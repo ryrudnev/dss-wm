@@ -1,2 +1,64 @@
-# Сгруппировать отходы по классу и типу (пока только для твердых отходов)
-SELECT ?user 
+# Select all available enterprises and methods for of waste processing of waste.
+select ?subject ?wasteClass ?processClass ?process
+where {
+  ?subject a :Subject ; :hasProcess ?process .
+  ?process a ?processClass .
+  {
+    select ?processClass ?wasteClass
+    where
+    {
+      :p1 a ?wasteClass .
+      ?wasteClass rdfs:subClassOf :Concrete ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasProcess ;
+                         owl:someValuesFrom ?processClass
+                       ] .
+    }
+  }
+}
+
+# Select all available enterprises and methods for of waste processing of waste that separeted by
+# transport and other methods.
+select distinct
+?st ?t ?tPriceByWeight ?tPriceByWidth
+?sm ?m ?mPriceByWeight
+where {
+
+  {
+    ?st a :Subject ; :hasProcess ?t .
+   	?t :priceByWeight ?tPriceByWeight ; :priceByWidth ?tPriceByWidth .
+    ?t a :Transport .
+
+    filter exists {
+      :p1 a ?wasteClass .
+      ?wasteClass rdfs:subClassOf :Concrete ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasProcess ;
+                         owl:someValuesFrom :Transport
+                       ]
+    }
+  }
+
+  union
+
+  {
+    ?sm a :Subject ; :hasProcess ?m .
+    ?m a ?mClass ; :priceByWeight ?mPriceByWeight .
+	minus { ?m a :Transport }
+
+    {
+      select ?mClass
+      where
+      {
+        :p1 a ?wasteClass .
+        ?wasteClass rdfs:subClassOf :Concrete ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty :hasProcess ;
+                           owl:someValuesFrom ?mClass
+                         ]
+      }
+    }
+
+  }
+
+}
