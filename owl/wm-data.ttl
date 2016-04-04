@@ -120,6 +120,8 @@
 :count rdf:type owl:DatatypeProperty ,
                 owl:FunctionalProperty ;
        
+       rdfs:domain :Waste ;
+       
        rdfs:range xsd:float .
 
 
@@ -181,8 +183,11 @@
 
 ###  http://localhost/owl/wm#priceByWeight
 
-:priceByWeight rdf:type owl:DatatypeProperty ,
-                        owl:FunctionalProperty ;
+:priceByWeight rdf:type owl:DatatypeProperty ;
+               
+               rdfs:subPropertyOf :price ;
+               
+               rdf:type owl:FunctionalProperty ;
                
                rdfs:domain :Process ;
                
@@ -192,8 +197,11 @@
 
 ###  http://localhost/owl/wm#priceByWidth
 
-:priceByWidth rdf:type owl:DatatypeProperty ,
-                       owl:FunctionalProperty ;
+:priceByWidth rdf:type owl:DatatypeProperty ;
+              
+              rdfs:subPropertyOf :price ;
+              
+              rdf:type owl:FunctionalProperty ;
               
               rdfs:domain :Process ;
               
