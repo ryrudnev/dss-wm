@@ -10,5 +10,8 @@
     "es6": true,
     "classes": true,
     "modules": true
+   },
+   "rules": {
+     "consistent-return": 0
    }
 }

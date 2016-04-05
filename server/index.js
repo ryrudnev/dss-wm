@@ -2,7 +2,7 @@ import Express from 'express';
 import bodyParser from 'body-parser';
 import config from './config';
 import logger from 'morgan';
-import wastes from './routes/waste.routes';
+import api from './routes';
 
 // Initialize the express application
 const app = new Express();
@@ -16,7 +16,7 @@ app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 
 // API endpoints
-app.use('/api', wastes);
+app.use('/api', api);
 
 const server = app.listen(config.server.port, error => {
   const address = server.address();

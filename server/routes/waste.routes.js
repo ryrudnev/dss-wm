@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import * as WasteController from '../controllers/waste.controller';
+import * as Controller from '../controllers/waste.controller';
 
 const router = new Router();
 
-router.route('/wastes').get(WasteController.getWastes);
+router.get('/:uri', Controller.getWaste);
 
 export default router;

@@ -1,13 +1,20 @@
-import stardog from '../services/stardog';
+import stardog, { axiomWithPrefix } from '../services/stardog';
 
-export function getWastes(req, res) {
-  const options = {
-    query: 'select distinct ?s where { ?s ?p ?o }',
-    limit: 10,
-    offset: 0,
-  };
+// Get an individua of Waste by the uri
+export function getWaste(req, res) {
+  const axiom = axiomWithPrefix(req.params.uri);
 
-  stardog.query(options, data => {
-    res.json(data);
-  });
+  const query = `
+  select distinct ?type ?typeLable ?title ?count where {
+    ${axiom} a ?type .
+    ?type rdfs:subClassOf :Concrete .
+    filter (?type != :Concrete)
+    optional {
+      ?type rdfs:label ?label .
+      filter langMatches(lang(?lable), "ru")
+    }
+    ${axiom} :title ?title ; :count ?count
+  }`;
+
+  stardog.queryToRes({ query, limit: 1, offset: 0 }, res);
 }
