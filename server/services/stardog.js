@@ -48,14 +48,18 @@ stardog._httpRequest = function stardogHttpRequest(options, callback) {
 };
 
 // Execute a stardog query and send response as json
-stardog.queryToRes = function stardogQueryToRes(options, res) {
+stardog.queryToRes = function stardogQueryToRes(options, res, callback) {
+  const cb = callback || (
+    data => _.map(
+      data, b => _.mapValues(b, be => axiomWithoutPrefix(be.value))
+    )
+  );
+
   this.query(options, response => {
     const result = response;
 
     if (_.has(result, 'data.results.bindings')) {
-      const data = _.map(result.data.results.bindings, b =>
-        _.mapValues(b, be => axiomWithoutPrefix(be.value))
-      );
+      const data = _.flatten([cb(result.data.results.bindings)]);
       result.data = _.size(data) > 1 ? data : (_.head(data) || {});
     }
 

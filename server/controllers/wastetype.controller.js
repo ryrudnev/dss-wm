@@ -1,14 +1,14 @@
 import stardog, { axiomWithPrefix } from '../services/stardog';
 
 // Get all Waste classes
-export function getWasteTypes(req, res) {
+export function all(req, res) {
   const query = `
-    select distinct ?type ?typeLabel where {
-      ?type rdfs:subClassOf :Concrete .
-      filter (?type != owl:Nothing && ?type != :Concrete)
+    select distinct ?fid ?title where {
+      ?fid rdfs:subClassOf :Concrete .
+      filter (?fid != owl:Nothing && ?fid != :Concrete)
       optional {
-        ?type rdfs:label ?typeLabel .
-        filter langMatches(lang(?typeLabel), "ru")
+        ?fid rdfs:label ?title .
+        filter langMatches(lang(?title), "ru")
       }
   }`;
 
@@ -16,24 +16,25 @@ export function getWasteTypes(req, res) {
 }
 
 // Get a class of Waste by the uri
-export function getWasteType(req, res) {
+export function get(req, res) {
   const axiom = axiomWithPrefix(req.params.uri);
 
   const flags = [':Composition', ':Hazardous', ':Processable', ':Substance'];
   const subquery = flags.reduce((qs, f, i) => {
     let q = i > 0 ? `${qs}union` : qs;
     q += `{
-      ${axiom} rdfs:subClassOf ?type .
-      ?type rdfs:subClassOf ${f} .
-      filter (?type != owl:Nothing && ?type != ${f} && ?type != ${axiom})
+      ${axiom} rdfs:subClassOf ?type_fid .
+      ?type_fid rdfs:subClassOf ${f} .
+      filter (?type_fid != owl:Nothing && ?type_fid != ${f} && ?type_fid != ${axiom})
       optional {
-        ?type rdfs:label ?typeLabel .
-        filter langMatches(lang(?typeLabel), "ru")
+        ?type_fid rdfs:label ?type_title .
+        filter langMatches(lang(?type_title), "ru")
       }
     }`;
     return q;
   }, '');
-  const query = `select distinct ?type ?typeLabel where {${subquery}}`;
+  const query = `select distinct ?fid ?type_fid ?type_title
+    where {${subquery} bind(${axiom} as ?fid)}`;
 
   stardog.queryToRes({ query }, res);
 }

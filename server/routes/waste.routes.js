@@ -3,6 +3,7 @@ import * as Controller from '../controllers/waste.controller';
 
 const router = new Router();
 
-router.get('/:uri', Controller.getWaste);
+router.get('/', Controller.all);
+router.get('/:uri', Controller.get);
 
 export default router;
