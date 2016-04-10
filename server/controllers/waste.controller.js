@@ -1,34 +1,45 @@
-import stardog, { axiomWithPrefix } from '../services/stardog';
+import { qsToJson } from '../util/utils';
+import Waste from '../models/waste';
 
-// Get all individuals of Waste
-export function all(req, res) {
-  const query = `
-    select distinct ?fid ?title ?count ?subject_fid ?subject_title where {
-      ?fid a :Concrete ; :title ?title ; :count ?count .
-      ?subject_fid :hasWaste ?fid
-      optional { ?subject_fid :title ?subject_title }
-  }`;
-
-  stardog.queryToRes({ query }, res);
+export function allIndivids(req, res) {
+  const qs = qsToJson(req);
+  Waste.selectIndividis({ ...qs, ...qs.filter })
+    .then(result => res.status(result.code).json(result));
 }
 
-// Get an individual of Waste by the uri
-export function get(req, res) {
-  const axiom = axiomWithPrefix(req.params.uri);
+export function individ(req, res) {
+  Waste.selectIndividByFid(req.params.fid)
+    .then(result => {
+      const { success, data } = result;
+      const r = success && !data.length ? {
+        success: false,
+        code: 404,
+        message: 'Not found',
+        data: null,
+      } : result;
 
-  const query = `
-  select distinct ?fid ?type_fid ?subject_fid ?subject_title ?type_title ?title ?count where {
-    ${axiom} a ?type_fid ; :title ?title ; :count ?count .
-    bind(${axiom} as ?fid)
-    ?subject_fid :hasWaste :bw2
-    optional {?subject_fid :title ?subject_title}
-    ?type_fid rdfs:subClassOf :Concrete
-    filter (?type_fid != :Concrete)
-    optional {
-      ?type_fid rdfs:label ?type_title .
-      filter langMatches(lang(?type_title), "ru")
-    }
-  }`;
+      res.status(r.code).json(r);
+    });
+}
 
-  stardog.queryToRes({ query, limit: 1, offset: 0 }, res);
+export function allTypes(req, res) {
+  const qs = qsToJson(req);
+  Waste.selectTypes({ ...qs, ...qs.filter })
+    .then(result => res.status(result.code).json(result));
+}
+
+export function type() {
+
+}
+
+export function origins() {
+
+}
+
+export function hazardClasses() {
+
+}
+
+export function aggregateStates() {
+
 }

@@ -1,16 +1,17 @@
-export default {
-  // Server side options
-  server: {
-    port: process.env.PORT || 1337,
-  },
-  // Options for stardog platform
-  stardog: {
-    // Default db on stardog platform
-    dbName: 'wm',
-    // Default prefix of db
-    dbPrefix: 'http://localhost/owl/wm#',
-    endpoint: 'http://localhost:5820/',
-    // as [username, password]
-    credentials: ['admin', 'admin'],
-  },
+const config = {
+  env: process.env.NODE_ENV || 'development',
+
+  // ----------------------------------
+  // Server Configuration
+  // ----------------------------------
+  server_host: '0.0.0.0',
+  server_port: process.env.PORT || 1337,
+
+  // ----------------------------------
+  // Stardog platform Configuration
+  // ----------------------------------
+  stardog_endpoint: 'http://localhost:5820/',
+  stardog_credentials: ['admin', 'admin'],
 };
+
+export default config;

@@ -1,3 +1,3 @@
-import base from './base';
-
-export default Object.assign({}, base, {});
+export default (/* config */) => ({
+  stardog_db: 'wm',
+});

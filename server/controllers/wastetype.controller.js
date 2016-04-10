@@ -3,13 +3,14 @@ import stardog, { axiomWithPrefix } from '../services/stardog';
 // Get all Waste classes
 export function all(req, res) {
   const query = `
-    select distinct ?fid ?title where {
-      ?fid rdfs:subClassOf :Concrete .
-      filter (?fid != owl:Nothing && ?fid != :Concrete)
-      optional {
-        ?fid rdfs:label ?title .
-        filter langMatches(lang(?title), "ru")
-      }
+    select distinct (replace(str(?ufid), '^.*(#|/)', '') as ?fid)
+      (if(bound(?ttitle), ?ttitle, '') as ?title) where {
+        ?ufid rdfs:subClassOf* :SpecificWaste
+        filter (?ufid != owl:Nothing && ?ufid != :SpecificWaste)
+        optional {
+          ?ufid rdfs:label ?ttitle
+          filter langMatches(lang(?ttitle), 'ru')
+        }
   }`;
 
   stardog.queryToRes({ query }, res);
@@ -23,18 +24,27 @@ export function get(req, res) {
   const subquery = flags.reduce((qs, f, i) => {
     let q = i > 0 ? `${qs}union` : qs;
     q += `{
-      ${axiom} rdfs:subClassOf ?type_fid .
-      ?type_fid rdfs:subClassOf ${f} .
+      ${axiom} rdfs:subClassOf* ?type_fid .
       filter (?type_fid != owl:Nothing && ?type_fid != ${f} && ?type_fid != ${axiom})
+      ?type_fid rdfs:subClassOf ${f}
       optional {
-        ?type_fid rdfs:label ?type_title .
-        filter langMatches(lang(?type_title), "ru")
+        ?type_fid rdfs:label ?type_title
+        filter langMatches(lang(?type_title), 'ru')
       }
     }`;
     return q;
   }, '');
-  const query = `select distinct ?fid ?type_fid ?type_title
-    where {${subquery} bind(${axiom} as ?fid)}`;
+
+  const query = `
+    select distinct ?fid
+    (if(bound(?fid), concat('[',
+             group_concat(distinct concat(
+               '{"fid":"', replace(str(?type_fid), '^.*(#|/)', ''),
+               '", "title": "', if(bound(?type_title), ?type_title, ''), '"}',
+               ''); separator=','
+             ),
+      ']'), ?fid) as ?types)
+    where {${subquery} bind(replace(str(${axiom}), '^.*(#|/)', '') as ?fid)} group by ?fid`;
 
   stardog.queryToRes({ query }, res);
 }

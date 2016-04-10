@@ -1,74 +1,59 @@
+import _debug from 'debug';
 import config from '../config';
+import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
-import _ from 'lodash';
 
-// Extract the name of axiom without prefix
-export function axiomWithoutPrefix(axiom) {
-  if (~axiom.indexOf(config.stardog.dbPrefix)) {
-    return axiom.substring(axiom.lastIndexOf('#') + 1);
-  }
-  return axiom;
-}
+const debug = _debug('app:stardog');
 
-// Add prefix to the name of axiom
-export function axiomWithPrefix(axiom) {
-  if (!~axiom.indexOf(config.stardog.dbPrefix)) {
-    return !~axiom.indexOf(':') ? `:${axiom}` : axiom;
-  }
-
-  return axiom;
-}
-
-// New stardog connection
-const stardog = new Connection();
-
-stardog.query = function stardogQuery(options, callback) {
-  const opts = _.defaults({}, options, {
-    database: config.stardog.dbName,
-  });
-
-  return Connection.prototype.query.call(this, opts, callback);
-};
-
-stardog._httpRequest = function stardogHttpRequest(options, callback) {
-  const cb = (body, response) => {
-    const result = {
-      success: response.statusCode === 200,
-      statusCode: response.statusCode,
-      statusMsg: response.statusMessage,
-      data: body,
-    };
-
-    if (callback) {
-      callback(result, response);
-    }
+// Parse response form Stardog platform
+export function parseStardogResponse(body, resp) {
+  const res = {
+    success: resp.statusCode < 400,
+    code: resp.statusCode,
+    message: resp.statusMessage,
   };
 
-  return Connection.prototype._httpRequest.call(this, options, cb);
-};
+  if (!res.success) {
+    return { ...res, data: body };
+  }
 
-// Execute a stardog query and send response as json
-stardog.queryToRes = function stardogQueryToRes(options, res, callback) {
-  const cb = callback || (
-    data => _.map(
-      data, b => _.mapValues(b, be => axiomWithoutPrefix(be.value))
-    )
-  );
+  const { boolean, results } = body;
 
-  this.query(options, response => {
-    const result = response;
+  if (boolean !== undefined) {
+    return { ...res, data: boolean };
+  }
 
-    if (_.has(result, 'data.results.bindings')) {
-      const data = _.flatten([cb(result.data.results.bindings)]);
-      result.data = _.size(data) > 1 ? data : (_.head(data) || {});
-    }
+  const { bindings } = results;
+  return { ...res, data: bindings.map(b => Object.keys(b).reduce((r, val) => {
+    const cur = r;
+    cur[val] = b[val].value;
+    return cur;
+  }, {})) || [] };
+}
 
-    return res.status(result.statusCode || 500).json(result);
-  });
-};
+// Stardog connection wrapper
+class Stardog {
+  constructor() {
+    const conn = this.connection = new Connection();
+    conn.setReasoning(true);
+    conn.setEndpoint(config.stardog_endpoint);
+    conn.setCredentials(...config.stardog_credentials);
+  }
 
-stardog.setReasoning(true);
-stardog.setEndpoint(config.stardog.endpoint);
-stardog.setCredentials(...config.stardog.credentials);
+  query(options, parseResult = parseStardogResponse) {
+    debug(`Query to Stardog platform: ${options.query}`);
 
-export default stardog;
+    const dfd = new Deferred();
+
+    this.connection.query({ ...options, database: config.stardog_db },
+      (body, resp) => {
+        debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
+
+        const res = parseResult(body, resp);
+        return dfd.resolve(res);
+      });
+    return dfd.promise;
+  }
+}
+
+export default new Stardog();
