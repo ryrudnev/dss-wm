@@ -16,19 +16,19 @@ router.get('/individuals/:fid', Controller.individ);
 router.get('/types', Controller.allTypes);
 
 // Get all subtypes for type of Waste entity by FID
-// /waste/types/:fid/subtypes
+// /waste/types/:fid/subtypes?sort&offset&limit
 router.get('/types/:fid/subtypes', Controller.subtypes);
 
 // Get all individuals of Origin entity
-// /waste/origins
-router.get('/waste/origins', Controller.origins);
+// /waste/origins?sort&offset&limit
+router.get('/origins', Controller.origins);
 
 // Get all individuals of HazardClass entity
-// /waste/origins
-router.get('/waste/hazard-classes', Controller.hazardClasses);
+// /waste/hazard-classes?sort&offset&limit
+router.get('/hazard-classes', Controller.hazardClasses);
 
 // Get all individuals of AggregateState entity
-// /waste/aggregate-states
-router.get('/waste/aggregate-states', Controller.aggregateStates);
+// /waste/aggregate-states?sort&offset&limit
+router.get('/aggregate-states', Controller.aggregateStates);
 
 export default router;

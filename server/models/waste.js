@@ -4,7 +4,7 @@ import { flatten } from '../util/utils';
 
 export default {
   // Select all individuals of Waste entity by options
-  selectIndividis({ types, forSubject, sort, offset, limit } = {}) {
+  selectIndividis({ types, forSubject, sort, offset = 0, limit = 30 } = {}) {
     const qselect = `
       SELECT DISTINCT ${qFidAs('?waste', '?fid')} ?amount ?title
     `;
@@ -34,25 +34,22 @@ export default {
       WHERE {
         ?waste a ?type ; :amount ?amount ; :title ?title
         FILTER(?type = :SpecificWaste && ?waste = ${axiomWithPrefix(fid)})
-        LIMIT 1 OFFSET 0
-      }
+      } LIMIT 1 OFFSET 0
     `;
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       stardog.query({ query }).then(resp => {
-        const res = resp.success && !resp.data.length ? {
-          success: false,
-          code: 404,
-          message: 'Not found',
-          data: null,
-        } : { ...resp, data: resp.data[0] };
-        resolve(res);
-      });
+        if (!resp.data.length) {
+          reject({ success: false, code: 404, message: 'Not found', data: null });
+        } else {
+          resolve({ ...resp, data: resp.data[0] });
+        }
+      }, resp => reject(resp));
     });
   },
 
   // Select all types of Waste entity by options
-  selectTypes({ types, sort, offset, limit } = {}) {
+  selectTypes({ types, sort, offset = 0, limit = 30 } = {}) {
     const qselect = `
       SELECT DISTINCT ${qFidAs('?type', '?fid')} ?title
     `;
@@ -73,12 +70,12 @@ export default {
   },
 
   // Select all subtypes of specific type of Waste entity by options
-  selectSubTypes({ individs, types, sort, offset, limit }) {
+  selectSubTypes({ individs, types, sort, offset = 0, limit }) {
     let qfilter = '';
 
     if (individs) {
       qfilter = `{
-        SELECT ?type ?w WHERE {
+        SELECT ?type ?waste ?w WHERE {
           ?waste a ?type
           FILTER (?waste IN (${flatten([individs]).map(axiomWithPrefix).join()}))
         }
@@ -88,8 +85,8 @@ export default {
     }
 
     if (!qfilter) {
-      return new Promise((resolve) => {
-        resolve({
+      return new Promise((resolve, reject) => {
+        reject({
           success: false,
           code: 404,
           message: 'Not found',
@@ -131,29 +128,29 @@ export default {
   },
 
   // Select all individuals of Origin entity
-  selectOrigins() {
+  selectOrigins({ sort, offset = 0, limit = 30 } = {}) {
     const query = `
-      SELECT ?fid ?title WHERE {
-        ?fid a :Origin ; :title ?title
-    }`;
+      SELECT ${qFidAs('?origin', '?fid')} ?title WHERE {
+        ?origin a :Origin ; :title ?title
+    } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
   },
 
   // Select all individuals of HazardClass entity
-  selectHazardClasses() {
+  selectHazardClasses({ sort, offset = 0, limit = 30 } = {}) {
     const query = `
-      SELECT ?fid ?title WHERE {
-        ?fid a :HazardClass ; :title ?title
-    }`;
+      SELECT ${qFidAs('?class', '?fid')} ?title WHERE {
+        ?class a :HazardClass ; :title ?title
+    } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
   },
 
   // Select all individuals of AggregateState entity
-  selectAggregateStates() {
+  selectAggregateStates({ sort, offset = 0, limit = 30 } = {}) {
     const query = `
-      SELECT ?fid ?title WHERE {
-        ?fid a :AggregateState ; :title ?title
-    }`;
+      SELECT ${qFidAs('?state', '?fid')} ?title WHERE {
+        ?state a :AggregateState ; :title ?title
+    } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
   },
 };

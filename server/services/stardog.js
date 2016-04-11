@@ -24,11 +24,15 @@ export function parseStardogResponse(body, resp) {
   }
 
   const { bindings } = results;
-  return { ...res, data: bindings.map(b => Object.keys(b).reduce((r, val) => {
-    const cur = r;
-    cur[val] = b[val].value;
-    return cur;
-  }, {})) || [] };
+  return {
+    ...res,
+    data: bindings.map(b => Object.keys(b).reduce(
+      (r, val) => {
+        const cur = r;
+        cur[val] = b[val].value;
+        return cur;
+      }, {})) || [],
+  };
 }
 
 // Stardog connection wrapper
@@ -50,7 +54,7 @@ class Stardog {
         debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
 
         const res = parseResult(body, resp);
-        return dfd.resolve(res);
+        dfd[res.success ? 'resolve' : 'reject'](res);
       });
     return dfd.promise;
   }
