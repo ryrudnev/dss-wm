@@ -2,25 +2,25 @@ import {
     qSort,
     qType,
     qFidAs,
-    qForSubject,
+    qInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
 import stardog from '../services/stardog';
-import { flatten } from '../util/utils';
 
 export default {
   // Select all individuals of Method entity by options
-  selectIndivids({ types, forSubject, sort, offset = 0, limit = 30 } = {}) {
+  selectIndivids({ types, forSubjects, sort, offset, limit } = {}) {
     const query = `
-      SELECT DISTINCT ${qFidAs('?method', '?fid')} ?title
+      SELECT DISTINCT ${qFidAs('method', 'fid')} ?title
       ?costOnWeight ?costOnDistance ?costByService
+      ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ?method :title ?title ${qType('a', [':Method', types])}
+        ?method :title ?title ${qType(['a'], [':Method', types])}
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
-        ${qForSubject(':hasMethod', '?method', forSubject)}
+        ${qInFilter(['subject', ':hasMethod', 'method'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 
@@ -30,7 +30,7 @@ export default {
   // Select the individual of Method entity by FID
   selectIndividByFid(fid) {
     const query = `
-      SELECT ${qFidAs('?method', '?fid')} ?title
+      SELECT ${qFidAs('method', 'fid')} ?title
       ?costOnWeight ?costOnDistance ?costByService
       WHERE {
         ?method a ?type ; :title ?title
@@ -53,10 +53,10 @@ export default {
   },
 
   // Select all types of Method entity by options
-  selectTypes({ types, sort, offset = 0, limit = 30 } = {}) {
+  selectTypes({ types, sort, offset, limit } = {}) {
     const query = `
-      SELECT DISTINCT ${qFidAs('?type', '?fid')} ?title WHERE {
-        ?type rdfs:label ?title ${qType('rdfs:subClassOf', [':Method', types])}
+      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
+        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':Method', types])}
         FILTER(?type != :Method)
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
@@ -71,13 +71,12 @@ export default {
     if (individs) {
       qfilter = `{
         SELECT ?type ?method ?w WHERE {
-          ?method a ?type
-          FILTER (?method IN (${flatten([individs]).map(axiomWithPrefix).join()}))
+          ${qInFilter(['method', 'a', 'type'], individs)}
         }
       }`;
     } else if (types) {
       qfilter = `
-        FILTER (?type IN (${flatten([types]).map(axiomWithPrefix).join()}))
+        ${qInFilter(['type'], types)}
         FILTER (?type != ?subtype)
       `;
     }
@@ -94,8 +93,8 @@ export default {
     }
 
     const qselect = `
-      SELECT DISTINCT ${qFidAs('?subtype', '?fid')} ?title
-      ${individs ? qFidAs('?method', '?methodFid') : ''}
+      SELECT DISTINCT ${qFidAs('subtype', 'fid')} ?title
+      ${individs ? qFidAs('method', 'methodFid') : ''}
     `;
 
     const query = `

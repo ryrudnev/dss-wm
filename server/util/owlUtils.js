@@ -12,7 +12,7 @@ export function axiomWithPrefix(a) {
 
 // Remove Uri prefix of axiom in SPARQL query
 export function qFidAs(fid, as) {
-  return `(REPLACE(STR(${fid}), '^.*(#|/)', '') as ${as})`;
+  return `(REPLACE(STR(?${fid}), '^.*(#|/)', '') as ?${as})`;
 }
 
 // Create sort conditional for SPARQL query
@@ -41,15 +41,16 @@ export function qLimitOffset(limit, offset) {
 }
 
 // Create type conditional for SPARQL query
-export function qType(predicate, types) {
+export function qType([p], types) {
   return flatten([types]).reduce((res, val) => {
     const axiom = axiomWithPrefix(val);
-    return !!axiom ? `${res} ; ${predicate} ${axiom}` : res;
+    return !!axiom ? `${res} ; ${p} ${axiom}` : res;
   }, '');
 }
 
-// Create `for Subject` conditional for SPARQL query
-export function qForSubject(predicate, object, forSubject) {
-  const s = axiomWithPrefix(forSubject);
-  return s ? `?subject ${predicate} ${object} FILTER(?subject = ${s})` : '';
+// Create filter conditional for SPARQL query
+export function qInFilter([s, p, o, inv = false], filters) {
+  const params = flatten([filters]).map(axiomWithPrefix).join();
+  const cond = !!p && !!o ? `?${s} ${p} ?${o} ` : '';
+  return params.length ? `${cond}FILTER(?${inv ? o : s} IN (${params}))` : '';
 }

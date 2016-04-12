@@ -1,72 +1,82 @@
-import { qsToJson } from '../util/utils';
+import { qsToJson, sendResp, joinExpanded, head } from '../util/utils';
 import Method from '../models/method';
+import Subject from '../models/subject';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
 
-  const cb = res => resp.status(res.code).json(res);
   const onSuccess = res => {
     const expand = qs.expand || [];
-    const promises = [];
+    const methodFids = res.data.map(method => method.fid);
+    const promises = [
+      expand.includes('types') ? Method.selectSubTypes({ individs: methodFids }) : void 0,
+      expand.includes('subject') ? Subject.selectIndivids({ byMethods: methodFids }) : void 0,
+    ];
 
-    if (expand.includes('types')) {
-      promises.push(Method.selectSubTypes({
-        individs: res.data.map(method => method.fid),
-      }));
-    }
+    if (promises.some(p => !!p)) {
+      return Promise.all(promises).then(results => {
+        const types = !results[0] || joinExpanded('methodFid', results[0].data);
+        const subjects = !results[1] || joinExpanded('methodFid', results[1].data);
 
-    if (promises.length) {
-      Promise.all(promises).then(results => {
-        const types = results[0].data.reduce((previous, val) => {
-          const cur = previous;
-          const { methodFid, title, fid } = val;
-          if (!cur[methodFid]) {
-            cur[methodFid] = [];
+        const data = res.data.map(m => {
+          const method = m;
+          if (typeof types !== 'boolean') {
+            method.types = types[method.fid] || [];
           }
-          cur[methodFid].push({ title, fid });
-          return cur;
-        }, {});
-        const data = res.data.map(method => ({
-          ...method,
-          types: types[method.fid],
-        }));
-        resp.status(res.code).json({ ...res, data });
-      }, cb);
-    } else {
-      cb(res);
+          if (typeof subjects !== 'boolean') {
+            method.subject = head(subjects[method.fid], {});
+          }
+          return method;
+        });
+
+        return sendResp(resp, {
+          success: res.success,
+          code: res.code,
+          message: res.message,
+          data,
+        })(res);
+      }, sendResp(resp));
     }
+
+    return sendResp(resp)(res);
   };
 
-  Method.selectIndivids({ ...qs, ...qs.filter }).then(onSuccess, cb);
+  return Method.selectIndivids({ ...qs, ...qs.filter }).then(onSuccess, sendResp(resp));
 }
 
 export function individ(req, resp) {
-  const cb = res => resp.status(res.code).json(res);
-
+  const { fid } = req.params;
   const expand = qsToJson(req).expand || [];
-  const promises = [Method.selectIndividByFid(req.params.fid)];
-
-  if (expand.includes('types')) {
-    promises.push(Method.selectSubTypes({ individs: req.params.fid }));
-  }
+  const promises = [
+    Method.selectIndividByFid(fid),
+    expand.includes('types') ? Method.selectSubTypes({ individs: fid }) : void 0,
+    expand.includes('subject') ? Subject.selectIndivids({ byMethods: fid }) : void 0,
+  ];
 
   Promise.all(promises).then(results => {
-    const [method, types] = results;
-    const data = { ...method.data };
-    if (types) {
-      data.types = types.data.map(m => ({ title: m.title, fid: m.fid }));
+    const method = results[0];
+    const types = !results[1] || joinExpanded('methodFid', results[1].data);
+    const subjects = !results[2] || joinExpanded('methodFid', results[2].data);
+
+    if (typeof types !== 'boolean') {
+      method.data.types = types[fid];
     }
-    resp.status(method.code).json({ ...method, data });
-  }, cb);
+
+    if (typeof subjects !== 'boolean') {
+      method.data.subject = head(subjects[fid], {});
+    }
+    return sendResp(resp)(method);
+  }, sendResp(resp));
 }
 
 export function allTypes(req, resp) {
   const qs = qsToJson(req);
-  const cb = res => resp.status(res.code).json(res);
-  Method.selectTypes({ ...qs, ...qs.filter }).then(cb, cb);
+  Method.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
 }
 
 export function subtypes(req, resp) {
-  const cb = res => resp.status(res.code).json(res);
-  Method.selectSubTypes({ ...qsToJson(req), types: req.params.fid }).then(cb, cb);
+  Method.selectSubTypes({
+    ...qsToJson(req),
+    types: req.params.fid,
+  }).then(sendResp(resp), sendResp(resp));
 }

@@ -2,20 +2,21 @@ import {
     qSort,
     qType,
     qFidAs,
-    qForSubject,
+    qInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
 import stardog from '../services/stardog';
-import { flatten } from '../util/utils';
 
 export default {
   // Select all individuals of Waste entity by options
-  selectIndivids({ types, forSubject, sort, offset = 0, limit = 30 } = {}) {
+  selectIndivids({ types, forSubjects, sort, offset, limit } = {}) {
     const query = `
-      SELECT DISTINCT ${qFidAs('?waste', '?fid')} ?amount ?title WHERE {
-        ?waste :amount ?amount ; :title ?title ${qType('a', [':SpecificWaste', types])} .
-        ${qForSubject(':hasWaste', '?waste', forSubject)}
+      SELECT DISTINCT ${qFidAs('waste', 'fid')} ?amount ?title
+      ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
+      WHERE {
+        ?waste :amount ?amount ; :title ?title ${qType(['a'], [':SpecificWaste', types])} .
+        ${qInFilter(['subject', ':hasWaste', 'waste'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 
@@ -25,7 +26,7 @@ export default {
   // Select the individual of Waste entity by FID
   selectIndividByFid(fid) {
     const query = `
-      SELECT ${qFidAs('?waste', '?fid')} ?amount ?title
+      SELECT ${qFidAs('waste', 'fid')} ?amount ?title
       WHERE {
         ?waste a ?type ; :amount ?amount ; :title ?title
         FILTER(?type = :SpecificWaste && ?waste = ${axiomWithPrefix(fid)})
@@ -44,10 +45,10 @@ export default {
   },
 
   // Select all types of Waste entity by options
-  selectTypes({ types, sort, offset = 0, limit = 30 } = {}) {
+  selectTypes({ types, sort, offset, limit } = {}) {
     const query = `
-      SELECT DISTINCT ${qFidAs('?type', '?fid')} ?title WHERE {
-        ?type rdfs:label ?title ${qType('rdfs:subClassOf', [':SpecificWaste', types])}
+      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
+        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':SpecificWaste', types])}
         FILTER(?type != :SpecificWaste)
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
@@ -62,13 +63,12 @@ export default {
     if (individs) {
       qfilter = `{
         SELECT ?type ?waste ?w WHERE {
-          ?waste a ?type
-          FILTER (?waste IN (${flatten([individs]).map(axiomWithPrefix).join()}))
+          ${qInFilter(['waste', 'a', 'type'], individs)}
         }
       }`;
     } else if (types) {
       qfilter = `
-        FILTER (?type IN (${flatten([types]).map(axiomWithPrefix).join()}))
+        ${qInFilter(['type'], types)}
         FILTER (?type != ?subtype)
       `;
     }
@@ -85,8 +85,8 @@ export default {
     }
 
     const qselect = `
-      SELECT DISTINCT ${qFidAs('?subtype', '?fid')} ?title
-      ${individs ? qFidAs('?waste', '?wasteFid') : ''}
+      SELECT DISTINCT ${qFidAs('subtype', 'fid')} ?title
+      ${individs ? qFidAs('waste', 'wasteFid') : ''}
     `;
 
     const evidences = [
@@ -120,27 +120,27 @@ export default {
   },
 
   // Select all individuals of Origin entity
-  selectOrigins({ sort, offset = 0, limit = 30 } = {}) {
+  selectOrigins({ sort, offset, limit } = {}) {
     const query = `
-      SELECT ${qFidAs('?origin', '?fid')} ?title WHERE {
+      SELECT ${qFidAs('origin', 'fid')} ?title WHERE {
         ?origin a :Origin ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
   },
 
   // Select all individuals of HazardClass entity
-  selectHazardClasses({ sort, offset = 0, limit = 30 } = {}) {
+  selectHazardClasses({ sort, offset, limit } = {}) {
     const query = `
-      SELECT ${qFidAs('?class', '?fid')} ?title WHERE {
+      SELECT ${qFidAs('class', 'fid')} ?title WHERE {
         ?class a :HazardClass ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
   },
 
   // Select all individuals of AggregateState entity
-  selectAggregateStates({ sort, offset = 0, limit = 30 } = {}) {
+  selectAggregateStates({ sort, offset, limit } = {}) {
     const query = `
-      SELECT ${qFidAs('?state', '?fid')} ?title WHERE {
+      SELECT ${qFidAs('state', 'fid')} ?title WHERE {
         ?state a :AggregateState ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
     return stardog.query({ query });
