@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import wastes from './waste.routes';
+import waste from './waste.routes';
+import methods from './method.routes';
 
 const router = new Router();
 
-router.use('/waste', wastes);
+router.use('/waste', waste);
+router.use('/methods', methods);
 
 export default router;

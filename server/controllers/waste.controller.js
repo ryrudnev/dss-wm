@@ -19,11 +19,11 @@ export function allIndivids(req, resp) {
       Promise.all(promises).then(results => {
         const types = results[0].data.reduce((previous, val) => {
           const cur = previous;
-          const { wasteFid, title, subtypeFid } = val;
+          const { wasteFid, title, fid } = val;
           if (!cur[wasteFid]) {
             cur[wasteFid] = [];
           }
-          cur[wasteFid].push({ title, subtypeFid });
+          cur[wasteFid].push({ title, fid });
           return cur;
         }, {});
 
@@ -45,7 +45,7 @@ export function allIndivids(req, resp) {
     }
   };
 
-  Waste.selectIndividis({ ...qs, ...qs.filter }).then(onSuccess, cb);
+  Waste.selectIndivids({ ...qs, ...qs.filter }).then(onSuccess, cb);
 }
 
 export function individ(req, resp) {
@@ -62,7 +62,7 @@ export function individ(req, resp) {
     const [waste, types] = results;
     const data = { ...waste.data };
     if (types) {
-      data.types = types.data.map(w => ({ title: w.title, subtypeFid: w.subtypeFid }));
+      data.types = types.data.map(w => ({ title: w.title, fid: w.fid }));
     }
     resp.status(waste.code).json({ ...waste, data });
   }, cb);
