@@ -1,4 +1,4 @@
-import { qsToJson, sendResp, joinExpanded, head } from '../util/utils';
+import { qsToJson, sendResp, joinExpanded } from '../util/utils';
 import Subject from '../models/subject';
 import Method from '../models/method';
 import Waste from '../models/waste';
@@ -7,19 +7,21 @@ export function allIndivids(req, resp) {
   const qs = qsToJson(req);
 
   const onSuccess = res => {
-    const expand = qs.expand || [];
+    const exp = qs.expand || [];
     const subjectFids = res.data.map(subject => subject.fid);
     const promises = [
-      // expand.includes('types') ? Method.selectSubTypes({ individs: methodFids }) : void 0,
-      expand.includes('waste') ? Waste.selectIndivids({ forSubjects: subjectFids }) : void 0,
-      expand.includes('methods') ? Method.selectIndivids({ forSubjects: subjectFids }) : void 0,
-      // expand.includes('located') ?
+      exp.includes('waste') ? Waste.selectIndivids({ forSubjects: subjectFids }) : 0,
+      exp.includes('methods') ? Method.selectIndivids({ forSubjects: subjectFids }) : 0,
+      exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: subjectFids }) : 0,
+      exp.includes('types') ? Subject.selectSubTypes({ individs: subjectFids }) : 0,
     ];
 
     if (promises.some(p => !!p)) {
       return Promise.all(promises).then(results => {
         const waste = !results[0] || joinExpanded('subjectFid', results[0].data);
         const methods = !results[1] || joinExpanded('subjectFid', results[1].data);
+        const locations = !results[2] || joinExpanded('subjectFid', results[2].data);
+        const types = !results[3] || joinExpanded('subjectFid', results[3].data);
 
         const data = res.data.map(s => {
           const subject = s;
@@ -28,6 +30,12 @@ export function allIndivids(req, resp) {
           }
           if (typeof methods !== 'boolean') {
             subject.methods = methods[subject.fid] || [];
+          }
+          if (typeof locations !== 'boolean') {
+            subject.located = locations[subject.fid] || [];
+          }
+          if (typeof types !== 'boolean') {
+            subject.types = types[subject.fid] || [];
           }
           return subject;
         });
@@ -48,15 +56,53 @@ export function allIndivids(req, resp) {
 }
 
 export function individ(req, resp) {
+  const { fid } = req.params;
+  const exp = qsToJson(req).expand || [];
+  const promises = [
+    Subject.selectIndividByFid(fid),
+    exp.includes('waste') ? Waste.selectIndivids({ forSubjects: fid }) : 0,
+    exp.includes('methods') ? Method.selectIndivids({ forSubjects: fid }) : 0,
+    exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: fid }) : 0,
+    exp.includes('types') ? Subject.selectSubTypes({ individs: fid }) : 0,
+  ];
 
+  Promise.all(promises).then(results => {
+    const subject = results[0];
+    const waste = !results[1] || joinExpanded('subjectFid', results[1].data);
+    const methods = !results[2] || joinExpanded('subjectFid', results[2].data);
+    const locations = !results[3] || joinExpanded('subjectFid', results[3].data);
+    const types = !results[4] || joinExpanded('subjectFid', results[4].data);
+
+    if (typeof types !== 'boolean') {
+      subject.data.types = types[fid] || [];
+    }
+
+    if (typeof methods !== 'boolean') {
+      subject.data.methods = methods[fid] || [];
+    }
+
+    if (typeof locations !== 'boolean') {
+      subject.data.locations = locations[fid] || [];
+    }
+
+    if (typeof waste !== 'boolean') {
+      subject.data.waste = waste[fid];
+    }
+
+    return sendResp(resp)(subject);
+  }, sendResp(resp));
 }
 
 export function allTypes(req, resp) {
-
+  const qs = qsToJson(req);
+  Subject.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
 }
 
 export function subtypes(req, resp) {
-
+  Subject.selectSubTypes({
+    ...qsToJson(req),
+    types: req.params.fid,
+  }).then(sendResp(resp), sendResp(resp));
 }
 
 export function searchStrategy(req, resp) {

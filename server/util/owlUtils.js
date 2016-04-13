@@ -1,4 +1,4 @@
-import { flatten } from '../util/utils';
+import { flatten } from './utils';
 
 // Extract the name of axiom without prefix
 export function axiomWithoutPrefix(a) {

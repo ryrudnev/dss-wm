@@ -4,7 +4,8 @@ import * as Controller from '../controllers/subject.controller';
 const router = new Router();
 
 // Get all individuals of Subject entity
-// /subjects/individuals?expand=['types', 'waste', 'methods', 'located']&filter={types}&sort&offset&limit
+// /subjects/individuals?expand=['types', 'waste', 'methods', 'located']
+// &filter={types}&sort&offset&limit
 router.get('/individuals', Controller.allIndivids);
 
 // Get the individual of Subject entity by FID

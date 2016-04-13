@@ -6,11 +6,11 @@ export function allIndivids(req, resp) {
   const qs = qsToJson(req);
 
   const onSuccess = res => {
-    const expand = qs.expand || [];
+    const exp = qs.expand || [];
     const wasteFids = res.data.map(waste => waste.fid);
     const promises = [
-      expand.includes('types') ? Waste.selectSubTypes({ individs: wasteFids }) : void 0,
-      expand.includes('subject') ? Subject.selectIndivids({ byWaste: wasteFids }) : void 0,
+      exp.includes('types') ? Waste.selectSubTypes({ individs: wasteFids }) : 0,
+      exp.includes('subject') ? Subject.selectIndivids({ byWaste: wasteFids }) : 0,
     ];
 
     if (promises.some(p => !!p)) {
@@ -46,11 +46,11 @@ export function allIndivids(req, resp) {
 
 export function individ(req, resp) {
   const { fid } = req.params;
-  const expand = qsToJson(req).expand || [];
+  const exp = qsToJson(req).expand || [];
   const promises = [
     Waste.selectIndividByFid(fid),
-    expand.includes('types') ? Waste.selectSubTypes({ individs: fid }) : void 0,
-    expand.includes('subject') ? Subject.selectIndivids({ byWaste: fid }) : void 0,
+    exp.includes('types') ? Waste.selectSubTypes({ individs: fid }) : 0,
+    exp.includes('subject') ? Subject.selectIndivids({ byWaste: fid }) : 0,
   ];
 
   Promise.all(promises).then(results => {
@@ -59,7 +59,7 @@ export function individ(req, resp) {
     const subjects = !results[2] || joinExpanded('wasteFid', results[2].data);
 
     if (typeof types !== 'boolean') {
-      waste.data.types = types[fid];
+      waste.data.types = types[fid] || [];
     }
 
     if (typeof subjects !== 'boolean') {
