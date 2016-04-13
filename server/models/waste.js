@@ -3,6 +3,7 @@ import {
     qType,
     qFidAs,
     qInFilter,
+    qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
@@ -10,12 +11,12 @@ import stardog from '../services/stardog';
 
 export default {
   // Select all individuals of Waste entity by options
-  selectIndivids({ types, forSubjects, sort, offset, limit } = {}) {
+  selectIndivids({ forSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('waste', 'fid')} ?amount ?title
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ?waste :amount ?amount ; :title ?title ${qType(['a'], [':SpecificWaste', types])} .
+        ?waste :amount ?amount ; :title ?title ${qType(['a'], [':SpecificWaste', subtypes])} .
         ${qInFilter(['subject', ':hasWaste', 'waste'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
@@ -44,50 +45,17 @@ export default {
     });
   },
 
-  // Select all types of Waste entity by options
-  selectTypes({ types, sort, offset, limit } = {}) {
-    const query = `
-      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
-        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':SpecificWaste', types])}
-        FILTER(?type != :SpecificWaste)
-      } ${qSort(sort)} ${qLimitOffset(limit, offset)}
-    `;
-
-    return stardog.query({ query });
-  },
-
-  // Select all subtypes of specific type of Waste entity by options
-  selectSubTypes({ individs, types, sort, offset, limit }) {
-    let qfilter = '';
-
-    if (individs) {
-      qfilter = `{
-        SELECT ?type ?waste ?w WHERE {
-          ${qInFilter(['waste', 'a', 'type'], individs)}
-        }
-      }`;
-    } else if (types) {
-      qfilter = `
-        ${qInFilter(['type'], types)}
-        FILTER (?type != ?subtype)
+  // Select all specific types of Waste entity by options
+  selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
+    if (!individs && !types) {
+      const query = `
+        SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
+          ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':SpecificWaste', subtypes])}
+          FILTER(?type != :SpecificWaste)
+        } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
+      return stardog.query({ query });
     }
-
-    if (!qfilter) {
-      return new Promise((resolve, reject) => {
-        reject({
-          success: false,
-          code: 404,
-          message: 'Not found',
-          data: null,
-        });
-      });
-    }
-
-    const qselect = `
-      SELECT DISTINCT ${qFidAs('subtype', 'fid')} ?title
-      ${individs ? qFidAs('waste', 'wasteFid') : ''}
-    `;
 
     const evidences = [
       ':Composition',
@@ -103,16 +71,20 @@ export default {
     const qbody = evidences.reduce((res, val, i) => {
       let q = i > 0 ? `${res}UNION` : res;
       q += `{
-        ?type rdfs:subClassOf ?subtype .
-        ?subtype rdfs:subClassOf ${val} ; rdfs:label ?title
-        FILTER(?subtype != ${val})
+        ${types ? '?subtype rdfs:subClassOf ?type .' : ''}
+        ?type rdfs:subClassOf ${val} ; rdfs:label ?title
+        FILTER(?type != ${val})
       }`;
       return q;
     }, '');
 
     const query = `
-      ${qselect} WHERE {
-        ${qbody} ${qfilter}
+      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
+      ${individs ? qFidAs('waste', 'wasteFid') : ''}
+      WHERE {
+        ${qInFilter(['waste', 'a', 'type'], individs)}
+        ${types ? `FILTER(?subtype != ?type) ${qInFilter(['subtype'], types)}` : ''}
+        ${qbody}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 

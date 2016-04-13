@@ -4,7 +4,8 @@ import * as Controller from '../controllers/waste.controller';
 const router = new Router();
 
 // Get all individuals of Waste entity
-// /waste/individuals?expand=['types', 'subject']&filter={types, forSubject}&sort&offset&limit
+// /waste/individuals?expand=['types', 'subject']
+// &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
 router.get('/individuals', Controller.allIndivids);
 
 // Get the individual of Waste entity by FID
@@ -12,12 +13,9 @@ router.get('/individuals', Controller.allIndivids);
 router.get('/individuals/:fid', Controller.individ);
 
 // Get all specific types of Waste entity
-// /waste/types?filter={types}&sort&offset&limit
+// /waste/types?
+// individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
 router.get('/types', Controller.allTypes);
-
-// Get all subtypes for type of Waste entity by FID
-// /waste/types/:fid/subtypes?sort&offset&limit
-router.get('/types/:fid/subtypes', Controller.subtypes);
 
 // Get all individuals of Origin entity
 // /waste/origins?sort&offset&limit
