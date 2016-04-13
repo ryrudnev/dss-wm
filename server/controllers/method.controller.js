@@ -9,7 +9,7 @@ export function allIndivids(req, resp) {
     const exp = qs.expand || [];
     const methodFids = res.data.map(method => method.fid);
     const promises = [
-      exp.includes('types') ? Method.selectSubTypes({ individs: methodFids }) : 0,
+      exp.includes('types') ? Method.selectTypes({ individs: methodFids }) : 0,
       exp.includes('subject') ? Subject.selectIndivids({ byMethods: methodFids }) : 0,
     ];
 
@@ -41,7 +41,7 @@ export function allIndivids(req, resp) {
     return sendResp(resp)(res);
   };
 
-  return Method.selectIndivids({ ...qs, ...qs.filter }).then(onSuccess, sendResp(resp));
+  return Method.selectIndivids(qs).then(onSuccess, sendResp(resp));
 }
 
 export function individ(req, resp) {
@@ -49,11 +49,11 @@ export function individ(req, resp) {
   const exp = qsToJson(req).expand || [];
   const promises = [
     Method.selectIndividByFid(fid),
-    exp.includes('types') ? Method.selectSubTypes({ individs: fid }) : 0,
+    exp.includes('types') ? Method.selectTypes({ individs: fid }) : 0,
     exp.includes('subject') ? Subject.selectIndivids({ byMethods: fid }) : 0,
   ];
 
-  Promise.all(promises).then(results => {
+  return Promise.all(promises).then(results => {
     const method = results[0];
     const types = !results[1] || joinExpanded('methodFid', results[1].data);
     const subjects = !results[2] || joinExpanded('methodFid', results[2].data);
@@ -70,13 +70,5 @@ export function individ(req, resp) {
 }
 
 export function allTypes(req, resp) {
-  const qs = qsToJson(req);
-  Method.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
-}
-
-export function subtypes(req, resp) {
-  Method.selectSubTypes({
-    ...qsToJson(req),
-    types: req.params.fid,
-  }).then(sendResp(resp), sendResp(resp));
+  return Method.selectTypes(qsToJson(req)).then(sendResp(resp), sendResp(resp));
 }

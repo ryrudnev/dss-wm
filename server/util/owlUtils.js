@@ -48,9 +48,24 @@ export function qType([p], types) {
   }, '');
 }
 
-// Create filter conditional for SPARQL query
-export function qInFilter([s, p, o, inv = false], filters) {
+// Create IN filter conditional for SPARQL query
+export function qInFilter([s, p, o, invert = false], filters) {
+  if (!filters) {
+    return '';
+  }
   const params = flatten([filters]).map(axiomWithPrefix).join();
   const cond = !!p && !!o ? `?${s} ${p} ?${o} ` : '';
-  return params.length ? `${cond}FILTER(?${inv ? o : s} IN (${params}))` : '';
+  return params.length ? `${cond}FILTER(?${invert ? o : s} IN (${params}))` : '';
+}
+
+// Create NOT IN filter conditional for SPARQL query
+export function qNotInFilter([s, p, o, invert = false], filters) {
+  if (!filters) {
+    return '';
+  }
+  const cond = !!p && !!o ? `?${s} ${p} ?${o} ` : '';
+  const params = flatten([filters]).map(
+      val => `?${invert ? o : s} != ${axiomWithPrefix(val)}`
+  ).join(' && ');
+  return params.length ? `${cond}FILTER(${params})` : '';
 }

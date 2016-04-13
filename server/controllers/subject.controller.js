@@ -66,7 +66,7 @@ export function individ(req, resp) {
     exp.includes('types') ? Subject.selectSubTypes({ individs: fid }) : 0,
   ];
 
-  Promise.all(promises).then(results => {
+  return Promise.all(promises).then(results => {
     const subject = results[0];
     const waste = !results[1] || joinExpanded('subjectFid', results[1].data);
     const methods = !results[2] || joinExpanded('subjectFid', results[2].data);
@@ -95,16 +95,29 @@ export function individ(req, resp) {
 
 export function allTypes(req, resp) {
   const qs = qsToJson(req);
-  Subject.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
+  return Subject.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
 }
 
 export function subtypes(req, resp) {
-  Subject.selectSubTypes({
+  return Subject.selectSubTypes({
     ...qsToJson(req),
     types: req.params.fid,
   }).then(sendResp(resp), sendResp(resp));
 }
 
+// Generate waste management strategy for the subject by FID
 export function searchStrategy(req, resp) {
+  const { fid } = req.params;
+  return Promise.all([
+    Subject.selectIndividByFid(fid),
+    Waste.selectIndivids({ forSubjects: fid }),
+    Method.selectIndivids({ forSubjects: fid }),
+  ]).then(results => {
+    const strategy = {};
 
+    const subject = results[0].data;
+    const subjectWaste = joinExpanded('subjectFid', results[1].data)[fid] || [];
+    const subjectMethods = joinExpanded('subjectFid', results[2].data)[fid] || [];
+
+  }, sendResp(resp));
 }

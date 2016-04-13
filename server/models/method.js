@@ -3,6 +3,7 @@ import {
     qType,
     qFidAs,
     qInFilter,
+    qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
@@ -10,13 +11,13 @@ import stardog from '../services/stardog';
 
 export default {
   // Select all individuals of Method entity by options
-  selectIndivids({ types, forSubjects, sort, offset, limit } = {}) {
+  selectIndivids({ forSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('method', 'fid')} ?title
       ?costOnWeight ?costOnDistance ?costByService
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ?method :title ?title ${qType(['a'], [':Method', types])}
+        ?method :title ?title ${qType(['a'], [':Method', subtypes])}
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
@@ -52,57 +53,33 @@ export default {
     });
   },
 
-  // Select all types of Method entity by options
-  selectTypes({ types, sort, offset, limit } = {}) {
-    const query = `
-      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
-        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':Method', types])}
-        FILTER(?type != :Method)
-      } ${qSort(sort)} ${qLimitOffset(limit, offset)}
-    `;
-
-    return stardog.query({ query });
-  },
-
-  // Select all subtypes of specific type of Method entity by options
-  selectSubTypes({ individs, types, sort, offset, limit }) {
-    let qfilter = '';
-
-    if (individs) {
-      qfilter = `{
-        SELECT ?type ?method ?w WHERE {
-          ${qInFilter(['method', 'a', 'type'], individs)}
-        }
-      }`;
-    } else if (types) {
-      qfilter = `
-        ${qInFilter(['type'], types)}
-        FILTER (?type != ?subtype)
+  // Select all specific types of Method entity by options
+  selectTypes({ forWaste, individs, types, subtypes, sort, offset, limit } = {}) {
+    if (forWaste) {
+      const query = `
+       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
+          ${qFidAs('waste', 'wasteFid')}
+          WHERE {
+            ?waste a ?wasteType .
+            ?wasteType rdfs:subClassOf :SpecificWaste ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasMethod ;
+                         owl:someValuesFrom ?type
+                       ]
+            ${qInFilter(['waste'], forWaste)}
+          } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
+      return stardog.query({ query });
     }
-
-    if (!qfilter) {
-      return new Promise((resolve, reject) => {
-        reject({
-          success: false,
-          code: 404,
-          message: 'Not found',
-          data: null,
-        });
-      });
-    }
-
-    const qselect = `
-      SELECT DISTINCT ${qFidAs('subtype', 'fid')} ?title
-      ${individs ? qFidAs('method', 'methodFid') : ''}
-    `;
 
     const query = `
-      ${qselect} WHERE {
-        ?type rdfs:subClassOf ?subtype .
-        ?subtype rdfs:subClassOf :Method ; rdfs:label ?title
-        FILTER(?subtype != :Method)
-        ${qfilter}
+      SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
+      ${individs ? qFidAs('method', 'methodFid') : ''}
+      WHERE {
+        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':Method', subtypes])}
+        FILTER(?type != :Method)
+        ${qInFilter(['type'], types)} ${qNotInFilter(['type'], types)}
+        ${qInFilter(['method', 'a', 'type'], individs)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 
