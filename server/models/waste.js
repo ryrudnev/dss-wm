@@ -16,7 +16,8 @@ export default {
       SELECT DISTINCT ${qFidAs('waste', 'fid')} ?amount ?title
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ?waste :amount ?amount ; :title ?title ${qType(['a'], [':SpecificWaste', subtypes])} .
+        ?waste :amount ?amount ; :title ?title .
+        ${qType(['waste', 'a'], [':SpecificWaste', subtypes])} .
         ${qInFilter(['subject', ':hasWaste', 'waste'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
@@ -50,7 +51,7 @@ export default {
     if (!individs && !types) {
       const query = `
         SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
-          ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':SpecificWaste', subtypes])}
+          ${qType(['type', 'rdfs:subClassOf'], [':SpecificWaste', subtypes])} ; rdfs:label ?title
           FILTER(?type != :SpecificWaste)
         } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
@@ -58,33 +59,23 @@ export default {
     }
 
     const evidences = [
-      ':Composition',
-      ':Hazardous',
-      ':Processable',
-      ':Substance',
+      'Composition',
+      'Hazardous',
+      'Processable',
+      'Substance',
+      'SpecificWaste',
+      'Waste',
     ];
-
-    if (individs) {
-      evidences.push(':SpecificWaste');
-    }
-
-    const qbody = evidences.reduce((res, val, i) => {
-      let q = i > 0 ? `${res}UNION` : res;
-      q += `{
-        ${types ? '?subtype rdfs:subClassOf ?type .' : ''}
-        ?type rdfs:subClassOf ${val} ; rdfs:label ?title
-        FILTER(?type != ${val})
-      }`;
-      return q;
-    }, '');
 
     const query = `
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
+        ?type rdfs:subClassOf :Waste OPTIONAL { ?type rdfs:label ?title } .
         ${qInFilter(['waste', 'a', 'type'], individs)}
-        ${types ? `FILTER(?subtype != ?type) ${qInFilter(['subtype'], types)}` : ''}
-        ${qbody}
+        ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
+        ${qInFilter(['subtype'], types)}` : ''}
+        ${qNotInFilter(['type'], evidences)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 

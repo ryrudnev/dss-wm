@@ -41,10 +41,13 @@ export function qLimitOffset(limit, offset) {
 }
 
 // Create type conditional for SPARQL query
-export function qType([p], types) {
+export function qType([s, p], types) {
   return flatten([types]).reduce((res, val) => {
     const axiom = axiomWithPrefix(val);
-    return !!axiom ? `${res} ; ${p} ${axiom}` : res;
+    if (!axiom) {
+      return res;
+    }
+    return `${res}${res.length ? ';' : `?${s}`} ${p} ${axiom} `;
   }, '');
 }
 

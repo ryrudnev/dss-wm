@@ -3,7 +3,6 @@ import {
     qType,
     qFidAs,
     qInFilter,
-    qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
@@ -17,7 +16,8 @@ export default {
       ?costOnWeight ?costOnDistance ?costByService
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ?method :title ?title ${qType(['a'], [':Method', subtypes])}
+        ?method :title ?title .
+        ${qType(['method', 'a'], [':Method', subtypes])}
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
@@ -65,7 +65,8 @@ export default {
                        [ rdf:type owl:Restriction ;
                          owl:onProperty :hasMethod ;
                          owl:someValuesFrom ?type
-                       ]
+                       ] .
+            ?type rdfs:label ?title .
             ${qInFilter(['waste'], forWaste)}
           } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
@@ -76,9 +77,10 @@ export default {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('method', 'methodFid') : ''}
       WHERE {
-        ?type rdfs:label ?title ${qType(['rdfs:subClassOf'], [':Method', subtypes])}
+        ${qType(['type', 'rdfs:subClassOf'], [':Method', subtypes])} ; rdfs:label ?title
         FILTER(?type != :Method)
-        ${qInFilter(['type'], types)} ${qNotInFilter(['type'], types)}
+        ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
+        ${qInFilter(['subtype'], types)}` : ''}
         ${qInFilter(['method', 'a', 'type'], individs)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;

@@ -13,7 +13,7 @@ export function allIndivids(req, resp) {
       exp.includes('waste') ? Waste.selectIndivids({ forSubjects: subjectFids }) : 0,
       exp.includes('methods') ? Method.selectIndivids({ forSubjects: subjectFids }) : 0,
       exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: subjectFids }) : 0,
-      exp.includes('types') ? Subject.selectSubTypes({ individs: subjectFids }) : 0,
+      exp.includes('types') ? Subject.selectTypes({ individs: subjectFids }) : 0,
     ];
 
     if (promises.some(p => !!p)) {
@@ -52,7 +52,7 @@ export function allIndivids(req, resp) {
     return sendResp(resp)(res);
   };
 
-  return Subject.selectIndivids({ ...qs, ...qs.filter }).then(onSuccess, sendResp(resp));
+  return Subject.selectIndivids(qs).then(onSuccess, sendResp(resp));
 }
 
 export function individ(req, resp) {
@@ -63,7 +63,7 @@ export function individ(req, resp) {
     exp.includes('waste') ? Waste.selectIndivids({ forSubjects: fid }) : 0,
     exp.includes('methods') ? Method.selectIndivids({ forSubjects: fid }) : 0,
     exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: fid }) : 0,
-    exp.includes('types') ? Subject.selectSubTypes({ individs: fid }) : 0,
+    exp.includes('types') ? Subject.selectTypes({ individs: fid }) : 0,
   ];
 
   return Promise.all(promises).then(results => {
@@ -94,15 +94,7 @@ export function individ(req, resp) {
 }
 
 export function allTypes(req, resp) {
-  const qs = qsToJson(req);
-  return Subject.selectTypes({ ...qs, ...qs.filter }).then(sendResp(resp), sendResp(resp));
-}
-
-export function subtypes(req, resp) {
-  return Subject.selectSubTypes({
-    ...qsToJson(req),
-    types: req.params.fid,
-  }).then(sendResp(resp), sendResp(resp));
+  return Subject.selectTypes(qsToJson(req)).then(sendResp(resp), sendResp(resp));
 }
 
 // Generate waste management strategy for the subject by FID
