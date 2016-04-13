@@ -101,15 +101,64 @@ export function allTypes(req, resp) {
 export function searchStrategy(req, resp) {
   const { fid } = req.params;
   return Promise.all([
+    // Select the information of a subject and own waste
     Subject.selectIndividByFid(fid),
     Waste.selectIndivids({ forSubjects: fid }),
-    Method.selectIndivids({ forSubjects: fid }),
-  ]).then(results => {
-    const strategy = {};
+    // Select all available waste management methods
+    Method.selectIndivids(),
+  ]).then(fres => {
+    const subject = fres[0].data; // Current the subject and own waste
 
-    const subject = results[0].data;
-    const subjectWaste = joinExpanded('subjectFid', results[1].data)[fid] || [];
-    const subjectMethods = joinExpanded('subjectFid', results[2].data)[fid] || [];
+    const waste = joinExpanded('subjectFid', fres[1].data, false)[fid] || [];
+    if (!waste.length) {
+      return sendResp(resp, {
+        success: false, code: 404, message: 'Waste not found', data: null,
+      }, 404)();
+    }
+    const wasteFids = waste.map(w => w.fid);
+
+    const methods = fres[2].data || []; // All available individuals of Method
+    if (!methods.length) {
+      return sendResp(resp, {
+        success: false, code: 404, message: 'Methods not found', data: null,
+      }, 404)();
+    }
+    const methodFids = methods.map(m => m.fid);
+
+    return Promise.all([
+      // Select types for the current individuals of Method
+      Method.selectTypes({ individs: methodFids }),
+      // Select all available method types for the current waste
+      Method.selectTypes({ forWaste: wasteFids }),
+      // Select subjects for the current individuals of Method
+      Subject.selectIndivids({ byMethods: methodFids }),
+    ]).then(sres => {
+      const methodTypes = joinExpanded('methodFid', sres[0].data, false);
+      const wasteMethods = joinExpanded('wasteFid', sres[1].data, false);
+      const subjectMethods = joinExpanded('methodFid', sres[2].data, false);
+
+      const strategy = genStrategy({
+        subject,
+        waste,
+        methods,
+        methodTypes,
+        wasteMethods,
+        subjectMethods,
+      });
+
+      return sendResp(resp, strategy, 200)();
+    }, sendResp(resp));
 
   }, sendResp(resp));
+}
+
+function genStrategy({
+    subject,
+    waste,
+    methods,
+    methodTypes,
+    wasteMethods,
+    subjectMethods,
+    }) {
+
 }

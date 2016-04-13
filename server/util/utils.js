@@ -39,12 +39,14 @@ export function qsToJson({ query }) {
   }, {});
 }
 
-export function joinExpanded(joinField, expanded) {
+export function joinExpanded(joinField, expanded, deleteJoinField = true) {
   return expanded.reduce((prev, val) => {
     const cur = prev;
     const item = val;
     const field = val[joinField];
-    delete item[joinField];
+    if (deleteJoinField) {
+      delete item[joinField];
+    }
     if (!cur[field]) {
       cur[field] = [];
     }
@@ -53,6 +55,6 @@ export function joinExpanded(joinField, expanded) {
   }, {});
 }
 
-export function sendResp(resp, data) {
-  return res => resp.status(res.code || 500).json(data || res);
+export function sendResp(resp, data, code) {
+  return res => resp.status(code || res.code).json(data || res);
 }

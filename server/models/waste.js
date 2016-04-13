@@ -11,7 +11,7 @@ import stardog from '../services/stardog';
 
 export default {
   // Select all individuals of Waste entity by options
-  selectIndivids({ forSubjects, subtypes, sort, offset, limit } = {}) {
+  selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('waste', 'fid')} ?amount ?title
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
@@ -19,6 +19,7 @@ export default {
         ?waste :amount ?amount ; :title ?title .
         ${qType(['waste', 'a'], [':SpecificWaste', subtypes])} .
         ${qInFilter(['subject', ':hasWaste', 'waste'], forSubjects)}
+        ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 

@@ -3,6 +3,7 @@ import {
     qType,
     qFidAs,
     qInFilter,
+    qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
@@ -10,7 +11,7 @@ import stardog from '../services/stardog';
 
 export default {
   // Select all individuals of Method entity by options
-  selectIndivids({ forSubjects, subtypes, sort, offset, limit } = {}) {
+  selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('method', 'fid')} ?title
       ?costOnWeight ?costOnDistance ?costByService
@@ -22,6 +23,7 @@ export default {
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
         ${qInFilter(['subject', ':hasMethod', 'method'], forSubjects)}
+        ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
 
