@@ -1,3 +1,6 @@
+import _debug from 'debug';
+const debug = _debug('app:server');
+
 export class Deferred {
   constructor() {
     this.promise = new Promise((resolve, reject) => {
@@ -58,5 +61,8 @@ export function joinExpanded(joinField, expanded, isSingle) {
 }
 
 export function onSendResp(resp) {
-  return res => resp.status(res.code).json(res);
+  return res => {
+    debug(`The server sent response with ${res.code} code and message '${res.message}'`);
+    return resp.status(res.code).json(res);
+  };
 }

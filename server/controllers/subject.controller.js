@@ -101,17 +101,14 @@ export function allTypes(req, resp) {
 // Generate waste management strategy for a subject
 // {
 //  subject, - the waste management subject to which the generated strategy
-//  waste, - the subject's waste:
+//  ownWaste, - the subject's waste:
 //           [{fid, title, amount}, ...]
 //  wasteMethods, - acceptable waste management methods for the types of waste:
 //                  {wasteFid: [{title, fid}, ...], ...}
 //  methods, - all available waste management methods:
-//             [{fid, title, costOnWeight, costByService}, ...]
-//  methodsTypes, - all types of waste management methods:
-//                  {methodFid: {title, fid}, ...}
-// methodSubjects - all subjects of waste management methods:
-//                  {methodFid: {fid, title, coordinates, budget}, ...}
-// }
+//             {methodTypeFid: [{fid, title, costOnWeight, costByService}, ...], ...},
+//  methodSubjects, - all waste management method's subjects:
+//                    [{fid, title, coordinates, budget}, ...]
 // Returned value:
 // [
 //   {
@@ -128,27 +125,31 @@ export function allTypes(req, resp) {
 //   }, ...
 // ]
 function genStrategy(data) {
-  const strategy = []; // waste management strategy
-  const { subject, waste, wasteMethods, methods, methodTypes, methodSubjects } = data;
+  // const strategies = []; // waste management strategy
+  // const { subject, ownWaste, wasteMethods, methods, methodSubjects } = data;
+/*
+  for (let waste of ownWaste) {
+    const strategy = { waste };
+    const wasteMethod = wasteMethods[waste.fid] || [];
+    if (!wasteMethod.length) {
 
-  for (let w of waste) {
-    const wStrategy = { waste: w };
-
+    }
   }
-
+*/
   return data;
 }
 
 // Generate waste management strategy for the subject by FID
 export function searchStrategy(req, resp) {
-  const { fid } = req.params;
+  const sfid = req.params.fid;
 
   const onMainResolve = mainResults => {
-    let [subject, waste, methods] = mainResults;
-    subject = subject.data;
+    const subject = mainResults[0].data;
+    const ownWaste = mainResults[1].data || [];
+    const allMethods = mainResults[2].data || [];
+    const ownMethods = {};
 
-    methods = methods.data || [];
-    if (!methods.length) {
+    if (!allMethods.length) {
       return onSendResp(resp)({
         success: false,
         code: 404,
@@ -156,10 +157,9 @@ export function searchStrategy(req, resp) {
         data: null,
       });
     }
-    const methodFids = methods.map(m => m.fid);
+    const methodFids = allMethods.map(m => m.fid);
 
-    waste = joinExpanded('subjectFid', waste.data)[fid] || [];
-    if (!waste.length) {
+    if (!ownWaste.length) {
       return onSendResp(resp)({
         success: false,
         code: 404,
@@ -167,24 +167,47 @@ export function searchStrategy(req, resp) {
         data: null,
       });
     }
-    const wasteFids = waste.map(w => w.fid);
+    const wasteFids = ownWaste.map(w => w.fid);
 
     const onResolve = results => {
-      const [methodTypes, wasteMethods, methodSubjects] = results;
-      const data = { subject, waste, methods,
-        wasteMethods: joinExpanded('wasteFid', wasteMethods.data),
-        methodTypes: joinExpanded('methodFid', methodTypes.data, true),
-        methodSubjects: joinExpanded('methodFid', methodSubjects.data, true),
-      };
+      const allMethodTypes = results[0].data;
+      const wasteMethods = joinExpanded('wasteFid', results[1].data);
+      const methodSubjects = results[2].data;
 
-      const strategy = genStrategy(data);
-      const bestTotalCost = strategy.reduce((prev, val) => prev + val.bestCost, 0);
+      // Reduce all available methods with subject and type
+      const methods = allMethodTypes.reduce((prev, methodType) => {
+        const cur = prev;
+        const { fid, methodFid } = methodType;
+        const sub = methodSubjects.find(s => s.methodFid === methodFid);
+        if (!sub) {
+          return cur;
+        }
+        const method = allMethods.find(m => m.fid === methodFid);
+
+        if (sub.fid === sfid) {
+          if (!ownMethods[fid]) {
+            ownMethods[fid] = [];
+          }
+          ownMethods[fid].push(method);
+        } else {
+          method.subject = sub;
+          if (!cur[fid]) {
+            cur[fid] = [];
+          }
+          cur[fid].push(method);
+        }
+
+        return cur;
+      }, {});
+
+      const strategy = genStrategy({ subject, ownWaste, ownMethods, wasteMethods, methods });
+      // const bestTotalCost = strategy.reduce((prev, val) => prev + val.bestCost, 0);
 
       return onSendResp(resp)({
         success: true,
         code: 200,
         message: 'OK',
-        data: { subject, waste, strategy, bestTotalCost },
+        data: strategy,
       });
     };
 
@@ -200,8 +223,8 @@ export function searchStrategy(req, resp) {
 
   return Promise.all([
     // Select the information of a subject and own waste
-    Subject.selectIndividByFid(fid),
-    Waste.selectIndivids({ forSubjects: fid }),
+    Subject.selectIndividByFid(sfid),
+    Waste.selectIndivids({ forSubjects: sfid }),
     // Select all available waste management methods
     Method.selectIndivids(),
   ]).then(onMainResolve, onSendResp(resp));
