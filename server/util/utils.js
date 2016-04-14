@@ -39,22 +39,24 @@ export function qsToJson({ query }) {
   }, {});
 }
 
-export function joinExpanded(joinField, expanded, deleteJoinField = true) {
+export function joinExpanded(joinField, expanded, isSingle) {
   return expanded.reduce((prev, val) => {
     const cur = prev;
     const item = val;
     const field = val[joinField];
-    if (deleteJoinField) {
-      delete item[joinField];
+    delete item[joinField];
+    if (!isSingle) {
+      if (!cur[field]) {
+        cur[field] = [];
+      }
+      cur[field].push(item);
+    } else {
+      cur[field] = item;
     }
-    if (!cur[field]) {
-      cur[field] = [];
-    }
-    cur[field].push(item);
     return cur;
   }, {});
 }
 
-export function sendResp(resp, data, code) {
-  return res => resp.status(code || res.code).json(data || res);
+export function onSendResp(resp) {
+  return res => resp.status(res.code).json(res);
 }

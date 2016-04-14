@@ -1,11 +1,11 @@
-import { qsToJson, sendResp, joinExpanded, head } from '../util/utils';
+import { qsToJson, onSendResp, joinExpanded } from '../util/utils';
 import Waste from '../models/waste';
 import Subject from '../models/subject';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
 
-  const onSuccess = res => {
+  const onMainResolve = res => {
     const exp = qs.expand || [];
     const wasteFids = res.data.map(waste => waste.fid);
     const promises = [
@@ -13,35 +13,37 @@ export function allIndivids(req, resp) {
       exp.includes('subject') ? Subject.selectIndivids({ byWaste: wasteFids }) : 0,
     ];
 
+    const onResolve = results => {
+      let [types, subjects] = results;
+      types = !types || joinExpanded('methodFid', types.data);
+      subjects = !subjects || joinExpanded('methodFid', subjects.data, true);
+
+      const data = res.data.map(w => {
+        const waste = w;
+        if (typeof types !== 'boolean') {
+          waste.types = types[waste.fid] || [];
+        }
+        if (typeof subjects !== 'boolean') {
+          waste.subject = subjects[waste.fid] || {};
+        }
+        return waste;
+      });
+
+      return onSendResp(resp)({
+        success: res.success,
+        code: res.code,
+        message: res.message,
+        data,
+      });
+    };
+
     if (promises.some(p => !!p)) {
-      return Promise.all(promises).then(results => {
-        const types = !results[0] || joinExpanded('wasteFid', results[0].data);
-        const subjects = !results[1] || joinExpanded('wasteFid', results[1].data);
-
-        const data = res.data.map(w => {
-          const waste = w;
-          if (typeof types !== 'boolean') {
-            waste.types = types[waste.fid] || [];
-          }
-          if (typeof subjects !== 'boolean') {
-            waste.subject = head(subjects[waste.fid], {});
-          }
-          return waste;
-        });
-
-        return sendResp(resp, {
-          success: res.success,
-          code: res.code,
-          message: res.message,
-          data,
-        })(res);
-      }, sendResp(resp));
+      return Promise.all(promises).then(onResolve, onSendResp(resp));
     }
-
-    return sendResp(resp)(res);
+    return onSendResp(resp)(res);
   };
 
-  return Waste.selectIndivids(qs).then(onSuccess, sendResp(resp));
+  return Waste.selectIndivids(qs).then(onMainResolve, onSendResp(resp));
 }
 
 export function individ(req, resp) {
@@ -53,34 +55,36 @@ export function individ(req, resp) {
     exp.includes('subject') ? Subject.selectIndivids({ byWaste: fid }) : 0,
   ];
 
-  return Promise.all(promises).then(results => {
-    const waste = results[0];
-    const types = !results[1] || joinExpanded('wasteFid', results[1].data);
-    const subjects = !results[2] || joinExpanded('wasteFid', results[2].data);
+  const onMainResolve = results => {
+    const [waste] = results;
+    let [, types, subjects] = results;
+    types = !types || joinExpanded('wasteFid', types.data);
+    subjects = !subjects || joinExpanded('wasteFid', subjects.data, true);
 
     if (typeof types !== 'boolean') {
       waste.data.types = types[fid] || [];
     }
-
     if (typeof subjects !== 'boolean') {
-      waste.data.subject = head(subjects[fid], {});
+      waste.data.subject = subjects[fid] || {};
     }
-    return sendResp(resp)(waste);
-  }, sendResp(resp));
+    return onSendResp(resp)(waste);
+  };
+
+  return Promise.all(promises).then(onMainResolve, onSendResp(resp));
 }
 
 export function allTypes(req, resp) {
-  return Waste.selectTypes(qsToJson(req)).then(sendResp(resp), sendResp(resp));
+  return Waste.selectTypes(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
 }
 
 export function origins(req, resp) {
-  return Waste.selectOrigins(qsToJson(req)).then(sendResp(resp), sendResp(resp));
+  return Waste.selectOrigins(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
 }
 
 export function hazardClasses(req, resp) {
-  return Waste.selectHazardClasses(qsToJson(req)).then(sendResp(resp), sendResp(resp));
+  return Waste.selectHazardClasses(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
 }
 
 export function aggregateStates(req, resp) {
-  return Waste.selectAggregateStates(qsToJson(req)).then(sendResp(resp), sendResp(resp));
+  return Waste.selectAggregateStates(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
 }

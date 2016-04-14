@@ -1,4 +1,4 @@
-import { qsToJson, sendResp, joinExpanded } from '../util/utils';
+import { qsToJson, onSendResp, joinExpanded } from '../util/utils';
 import Subject from '../models/subject';
 import Method from '../models/method';
 import Waste from '../models/waste';
@@ -6,7 +6,7 @@ import Waste from '../models/waste';
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
 
-  const onSuccess = res => {
+  const onMainResolve = res => {
     const exp = qs.expand || [];
     const subjectFids = res.data.map(subject => subject.fid);
     const promises = [
@@ -16,43 +16,45 @@ export function allIndivids(req, resp) {
       exp.includes('types') ? Subject.selectTypes({ individs: subjectFids }) : 0,
     ];
 
+    const onResolve = results => {
+      let [waste, methods, locations, types] = results;
+      waste = !waste || joinExpanded('subjectFid', waste.data);
+      methods = !methods || joinExpanded('subjectFid', methods.data);
+      locations = !locations || joinExpanded('subjectFid', locations.data);
+      types = !types || joinExpanded('subjectFid', types.data);
+
+      const data = res.data.map(s => {
+        const subject = s;
+        if (typeof waste !== 'boolean') {
+          subject.waste = waste[subject.fid] || [];
+        }
+        if (typeof methods !== 'boolean') {
+          subject.methods = methods[subject.fid] || [];
+        }
+        if (typeof locations !== 'boolean') {
+          subject.located = locations[subject.fid] || [];
+        }
+        if (typeof types !== 'boolean') {
+          subject.types = types[subject.fid] || [];
+        }
+        return subject;
+      });
+
+      return onSendResp(resp)({
+        success: res.success,
+        code: res.code,
+        message: res.message,
+        data,
+      });
+    };
+
     if (promises.some(p => !!p)) {
-      return Promise.all(promises).then(results => {
-        const waste = !results[0] || joinExpanded('subjectFid', results[0].data);
-        const methods = !results[1] || joinExpanded('subjectFid', results[1].data);
-        const locations = !results[2] || joinExpanded('subjectFid', results[2].data);
-        const types = !results[3] || joinExpanded('subjectFid', results[3].data);
-
-        const data = res.data.map(s => {
-          const subject = s;
-          if (typeof waste !== 'boolean') {
-            subject.waste = waste[subject.fid] || [];
-          }
-          if (typeof methods !== 'boolean') {
-            subject.methods = methods[subject.fid] || [];
-          }
-          if (typeof locations !== 'boolean') {
-            subject.located = locations[subject.fid] || [];
-          }
-          if (typeof types !== 'boolean') {
-            subject.types = types[subject.fid] || [];
-          }
-          return subject;
-        });
-
-        return sendResp(resp, {
-          success: res.success,
-          code: res.code,
-          message: res.message,
-          data,
-        })(res);
-      }, sendResp(resp));
+      return Promise.all(promises).then(onResolve, onSendResp(resp));
     }
-
-    return sendResp(resp)(res);
+    return onSendResp(resp)(res);
   };
 
-  return Subject.selectIndivids(qs).then(onSuccess, sendResp(resp));
+  return Subject.selectIndivids(qs).then(onMainResolve, onSendResp(resp));
 }
 
 export function individ(req, resp) {
@@ -66,64 +68,125 @@ export function individ(req, resp) {
     exp.includes('types') ? Subject.selectTypes({ individs: fid }) : 0,
   ];
 
-  return Promise.all(promises).then(results => {
-    const subject = results[0];
-    const waste = !results[1] || joinExpanded('subjectFid', results[1].data);
-    const methods = !results[2] || joinExpanded('subjectFid', results[2].data);
-    const locations = !results[3] || joinExpanded('subjectFid', results[3].data);
-    const types = !results[4] || joinExpanded('subjectFid', results[4].data);
+  const onMainResolve = results => {
+    const [subject] = results;
+    let [, waste, methods, locations, types] = results;
+    waste = !waste || joinExpanded('subjectFid', waste.data);
+    methods = !methods || joinExpanded('subjectFid', methods.data);
+    locations = !locations || joinExpanded('subjectFid', locations.data);
+    types = !types || joinExpanded('subjectFid', types.data);
 
     if (typeof types !== 'boolean') {
       subject.data.types = types[fid] || [];
     }
-
     if (typeof methods !== 'boolean') {
       subject.data.methods = methods[fid] || [];
     }
-
     if (typeof locations !== 'boolean') {
       subject.data.locations = locations[fid] || [];
     }
-
     if (typeof waste !== 'boolean') {
       subject.data.waste = waste[fid];
     }
+    return onSendResp(resp)(subject);
+  };
 
-    return sendResp(resp)(subject);
-  }, sendResp(resp));
+  return Promise.all(promises).then(onMainResolve, onSendResp(resp));
 }
 
 export function allTypes(req, resp) {
-  return Subject.selectTypes(qsToJson(req)).then(sendResp(resp), sendResp(resp));
+  return Subject.selectTypes(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
+}
+
+// Generate waste management strategy for a subject
+// {
+//  subject, - the waste management subject to which the generated strategy
+//  waste, - the subject's waste:
+//           [{fid, title, amount}, ...]
+//  wasteMethods, - acceptable waste management methods for the types of waste:
+//                  {wasteFid: [{title, fid}, ...], ...}
+//  methods, - all available waste management methods:
+//             [{fid, title, costOnWeight, costByService}, ...]
+//  methodsTypes, - all types of waste management methods:
+//                  {methodFid: {title, fid}, ...}
+// methodSubjects - all subjects of waste management methods:
+//                  {methodFid: {fid, title, coordinates, budget}, ...}
+// }
+// Returned value:
+// [
+//   {
+//     waste: {fid, title, amount},
+//     bestTransportation: {
+//        subject, method, cost
+//     },
+//     ownTransportation: {} || null,
+//     bestMethod: {
+//       subject, method, cost
+//     },
+//     ownMethod: {} || null,
+//     bestCost: integer
+//   }, ...
+// ]
+function genStrategy(data) {
+  const strategy = []; // waste management strategy
+  const { subject, waste, wasteMethods, methods, methodTypes, methodSubjects } = data;
+
+  for (let w of waste) {
+    const wStrategy = { waste: w };
+
+  }
+
+  return data;
 }
 
 // Generate waste management strategy for the subject by FID
 export function searchStrategy(req, resp) {
   const { fid } = req.params;
-  return Promise.all([
-    // Select the information of a subject and own waste
-    Subject.selectIndividByFid(fid),
-    Waste.selectIndivids({ forSubjects: fid }),
-    // Select all available waste management methods
-    Method.selectIndivids(),
-  ]).then(fres => {
-    const subject = fres[0].data; // Current the subject and own waste
 
-    const waste = joinExpanded('subjectFid', fres[1].data, false)[fid] || [];
+  const onMainResolve = mainResults => {
+    let [subject, waste, methods] = mainResults;
+    subject = subject.data;
+
+    methods = methods.data || [];
+    if (!methods.length) {
+      return onSendResp(resp)({
+        success: false,
+        code: 404,
+        message: 'Waste management methods not found',
+        data: null,
+      });
+    }
+    const methodFids = methods.map(m => m.fid);
+
+    waste = joinExpanded('subjectFid', waste.data)[fid] || [];
     if (!waste.length) {
-      return sendResp(resp, {
-        success: false, code: 404, message: 'Waste not found', data: null,
-      }, 404)();
+      return onSendResp(resp)({
+        success: false,
+        code: 404,
+        message: 'The subject has not a waste',
+        data: null,
+      });
     }
     const wasteFids = waste.map(w => w.fid);
 
-    const methods = fres[2].data || []; // All available individuals of Method
-    if (!methods.length) {
-      return sendResp(resp, {
-        success: false, code: 404, message: 'Methods not found', data: null,
-      }, 404)();
-    }
-    const methodFids = methods.map(m => m.fid);
+    const onResolve = results => {
+      const [methodTypes, wasteMethods, methodSubjects] = results;
+      const data = { subject, waste, methods,
+        wasteMethods: joinExpanded('wasteFid', wasteMethods.data),
+        methodTypes: joinExpanded('methodFid', methodTypes.data, true),
+        methodSubjects: joinExpanded('methodFid', methodSubjects.data, true),
+      };
+
+      const strategy = genStrategy(data);
+      const bestTotalCost = strategy.reduce((prev, val) => prev + val.bestCost, 0);
+
+      return onSendResp(resp)({
+        success: true,
+        code: 200,
+        message: 'OK',
+        data: { subject, waste, strategy, bestTotalCost },
+      });
+    };
 
     return Promise.all([
       // Select types for the current individuals of Method
@@ -132,33 +195,14 @@ export function searchStrategy(req, resp) {
       Method.selectTypes({ forWaste: wasteFids }),
       // Select subjects for the current individuals of Method
       Subject.selectIndivids({ byMethods: methodFids }),
-    ]).then(sres => {
-      const methodTypes = joinExpanded('methodFid', sres[0].data, false);
-      const wasteMethods = joinExpanded('wasteFid', sres[1].data, false);
-      const subjectMethods = joinExpanded('methodFid', sres[2].data, false);
+    ]).then(onResolve, onSendResp(resp));
+  };
 
-      const strategy = genStrategy({
-        subject,
-        waste,
-        methods,
-        methodTypes,
-        wasteMethods,
-        subjectMethods,
-      });
-
-      return sendResp(resp, strategy, 200)();
-    }, sendResp(resp));
-
-  }, sendResp(resp));
-}
-
-function genStrategy({
-    subject,
-    waste,
-    methods,
-    methodTypes,
-    wasteMethods,
-    subjectMethods,
-    }) {
-
+  return Promise.all([
+    // Select the information of a subject and own waste
+    Subject.selectIndividByFid(fid),
+    Waste.selectIndivids({ forSubjects: fid }),
+    // Select all available waste management methods
+    Method.selectIndivids(),
+  ]).then(onMainResolve, onSendResp(resp));
 }
