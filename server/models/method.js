@@ -9,6 +9,8 @@ import {
 } from '../util/owlUtils';
 import stardog from '../services/stardog';
 
+export const TRANSPORT_METHOD = 'Transportation';
+
 export default {
   // Select all individuals of Method entity by options
   selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {

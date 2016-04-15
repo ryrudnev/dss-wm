@@ -93,15 +93,16 @@ export function searchStrategy(req, resp) {
     Waste.selectIndivids({ forSubjects: subjectFid }),
     Method.selectIndivids(),
   ]).then(([subject, ownWaste, allMethods]) => {
-    if (!allMethods.data.length) {
+    try {
+      JSON.parse(subject.data.coordinates);
+    } catch (err) {
       return onError({
         success: false,
-        code: 404,
-        message: 'Waste management methods not found',
+        code: 500,
+        message: 'This the subject has not coordinates',
         data: null,
       });
     }
-    const methodFids = allMethods.data.map(m => m.fid);
 
     if (!ownWaste.data.length) {
       return onError({
@@ -112,6 +113,16 @@ export function searchStrategy(req, resp) {
       });
     }
     const wasteFids = ownWaste.data.map(w => w.fid);
+
+    if (!allMethods.data.length) {
+      return onError({
+        success: false,
+        code: 404,
+        message: 'Available waste management methods not found',
+        data: null,
+      });
+    }
+    const methodFids = allMethods.data.map(m => m.fid);
 
     return Promise.all([
       subject,

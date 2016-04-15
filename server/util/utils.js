@@ -16,11 +16,51 @@ export function flatten(list) {
   );
 }
 
+// Intersection (a ∩ b): create a set that contains those elements of set a that are also in set b.
+export function intersectSet(a, b) {
+  return new Set([...a].filter(element => b.has(element)));
+}
+
+// Check if one set contains another (all members of a are in b).
+export function containsSet(a, b) {
+  return [...a].every(element => b.has(element));
+}
+
+// Set equality: a contains b, and b contains a
+export function equalSet(a, b) {
+  return a.size === b.size && containsSet(a, b);
+}
+
+// Get this key is equivalent of a Setmap structure
+export function getEqualKeySetmap(setmap, key) {
+  for (const k of setmap.keys()) {
+    if (equalSet(k, key) === true) {
+      return k;
+    }
+  }
+  return null;
+}
+
 export function head(array, defaults = void 0) {
   if (!Array.isArray(array)) {
     return defaults;
   }
   return array[0] || defaults;
+}
+
+export function diff(a, b) {
+  return a.filter(i => b.indexOf(i) < 0);
+}
+
+export function omit(object, ...keys) {
+  if (!(object !== null && typeof object === 'object')) {
+    return {};
+  }
+  const res = {};
+  for (const key of diff(Object.keys(object), flatten[keys])) {
+    res[key] = object[key];
+  }
+  return res;
 }
 
 export function qsToJson({ query }) {
@@ -62,6 +102,10 @@ export function joinExpanded(joinField, expanded, isSingle) {
 
 export function onSendResp(resp) {
   return res => {
+    if (res instanceof Error) {
+      debug(res);
+      return resp.status(500).send(JSON.stringify(res));
+    }
     debug(`The server sent response with ${res.code} code and message '${res.message}'`);
     return resp.status(res.code).json(res);
   };
