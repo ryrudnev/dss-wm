@@ -9,7 +9,13 @@ import {
 } from '../util/owlUtils';
 import stardog from '../services/stardog';
 
+// Constant of Transportation method type
 export const TRANSPORT_METHOD = 'Transportation';
+
+// Calculate uses cost of waste management method
+export function calcMethodCost(wasteAmount, { costOnWeight, costByService }) {
+  return (+costByService || 0) + (+wasteAmount || 0) * (+costOnWeight || 0);
+}
 
 export default {
   // Select all individuals of Method entity by options

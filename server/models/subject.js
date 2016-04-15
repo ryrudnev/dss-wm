@@ -8,12 +8,13 @@ import {
 } from '../util/owlUtils';
 import { intersectSet, getEqualKeySetmap } from '../util/utils';
 import { getGeoDistance } from '../util/geoUtils';
-import { TRANSPORT_METHOD } from './method';
+import { TRANSPORT_METHOD, calcMethodCost } from './method';
 import stardog from '../services/stardog';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]
 const cachedDistances = new Map();
 
+// Get valid distance from subject or null
 function distance({ coordinates }) {
   if (!coordinates) {
     return null;
@@ -43,14 +44,12 @@ function groupWaste(waste, wasteMethodTypes) {
   return wasteMap;
 }
 
-function calcMethodCost(amount, { costOnWeight, costByService }) {
-  return (+costByService || 0) + (+amount || 0) * (+costOnWeight || 0);
-}
-
-function getBestTransport(source, reciver, amount, transportations) {
+// Get best transport by a cost
+// Distance and best transportation is cached in a map
+function getBestTransport(source, reciver, wasteAmount, transportations) {
   let cached = cachedDistances.get(reciver.fid) || {};
 
-  const bestTransport = cached[amount];
+  const bestTransport = cached[wasteAmount];
   if (bestTransport) {
     return bestTransport;
   }
@@ -65,19 +64,151 @@ function getBestTransport(source, reciver, amount, transportations) {
 
   let [cost, method] = [];
   transportations.forEach(t => {
-    const c = (+t.costOnDistance || 0) * (dist / 100) + calcMethodCost(amount, t);
+    const c = (+t.costOnDistance || 0) * (dist / 100) + calcMethodCost(wasteAmount, t);
     if (cost === undefined || cost >= c) {
       cost = c;
       method = t;
     }
   });
 
-  cached[amount] = { cost, method };
+  cached[wasteAmount] = { cost, method };
   cachedDistances.set(reciver.fid, cached);
-  return cached[amount];
+  return cached[wasteAmount];
 }
 
 export default {
+  // Generate waste management strategy for a subject
+  // {
+  //  subject, - the waste management subject to which the generated strategy
+  //  ownWaste, - the subject's waste:
+  //           [{fid, title, amount}, ...]
+  //  wasteMethods, - acceptable waste management methods for the types of waste:
+  //                  {wasteFid: [{title, fid}, ...], ...}
+  //  ownMethods, - the subject's waste management methods:
+  //                [{fid, title, costOnWeight, costOnDistance, costByService}, ...]
+  //  methods, - all available waste management methods:
+  //             {methodTypeFid: [
+  //                {fid, title, costOnWeight, costByService,
+  //                  subject: {fid, title, coordinates, budget}
+  //                },
+  //                ...], ...},
+  // Returned value:
+  // {
+  //   subject: {fid, title, coordinates, budget},
+  //   strategy: [
+  //      {
+  //         waste: [{fid, title, amount}..., ]
+  //         totalAmount: integer
+  //         strategy: {
+  //            ownTransportations: [{method}...,],
+  //            ownMethods: [{method}...,],
+  //            bestTransportation: {subject, method, cost},
+  //            bestMethod: {subject, method, cost},
+  //            bestCost: integer,
+  //         }
+  //      }, ...
+  //   ],
+  //   totalBestCost: integer
+  // }
+  genStrategy({ subject, ownWaste, wasteMethods, ownMethods, methods }) {
+    // Clear cache of calculated distance for a subjects.
+    cachedDistances.clear();
+
+    const coordinates = distance(subject);
+    if (!coordinates) { // Can not calculate distance!
+      return null;
+    }
+    // The subject as source for calculating distance
+    const source = { coordinates };
+
+    const strategy = [];
+    // Methods type as Set of their keys.
+    const ownMethodTypes = new Set(Object.keys(ownMethods));
+    const methodTypes = new Set(Object.keys(methods));
+    // Cached all available transportation
+    const transportation = methods[TRANSPORT_METHOD];
+
+    for (const [group, waste] of groupWaste(ownWaste, wasteMethods)) {
+      // Calculate total amount of all own waste for the current group
+      const totalAmount = waste.reduce((prev, val) => prev + +val.amount, 0);
+
+      if (!group.size) {  // No available waste management methods for group of waste
+        strategy.push({ waste, totalAmount: totalAmount.toFixed(3) });
+        continue;
+      }
+
+      const curStrategy = {};
+      // The current group of waste can transportation
+      const canTransport = group.has(TRANSPORT_METHOD);
+
+      if (canTransport && ownMethodTypes.has(TRANSPORT_METHOD)) {
+        curStrategy.ownTransportations = ownMethods[TRANSPORT_METHOD];
+      }
+
+      // Other own waste management methods for the current group of waste
+      const ownAvailableMethodTypes = intersectSet(group, ownMethodTypes);
+      ownAvailableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
+      if (ownAvailableMethodTypes.size) {
+        curStrategy.ownMethods = [...ownAvailableMethodTypes].reduce(
+            (prev, methodType) => [...prev, ...ownMethods[methodType]], []
+        );
+      }
+
+      // Try to find the best way of waste management method from other a subjects,
+      // if the waste can be transported
+      if (!canTransport || !methodTypes.has(TRANSPORT_METHOD)) {
+        strategy.push({
+          waste,
+          totalAmount: totalAmount.toFixed(3),
+          strategy: curStrategy,
+        });
+        continue;
+      }
+
+      const availableMethodTypes = intersectSet(group, methodTypes);
+      availableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
+
+      // Find best method from other a subjects by a cost
+      let [bestTransportation, bestMethod, bestCost] = [];
+      [...availableMethodTypes].forEach(methodType => {
+        methods[methodType].forEach(method => {
+          const transport = getBestTransport(source, method.subject, totalAmount, transportation);
+          const cost = calcMethodCost(totalAmount, method) + transport.cost;
+          if (bestCost === undefined || bestCost >= cost) {
+            bestTransportation = transport.method;
+            bestMethod = method;
+            bestCost = cost;
+          }
+        });
+      });
+
+      if (bestCost !== undefined) {
+        curStrategy.bestTransportation = bestTransportation;
+        curStrategy.bestMethod = bestMethod;
+        curStrategy.bestCost = bestCost.toFixed(2);
+      }
+
+      strategy.push({
+        waste,
+        totalAmount: totalAmount.toFixed(3),
+        strategy: curStrategy,
+      });
+    }
+    // Results of searching algorithm of waste management strategy
+    const result = { subject, strategy };
+
+    // Get best total cost of uses best waste management methods for all group of waste
+    const totalBestCost = strategy.reduce((total, v) =>
+        (!v.strategy || !v.strategy.bestCost ? total : +total + +v.strategy.bestCost), null
+    );
+
+    if (totalBestCost) {
+      result.totalBestCost = totalBestCost.toFixed(2);
+    }
+
+    return result;
+  },
+
   // Select all individuals of Subject entity by options
   selectIndivids({ subtypes, byMethods, byWaste, sort, offset, limit } = {}) {
     const query = `
@@ -150,134 +281,5 @@ export default {
     `;
 
     return stardog.query({ query });
-  },
-
-  // Generate waste management strategy for a subject
-  // {
-  //  subject, - the waste management subject to which the generated strategy
-  //  ownWaste, - the subject's waste:
-  //           [{fid, title, amount}, ...]
-  //  wasteMethods, - acceptable waste management methods for the types of waste:
-  //                  {wasteFid: [{title, fid}, ...], ...}
-  //  ownMethods, - the subject's waste management methods:
-  //                [{fid, title, costOnWeight, costOnDistance, costByService}, ...]
-  //  methods, - all available waste management methods:
-  //             {methodTypeFid: [
-  //                {fid, title, costOnWeight, costByService,
-  //                  subject: {fid, title, coordinates, budget}
-  //                },
-  //                ...], ...},
-  // Returned value:
-  // {
-  //   subject: {fid, title, coordinates, budget},
-  //   strategy: [
-  //      {
-  //         waste: [{fid, title, amount}..., ]
-  //         totalAmount: integer
-  //         strategy: {
-  //            ownTransportations: [{method}...,],
-  //            ownMethods: [{method}...,],
-  //            bestTransportation: {subject, method, cost},
-  //            bestMethod: {subject, method, cost},
-  //            bestCost: integer,
-  //         }
-  //      }, ...
-  //   ],
-  //   totalBestCost: integer
-  // }
-  genStrategy({ subject, ownWaste, wasteMethods, ownMethods, methods }) {
-    // Clear cache of calculated distance for a subjects.
-    cachedDistances.clear();
-
-    const coordinates = distance(subject);
-    if (!coordinates) {
-      return null;
-    }
-    const source = { coordinates };
-
-    const strategy = [];
-
-    const ownMethodTypes = new Set(Object.keys(ownMethods));
-    const methodTypes = new Set(Object.keys(methods));
-    const transportation = methods[TRANSPORT_METHOD];
-
-    for (const [group, waste] of groupWaste(ownWaste, wasteMethods)) {
-      // Calculate total amount of all own waste for the current group
-      const totalAmount = waste.reduce((prev, val) => prev + +val.amount, 0);
-
-      if (!group.size) {  // No available waste management methods for group of waste
-        strategy.push({ waste, totalAmount });
-        continue;
-      }
-
-      const curStrategy = {};
-      // The current group of waste can transportation
-      const canTransport = group.has(TRANSPORT_METHOD);
-
-      if (canTransport && ownMethodTypes.has(TRANSPORT_METHOD)) {
-        curStrategy.ownTransportations = ownMethods[TRANSPORT_METHOD];
-      }
-
-      // Other own waste management methods for the current group of waste
-      const ownAvailableMethodTypes = intersectSet(group, ownMethodTypes);
-      ownAvailableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
-      if (ownAvailableMethodTypes.size) {
-        curStrategy.ownMethods = [...ownAvailableMethodTypes].reduce(
-            (prev, methodType) => [...prev, ...ownMethods[methodType]], []
-        );
-      }
-
-      // Try to find the best way of waste management method from other a subjects,
-      // if the waste can be transported
-      if (!canTransport || !methodTypes.has(TRANSPORT_METHOD)) {
-        strategy.push({
-          waste,
-          totalAmount,
-          strategy: curStrategy,
-        });
-        continue;
-      }
-
-      const availableMethodTypes = intersectSet(group, methodTypes);
-      availableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
-
-      let [bestTransportation, bestMethod, bestCost] = [];
-      [...availableMethodTypes].forEach(methodType => {
-        methods[methodType].forEach(method => {
-          const transport = getBestTransport(source, method.subject, totalAmount, transportation);
-          const cost = calcMethodCost(totalAmount, method) + transport.cost;
-          if (bestCost === undefined || bestCost >= cost) {
-            bestTransportation = transport.method;
-            bestMethod = method;
-            bestCost = cost;
-          }
-        });
-      });
-
-      if (bestCost !== undefined) {
-        curStrategy.bestTransportation = bestTransportation;
-        curStrategy.bestMethod = bestMethod;
-        curStrategy.bestCost = bestCost.toFixed(2);
-      }
-
-      strategy.push({
-        waste,
-        totalAmount: totalAmount.toFixed(2),
-        strategy: curStrategy,
-      });
-    }
-
-    const result = { subject, strategy };
-
-    // Get best total cost of use best waste management methods for all waste
-    const totalBestCost = strategy.reduce((total, v) =>
-        (!v.strategy || !v.strategy.bestCost ? total : +total + +v.strategy.bestCost), null
-    );
-
-    if (totalBestCost) {
-      result.totalBestCost = totalBestCost.toFixed(2);
-    }
-
-    return result;
   },
 };
