@@ -4,58 +4,46 @@ import Subject from '../models/subject';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
+  const exp = qs.expand || [];
 
-  const onMainResolve = res => {
-    const exp = qs.expand || [];
-    const methodFids = res.data.map(method => method.fid);
-    const promises = [
+  return Method.selectIndivids(qs).then(method => {
+    const methodFids = method.data.map(m => m.fid);
+    return Promise.all([
+      method,
       exp.includes('types') ? Method.selectTypes({ individs: methodFids }) : 0,
       exp.includes('subject') ? Subject.selectIndivids({ byMethods: methodFids }) : 0,
-    ];
-
-    const onResolve = results => {
-      let [types, subjects] = results;
+    ]);
+  }).then(results => {
+    const [method] = results;
+    if (results.slice(1).some(p => !!p)) {
+      let [, types, subjects] = results;
       types = !types || joinExpanded('methodFid', types.data);
       subjects = !subjects || joinExpanded('methodFid', subjects.data, true);
 
-      const data = res.data.map(m => {
-        const method = m;
+      method.data = method.data.map(m => {
+        const curMethod = m;
         if (typeof types !== 'boolean') {
-          method.types = types[method.fid] || [];
+          curMethod.types = types[curMethod.fid] || [];
         }
         if (typeof subjects !== 'boolean') {
-          method.subject = subjects[method.fid] || {};
+          curMethod.subject = subjects[curMethod.fid] || {};
         }
-        return method;
+        return curMethod;
       });
-
-      return onSendResp(resp)({
-        success: res.success,
-        code: res.code,
-        message: res.message,
-        data,
-      });
-    };
-
-    if (promises.some(p => !!p)) {
-      return Promise.all(promises).then(onResolve, onSendResp(resp));
     }
-    return onSendResp(resp)(res);
-  };
-
-  return Method.selectIndivids(qs).then(onMainResolve, onSendResp(resp));
+    return onSendResp(resp)(method);
+  }).catch(onSendResp(resp));
 }
 
 export function individ(req, resp) {
   const { fid } = req.params;
   const exp = qsToJson(req).expand || [];
-  const promises = [
+
+  return Promise.all([
     Method.selectIndividByFid(fid),
     exp.includes('types') ? Method.selectTypes({ individs: fid }) : 0,
     exp.includes('subject') ? Subject.selectIndivids({ byMethods: fid }) : 0,
-  ];
-
-  const onMainResolve = results => {
+  ]).then(results => {
     const [method] = results;
     let [, types, subjects] = results;
     types = !types || joinExpanded('methodFid', types.data);
@@ -68,11 +56,9 @@ export function individ(req, resp) {
       method.data.subject = subjects[fid] || {};
     }
     return onSendResp(resp)(method);
-  };
-
-  return Promise.all(promises).then(onMainResolve, onSendResp(resp));
+  }).catch(onSendResp(resp));
 }
 
 export function allTypes(req, resp) {
-  return Method.selectTypes(qsToJson(req)).then(onSendResp(resp), onSendResp(resp));
+  return Method.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
 }

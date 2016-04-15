@@ -82,4 +82,38 @@ export default {
 
     return stardog.query({ query });
   },
+
+  // Generate waste management strategy for a subject
+  // {
+  //  subject, - the waste management subject to which the generated strategy
+  //  ownWaste, - the subject's waste:
+  //           [{fid, title, amount}, ...]
+  //  wasteMethods, - acceptable waste management methods for the types of waste:
+  //                  {wasteFid: [{title, fid}, ...], ...}
+  //  ownMethods, - the subject's waste management methods:
+  //                [{fid, title, costOnWeight, costOnDistance, costByService}, ...]
+  //  methods, - all available waste management methods:
+  //             {methodTypeFid: [
+  //                {fid, title, costOnWeight, costByService,
+  //                  subject: {fid, title, coordinates, budget}
+  //                },
+  //                ...], ...},
+  // Returned value:
+  // [
+  //   {
+  //     waste: {fid, title, amount},
+  //     bestTransportation: {
+  //        subject, method, cost
+  //     } || null,
+  //     ownTransportation: {} || null,
+  //     bestMethod: {
+  //       subject, method, cost
+  //     } || null,
+  //     ownMethod: {} || null,
+  //     bestCost: integer || null
+  //   }, ...
+  // ]
+  genStrategy({ subject, ownWaste, wasteMethods, ownMethods, methods }) {
+
+  }
 };

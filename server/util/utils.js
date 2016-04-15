@@ -66,3 +66,7 @@ export function onSendResp(resp) {
     return resp.status(res.code).json(res);
   };
 }
+
+export function onError(res) {
+  return new Promise((resolve, reject) => reject(res));
+}
