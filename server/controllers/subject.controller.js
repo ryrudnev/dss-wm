@@ -1,7 +1,7 @@
 import { qsToJson, onSendResp, joinExpanded, onError } from '../util/utils';
-import Subject from '../models/subject';
-import Method from '../models/method';
-import Waste from '../models/waste';
+import Subject from '../models/subject.model';
+import Method from '../models/method.model';
+import Waste from '../models/waste.model';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);

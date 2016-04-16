@@ -8,7 +8,7 @@ import {
 } from '../util/owlUtils';
 import { intersectSet, getEqualKeySetmap } from '../util/utils';
 import { getGeoDistance } from '../util/geoUtils';
-import { TRANSPORT_METHOD, calcMethodCost } from './method';
+import { TRANSPORT_METHOD, calcMethodCost } from './method.model';
 import stardog from '../services/stardog';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]

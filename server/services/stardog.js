@@ -1,5 +1,5 @@
 import _debug from 'debug';
-import config from '../config';
+import config from '../config/stardog';
 import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
 

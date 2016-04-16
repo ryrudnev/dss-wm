@@ -20,10 +20,15 @@
   },
   "homepage": "https://github.com/ryrudnev/dss-wm",
   "dependencies": {
+    "bcrypt": "^0.8.5",
     "body-parser": "~1.15.0",
+    "cookie-parser": "^1.4.1",
     "debug": "^2.2.0",
     "express": "^4.13.4",
-    "geolib": "^2.0.20",
+    "jwt-simple": "^0.5.0",
+    "mongoose": "^4.4.12",
+    "passport": "^0.3.2",
+    "passport-jwt": "^2.0.0",
     "stardog": "^0.3.1"
   },
   "devDependencies": {
