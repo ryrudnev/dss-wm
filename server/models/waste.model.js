@@ -7,9 +7,29 @@ import {
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
+import { Deferred } from '../util/utils';
 import stardog from '../services/stardog';
 
+// Constant of base type of Waste entity
+export const WASTE_TYPE = 'Waste';
+
 export default {
+  // Check exists individual of Waste entity
+  individExists(individ) {
+    const query = `
+      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(WASTE_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
+  // Check exists type of Waste entity
+  typeExists(type) {
+    const query = `
+      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(WASTE_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
   // Select all individuals of Waste entity by options
   selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
@@ -36,15 +56,15 @@ export default {
       } LIMIT 1 OFFSET 0
     `;
 
-    return new Promise((resolve, reject) => {
-      stardog.query({ query }).then(resp => {
-        if (!resp.data.length) {
-          reject({ success: false, code: 404, message: 'Not found', data: null });
-        } else {
-          resolve({ ...resp, data: resp.data[0] });
-        }
-      }, resp => reject(resp));
-    });
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (!resp.data.length) {
+        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
+      } else {
+        dfd.resolve({ ...resp, data: resp.data[0] });
+      }
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Select all specific types of Waste entity by options
@@ -72,7 +92,7 @@ export default {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
-        ?type rdfs:subClassOf :Waste OPTIONAL { ?type rdfs:label ?title } .
+        ?type rdfs:subClassOf ${axiomWithPrefix(WASTE_TYPE)} OPTIONAL { ?type rdfs:label ?title } .
         ${qInFilter(['waste', 'a', 'type'], individs)}
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}

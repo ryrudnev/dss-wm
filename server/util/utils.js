@@ -1,6 +1,14 @@
 import _debug from 'debug';
 const debug = _debug('app:server');
 
+export function isArray(object) {
+  return Array.isArray(object);
+}
+
+export function isObject(object) {
+  return object !== null && typeof object === 'object';
+}
+
 export class Deferred {
   constructor() {
     this.promise = new Promise((resolve, reject) => {
@@ -12,7 +20,7 @@ export class Deferred {
 
 export function flatten(list) {
   return list.reduce(
-      (a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []
+      (a, b) => a.concat(isArray(b) ? flatten(b) : b), []
   );
 }
 
@@ -42,7 +50,7 @@ export function getEqualKeySetmap(setmap, key) {
 }
 
 export function head(array, defaults = void 0) {
-  if (!Array.isArray(array)) {
+  if (!isArray(array)) {
     return defaults;
   }
   return array[0] || defaults;
@@ -53,12 +61,25 @@ export function diff(a, b) {
 }
 
 export function omit(object, ...keys) {
-  if (!(object !== null && typeof object === 'object')) {
+  if (!isObject(object)) {
     return {};
   }
   const res = {};
   for (const key of diff(Object.keys(object), flatten([keys]))) {
     res[key] = object[key];
+  }
+  return res;
+}
+
+export function pluck(object, ...keys) {
+  if (!isObject(object)) {
+    return {};
+  }
+  const res = {};
+  for (const key of flatten([keys])) {
+    if (key in object) {
+      res[key] = object[key];
+    }
   }
   return res;
 }

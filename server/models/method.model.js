@@ -6,10 +6,16 @@ import {
     qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
+    axiomWithoutPrefix,
 } from '../util/owlUtils';
+import { Deferred } from '../util/utils';
 import stardog from '../services/stardog';
+import counter from '../services/counter';
 
-// Constant of Transportation method type
+// Constant of base type of Method entity
+export const METHOD_TYPE = 'Method';
+
+// Constant of transportation method type
 export const TRANSPORT_METHOD = 'Transportation';
 
 // Calculate uses cost of waste management method
@@ -18,6 +24,52 @@ export function calcMethodCost(wasteAmount, { costOnWeight, costByService }) {
 }
 
 export default {
+  // Check exists individual of Method entity
+  individExists(individ) {
+    const query = `
+      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(METHOD_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
+  // Check exists type of Method entity
+  typeExists(type) {
+    const query = `
+      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(METHOD_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
+  // Create a new individual of Method entity
+  createIndivid(type = METHOD_TYPE, data = {}) {
+    return counter.generateUid().then(uid => {
+      const fid = axiomWithPrefix(uid);
+      const qdata = Object.keys(data).reduce((prev, key) => {
+        switch (key) {
+          case 'title':
+            return `${prev} ${fid} :title "${data[key]}" .`;
+          case 'costOnWeight':
+          case 'costOnDistance':
+          case 'costByService':
+            return `${prev} ${fid} ${axiomWithPrefix(key)} ${+data[key]} .`;
+          case 'forSubject':
+            return `${prev} ${axiomWithPrefix(data[key])} :hasMethod ${fid} .`;
+          default: return prev;
+        }
+      }, '');
+      const query = `INSERT DATA {
+        ${fid} a ${axiomWithPrefix(METHOD_TYPE)} .
+        ${qdata}
+      }`;
+
+      const dfd = new Deferred();
+      stardog.query({ query }).then(resp => {
+        dfd.resolve({ ...resp, data: { fid: axiomWithoutPrefix(fid) } });
+      }).catch(resp => dfd.reject(resp));
+      return dfd.promise;
+    });
+  },
+
   // Select all individuals of Method entity by options
   selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
@@ -26,7 +78,7 @@ export default {
       ${forSubjects ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
         ?method :title ?title .
-        ${qType(['method', 'a'], [':Method', subtypes])}
+        ${qType(['method', 'a'], [METHOD_TYPE, subtypes])}
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
@@ -48,19 +100,19 @@ export default {
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
-        FILTER(?type = :Method && ?method = ${axiomWithPrefix(fid)})
+        FILTER(?type = ${axiomWithPrefix(METHOD_TYPE)} && ?method = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
 
-    return new Promise((resolve, reject) => {
-      stardog.query({ query }).then(resp => {
-        if (!resp.data.length) {
-          reject({ success: false, code: 404, message: 'Not found', data: null });
-        } else {
-          resolve({ ...resp, data: resp.data[0] });
-        }
-      }, resp => reject(resp));
-    });
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (!resp.data.length) {
+        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
+      } else {
+        dfd.resolve({ ...resp, data: resp.data[0] });
+      }
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Select all specific types of Method entity by options
@@ -87,8 +139,8 @@ export default {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('method', 'methodFid') : ''}
       WHERE {
-        ${qType(['type', 'rdfs:subClassOf'], [':Method', subtypes])} ; rdfs:label ?title
-        FILTER(?type != :Method)
+        ${qType(['type', 'rdfs:subClassOf'], [METHOD_TYPE, subtypes])} ; rdfs:label ?title
+        FILTER(?type != ${axiomWithPrefix(METHOD_TYPE)})
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}
         ${qInFilter(['method', 'a', 'type'], individs)}

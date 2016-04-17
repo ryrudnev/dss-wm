@@ -48,6 +48,7 @@ app.use('/api', (req, res, next) => {
       code: 403,
       success: false,
       message: 'Token could not be authenticated',
+      data: null,
     });
   })(req, res, next);
 });

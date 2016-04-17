@@ -20,7 +20,7 @@ export function parseStardogResponse(body, resp) {
   const { boolean, results } = body;
 
   if (boolean !== undefined) {
-    return { ...res, data: boolean };
+    return { ...res, data: { boolean } };
   }
 
   const { bindings } = results;

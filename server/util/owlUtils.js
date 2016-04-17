@@ -2,12 +2,12 @@ import { flatten } from './utils';
 
 // Extract the name of axiom without prefix
 export function axiomWithoutPrefix(a) {
-  return typeof a === 'string' ? a.replace(/^.*(#|\/|:)/g, '') : null;
+  return typeof !!a ? `${a}`.replace(/^.*(#|\/|:)/g, '') : null;
 }
 
 // Add prefix to the name of axiom
 export function axiomWithPrefix(a) {
-  return typeof a === 'string' ? `:${axiomWithoutPrefix(a)}` : null;
+  return typeof !!a ? `:${axiomWithoutPrefix(a)}` : null;
 }
 
 // Remove Uri prefix of axiom in SPARQL query

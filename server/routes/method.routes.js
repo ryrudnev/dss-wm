@@ -8,6 +8,9 @@ const router = new Router();
 // &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
 router.get('/individuals', Controller.allIndivids);
 
+// Create a new individuals of Method entity
+router.post('/individuals', Controller.createIndivid);
+
 // Get the individual of Method entity by FID
 // /methods/individuals/:fid?expand=['types', 'subject']
 router.get('/individuals/:fid', Controller.individ);

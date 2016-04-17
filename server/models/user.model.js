@@ -2,6 +2,8 @@ import { omit } from '../util/utils';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+const { Schema } = mongoose;
+
 // Rounds constant for generating salt
 const SALT_ROUNDS = 10;
 
@@ -10,7 +12,7 @@ const PRIVATE_FIELDS = [
   'password',
 ];
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new Schema({
   username: {
     type: String,
     unique: true,

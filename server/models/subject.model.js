@@ -6,10 +6,13 @@ import {
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
-import { intersectSet, getEqualKeySetmap } from '../util/utils';
+import { Deferred, intersectSet, getEqualKeySetmap } from '../util/utils';
 import { getGeoDistance } from '../util/geoUtils';
 import { TRANSPORT_METHOD, calcMethodCost } from './method.model';
 import stardog from '../services/stardog';
+
+// Constant of base type of Subject entity
+export const SUBJECT_TYPE = 'Subject';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]
 const cachedDistances = new Map();
@@ -209,6 +212,22 @@ export default {
     return result;
   },
 
+  // Check exists individual of Subject entity
+  individExists(individ) {
+    const query = `
+      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(SUBJECT_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
+  // Check exists type of Subject entity
+  typeExists(type) {
+    const query = `
+      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(SUBJECT_TYPE)} }
+    `;
+    return stardog.query({ query });
+  },
+
   // Select all individuals of Subject entity by options
   selectIndivids({ subtypes, byMethods, byWaste, sort, offset, limit } = {}) {
     const query = `
@@ -217,7 +236,7 @@ export default {
       ${byWaste ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
         ?subject :title ?title .
-        ${qType(['subject', 'a'], [':Subject', subtypes])}
+        ${qType(['subject', 'a'], [SUBJECT_TYPE, subtypes])}
         OPTIONAL { ?subject :coordinates ?coordinates }
         OPTIONAL { ?subject :budget ?budget }
         ${qInFilter(['subject', ':hasMethod', 'method', true], byMethods)}
@@ -236,19 +255,19 @@ export default {
         ?subject a ?type ; :title ?title
         OPTIONAL { ?subject :coordinates ?coordinates }
         OPTIONAL { ?subject :budget ?budget }
-        FILTER(?type = :Subject && ?subject = ${axiomWithPrefix(fid)})
+        FILTER(?type = ${axiomWithPrefix(SUBJECT_TYPE)} && ?subject = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
 
-    return new Promise((resolve, reject) => {
-      stardog.query({ query }).then(resp => {
-        if (!resp.data.length) {
-          reject({ success: false, code: 404, message: 'Not found', data: null });
-        } else {
-          resolve({ ...resp, data: resp.data[0] });
-        }
-      }, resp => reject(resp));
-    });
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (!resp.data.length) {
+        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
+      } else {
+        dfd.resolve({ ...resp, data: resp.data[0] });
+      }
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Select all locations for subjects
@@ -258,7 +277,7 @@ export default {
       ${qFidAs('subject', 'subjectFid')}
       WHERE {
         ?location :title ?title .
-        ${qType(['location', 'a'], [':Subject', subtypes])} .
+        ${qType(['location', 'a'], [SUBJECT_TYPE, subtypes])} .
         ${qInFilter(['subject', ':locatedIn', 'location'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
@@ -272,8 +291,8 @@ export default {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ${qType(['type', 'rdfs:subClassOf'], [':Subject', subtypes])} ; rdfs:label ?title
-        FILTER(?type != :Subject)
+        ${qType(['type', 'rdfs:subClassOf'], [SUBJECT_TYPE, subtypes])} ; rdfs:label ?title
+        FILTER(?type != ${axiomWithPrefix(SUBJECT_TYPE)})
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}
         ${qInFilter(['subject', 'a', 'type'], individs)}

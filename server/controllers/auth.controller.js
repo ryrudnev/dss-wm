@@ -9,6 +9,7 @@ export function signup(req, res) {
       code: 403,
       success: false,
       message: 'Is necessary to specify a username and password',
+      data: null,
     });
   }
   const user = new User({ username, password });
@@ -18,6 +19,7 @@ export function signup(req, res) {
         code: 500,
         success: false,
         message: err,
+        data: null,
       });
     }
 
@@ -42,6 +44,7 @@ export function auth(req, res) {
         code: 401,
         success: false,
         message: 'Authentication failed. User not found',
+        data: null,
       });
     }
 
@@ -72,6 +75,7 @@ export function auth(req, res) {
         code: 401,
         success: false,
         message: 'Authentication failed. Wrong password',
+        data: null,
       });
     });
   });
