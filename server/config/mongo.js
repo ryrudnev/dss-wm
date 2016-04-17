@@ -1,17 +1,17 @@
 import mongoose from 'mongoose';
 import _debug from 'debug';
-import config from './app.config';
+import appConfig from './app.config';
 
 const debug = _debug('app:mongodb');
 
 export default () => {
   const connect = () => {
-    mongoose.connect(config.mongodb_url, (err) => {
+    mongoose.connect(appConfig.mongodb.url, (err) => {
       if (err) {
-        debug(`Error connecting to ${config.mongodb_url}`);
+        debug(`Error connecting to ${appConfig.mongodb.url}`);
         debug(`Reason: ${err}`);
       } else {
-        debug(`Succeeded in connecting to ${config.mongodb_url}`);
+        debug(`Succeeded in connecting to ${appConfig.mongodb.url}`);
       }
     });
   };

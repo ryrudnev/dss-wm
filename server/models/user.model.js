@@ -1,5 +1,14 @@
+import { omit } from '../util/utils';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+
+// Rounds constant for generating salt
+const SALT_ROUNDS = 10;
+
+// Private fields
+const PRIVATE_FIELDS = [
+  'password',
+];
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -15,7 +24,7 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.pre('save', function (next) {
   if (this.isModified('password') || this.isNew) {
-    bcrypt.genSalt(10, (saltErr, salt) => {
+    bcrypt.genSalt(SALT_ROUNDS, (saltErr, salt) => {
       if (saltErr) {
         return next(saltErr);
       }
@@ -43,6 +52,10 @@ UserSchema.methods.comparePassword = function (password, cb) {
     }
     cb(null, isMatch);
   });
+};
+
+UserSchema.methods.toPublicJSON = function () {
+  return omit(this.toJSON(), PRIVATE_FIELDS);
 };
 
 UserSchema.statics = {};

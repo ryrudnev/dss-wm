@@ -2,12 +2,12 @@ import Express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import _debug from 'debug';
-import appConfig from './config/app.config';
 import mongoConnect from './config/mongo';
 import passportInit from './config/passport';
 import passport from 'passport';
+import appConfig from './config/app.config';
 import api from './routes/api';
-import users from './routes/users.routes';
+import auth from './routes/auth.routes';
 
 const debug = _debug('app:server');
 
@@ -30,7 +30,15 @@ app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(cookieParser());
 
-// API endpoints with authenticate via passport
+// Allowing requests to come from different domains in order to develop a client-independent system
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+  next();
+});
+
+// API endpoints with authentication via passport
 app.use('/api', (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user) => {
     if (user) {
@@ -45,10 +53,11 @@ app.use('/api', (req, res, next) => {
 });
 app.use('/api', api);
 
-app.use('/users', users);
+// Routes for an authentication
+app.use('/auth', auth);
 
 // Run server
-const server = app.listen(appConfig.server_port, error => {
+const server = app.listen(appConfig.server.port, error => {
   const address = server.address();
 
   if (!error) {

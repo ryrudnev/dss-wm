@@ -1,40 +1,32 @@
 import passportJwt from 'passport-jwt';
+import _debug from 'debug';
 import User from '../models/user.model';
 import appConfig from '../config/app.config';
 
+const debug = _debug('app:passport');
+
+const { Strategy, ExtractJwt } = passportJwt;
+
 export default passport => {
-  // Configure Passport authenticated session persistence.
-  //
-  // In order to restore authentication state across HTTP requests, Passport needs
-  // to serialize users into and deserialize users out of the session.  The
-  // typical implementation of this is as simple as supplying the user ID when
-  // serializing, and querying the user record by ID from the database when
-  // deserializing.
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-
-  passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-      done(err, user);
-    });
-  });
-
   const options = {
-    secretOrKey: appConfig.secret,
-    jwtFromRequest: passportJwt.ExtractJwt.fromAuthHeader(),
+    secretOrKey: appConfig.jwt.secret,
+    jwtFromRequest: ExtractJwt.fromAuthHeader(),
+    audience: appConfig.jwt.audience,
+    issuer: appConfig.jwt.issuer,
   };
 
-  passport.use(new passportJwt.Strategy(options, (jwtPayload, done) => {
+  passport.use(new Strategy(options, (jwtPayload, done) => {
+    debug(`JWT payload: ${JSON.stringify(jwtPayload)}`);
     User.findOne({ username: jwtPayload.sub }, (err, user) => {
       if (err) {
+        debug(`User verifying error: ${err}`);
         return done(err, false);
       }
       if (user) {
-        done(null, user);
-      } else {
-        done(null, false, 'User not found in token');
+        return done(null, user, 'User successfully verified');
       }
+
+      return done(null, false, 'User not verified');
     });
   }));
 };

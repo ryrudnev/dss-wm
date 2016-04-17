@@ -57,7 +57,7 @@ export function omit(object, ...keys) {
     return {};
   }
   const res = {};
-  for (const key of diff(Object.keys(object), flatten[keys])) {
+  for (const key of diff(Object.keys(object), flatten([keys]))) {
     res[key] = object[key];
   }
   return res;
