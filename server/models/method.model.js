@@ -8,9 +8,9 @@ import {
     axiomWithPrefix,
     axiomWithoutPrefix,
 } from '../util/owlUtils';
-import { Deferred } from '../util/utils';
+import { Deferred, onError } from '../util/utils';
 import stardog from '../services/stardog';
-import counter from '../services/counter';
+import uidCounter from '../services/counter';
 
 // Constant of base type of Method entity
 export const METHOD_TYPE = 'Method';
@@ -42,7 +42,7 @@ export default {
 
   // Create a new individual of Method entity
   createIndivid(type = METHOD_TYPE, data = {}) {
-    return counter.generateUid().then(uid => {
+    return uidCounter.generateUid().then(uid => {
       const fid = axiomWithPrefix(uid);
       const qdata = Object.keys(data).reduce((prev, key) => {
         switch (key) {
@@ -68,6 +68,59 @@ export default {
       }).catch(resp => dfd.reject(resp));
       return dfd.promise;
     });
+  },
+
+  // Update the individual of Method entity
+  updateIndivid(fid, data) {
+    let [qinsert, qwhere] = ['', ''];
+    Object.keys(data || {}).forEach((key) => {
+      const pred = axiomWithPrefix(key);
+      switch (key) {
+        case 'title':
+          qwhere = `${qwhere} ?m ${pred} ?${key} .`;
+          qinsert = `${qinsert} ?m ${pred} "${data[key]}" .`;
+          break;
+        case 'costOnWeight':
+        case 'costOnDistance':
+        case 'costByService':
+          qwhere = `${qwhere} ?m ${pred} ?${key} .`;
+          qinsert = `${qinsert} ?m ${pred} ${+data[key]} .`;
+          break;
+        case 'forSubject':
+          qwhere = `${qwhere} ?subject :hasMethod ?m .`;
+          qinsert = `${qinsert} ${axiomWithPrefix(data[key])} :hasMethod ?m .`;
+          break;
+        default:
+      }
+    });
+
+    if (!qinsert || !qwhere) {
+      return onError({
+        code: 500,
+        success: false,
+        message: `Not valid condition to update the individual ${fid}`,
+        data: null,
+      });
+    }
+
+    const query = `DELETE {
+        ${qwhere}
+      } INSERT {
+        ${qinsert}
+      } WHERE {
+        ?m a ${axiomWithPrefix(METHOD_TYPE)} .
+        ${qwhere}
+        FILTER(?m = ${axiomWithPrefix(fid)})
+    }`;
+    return stardog.query({ query });
+  },
+
+  // Delete the individual of Method entity
+  deleteIndivid(fid) {
+    const query = `DELETE { ?s ?p ?o }
+      INSERT { ?s a owl:Nothing }
+      WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
+    return stardog.query({ query });
   },
 
   // Select all individuals of Method entity by options

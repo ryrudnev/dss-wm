@@ -25,7 +25,7 @@ const config = {
   // ----------------------------------
   jwt: {
     secret: 'DSS-WM-secret',
-    tokenExpirationTime: 60 * 60,
+    tokenExpirationTime: 24 * 60 * 60,
     audience: 'http://localhost:1337',
     issuer: 'admin@dsswm.me',
   },

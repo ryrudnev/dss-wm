@@ -2,9 +2,10 @@ import Express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import _debug from 'debug';
+import passport from 'passport';
+import methodOverride from 'method-override';
 import mongoConnect from './config/mongo';
 import passportInit from './config/passport';
-import passport from 'passport';
 import appConfig from './config/app.config';
 import api from './routes/api';
 import auth from './routes/auth.routes';
@@ -16,6 +17,8 @@ mongoConnect();
 
 // Initialize the express application
 const app = new Express();
+
+app.use(methodOverride());
 
 // Bootstrap passport plugin settings
 passportInit(passport);
@@ -33,7 +36,7 @@ app.use(cookieParser());
 // Allowing requests to come from different domains in order to develop a client-independent system
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
   next();
 });

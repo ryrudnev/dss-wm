@@ -80,3 +80,46 @@ export function createIndivid(req, resp) {
     return Method.createIndivid(forSubject, req.body);
   }).then(onSendResp(resp)).catch(onSendResp(resp));
 }
+
+export function updateIndivid(req, resp) {
+  const { fid } = req.params;
+  const { forSubject } = req.body;
+
+  return Promise.all([
+    Method.individExists(`${fid}`),
+    forSubject ? Subject.individExists(`${forSubject}`) : 0,
+  ]).then(([existsFid, existsSubject]) => {
+    if (!existsFid.data.boolean) {
+      return onError({
+        success: false,
+        code: 404,
+        message: 'Not found',
+        data: null,
+      });
+    }
+    if (existsSubject && !existsSubject.data.boolean) {
+      return onError({
+        success: false,
+        code: 404,
+        message: 'Not specified the valid subject',
+        data: null,
+      });
+    }
+    return Method.updateIndivid(fid, req.body);
+  }).then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function deleteIndivid(req, resp) {
+  const { fid } = req.params;
+  return Method.individExists(`${fid}`).then(res => {
+    if (!res.data.boolean) {
+      return onError({
+        success: false,
+        code: 404,
+        message: 'Not found',
+        data: null,
+      });
+    }
+    return Method.deleteIndivid(fid);
+  }).then(onSendResp(resp)).catch(onSendResp(resp));
+}
