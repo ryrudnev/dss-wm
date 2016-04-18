@@ -43,7 +43,7 @@ function update(cond, cb, fid, data) {
   return exec(query);
 }
 
-export default class RdfStorage {
+export default class RdfBaseStorage {
   // Base type of entity
   get entity() {
     throw new Error('Method not implemented');
@@ -55,8 +55,8 @@ export default class RdfStorage {
   }
 
   constructor() {
-    if (this.constructor === RdfStorage) {
-      throw new TypeError('Cannot construct RdfStorage instances directly');
+    if (this.constructor === RdfBaseStorage) {
+      throw new TypeError('Cannot construct RdfBaseStorage instances directly');
     }
   }
 

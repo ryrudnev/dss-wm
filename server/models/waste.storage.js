@@ -1,4 +1,4 @@
-import RdfStorage from './rdf.storage';
+import RdfBaseStorage from './rdfbase.storage';
 import {
     qFidAs,
     qSort,
@@ -10,7 +10,7 @@ import {
     qTypeRestrict,
 } from '../util/owlUtils';
 
-class WasteStorage extends RdfStorage {
+class WasteStorage extends RdfBaseStorage {
   get entity() {
     return 'Waste';
   }
@@ -112,7 +112,7 @@ class WasteStorage extends RdfStorage {
         ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   selectIndividByFid(fid) {
@@ -123,7 +123,7 @@ class WasteStorage extends RdfStorage {
         FILTER(?type = :SpecificWaste && ?waste = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
       if (resp.data.length) {
         return next({ ...resp, data: resp.data[0] });
       }
@@ -144,7 +144,7 @@ class WasteStorage extends RdfStorage {
           FILTER(?type != :SpecificWaste)
         } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
-      return RdfStorage.exec(query);
+      return RdfBaseStorage.exec(query);
     }
 
     const evidences = [
@@ -167,7 +167,7 @@ class WasteStorage extends RdfStorage {
         ${qNotInFilter(['type'], evidences)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   // Select all individuals of Origin entity
@@ -176,7 +176,7 @@ class WasteStorage extends RdfStorage {
       SELECT ${qFidAs('origin', 'fid')} ?title WHERE {
         ?origin a :Origin ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   // Select all individuals of HazardClass entity
@@ -185,7 +185,7 @@ class WasteStorage extends RdfStorage {
       SELECT ${qFidAs('class', 'fid')} ?title WHERE {
         ?class a :HazardClass ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   // Select all individuals of AggregateState entity
@@ -194,7 +194,7 @@ class WasteStorage extends RdfStorage {
       SELECT ${qFidAs('state', 'fid')} ?title WHERE {
         ?state a :AggregateState ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 }
 

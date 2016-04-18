@@ -1,4 +1,4 @@
-import RdfStorage from './rdf.storage';
+import RdfBaseStorage from './rdfbase.storage';
 import {
     qFidAs,
     qSort,
@@ -9,7 +9,7 @@ import {
     axiomWithPrefix,
 } from '../util/owlUtils';
 
-class MethodStorage extends RdfStorage {
+class MethodStorage extends RdfBaseStorage {
   get entity() {
     return 'Method';
   }
@@ -62,7 +62,7 @@ class MethodStorage extends RdfStorage {
         ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   selectIndividByFid(fid) {
@@ -77,7 +77,7 @@ class MethodStorage extends RdfStorage {
         FILTER(?type = ${this.entityWithPrefix} && ?method = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
       if (resp.data.length) {
         return next({ ...resp, data: resp.data[0] });
       }
@@ -106,7 +106,7 @@ class MethodStorage extends RdfStorage {
             ${qInFilter(['waste'], forWaste)}
           } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
-      return RdfStorage.exec(query);
+      return RdfBaseStorage.exec(query);
     }
     const query = `
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
@@ -119,7 +119,7 @@ class MethodStorage extends RdfStorage {
         ${qInFilter(['method', 'a', 'type'], individs)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 }
 

@@ -1,4 +1,4 @@
-import RdfStorage from './rdf.storage';
+import RdfBaseStorage from './rdfbase.storage';
 import { TRANSPORT_METHOD, calcMethodCost } from './method.storage';
 import { intersectSet, getEqualKeySetmap } from '../util/utils';
 import { getGeoDistance } from '../util/geoUtils';
@@ -76,7 +76,7 @@ function getBestTransport(source, reciver, wasteAmount, transportations) {
   return cached[wasteAmount];
 }
 
-class SubjectStorage extends RdfStorage {
+class SubjectStorage extends RdfBaseStorage {
   get entity() {
     return 'Subject';
   }
@@ -259,7 +259,7 @@ class SubjectStorage extends RdfStorage {
         ${qInFilter(['subject', ':hasWaste', 'waste', true], byWaste)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   selectIndividByFid(fid) {
@@ -272,7 +272,7 @@ class SubjectStorage extends RdfStorage {
         FILTER(?type = ${this.entityWithPrefix} && ?subject = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
       if (resp.data.length) {
         return next({ ...resp, data: resp.data[0] });
       }
@@ -295,7 +295,7 @@ class SubjectStorage extends RdfStorage {
         ${qInFilter(['subject', ':locatedIn', 'location'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 
   selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
@@ -310,7 +310,7 @@ class SubjectStorage extends RdfStorage {
         ${qInFilter(['subject', 'a', 'type'], individs)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-    return RdfStorage.exec(query);
+    return RdfBaseStorage.exec(query);
   }
 }
 
