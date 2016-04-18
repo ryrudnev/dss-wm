@@ -1,4 +1,4 @@
-import { qsToJson, onSendResp, joinExpanded, onError } from '../util/utils';
+import { qsToJson, onSendResp, joinExpanded } from '../util/utils';
 import Method from '../models/method.model';
 import Subject from '../models/subject.model';
 
@@ -66,19 +66,11 @@ export function allTypes(req, resp) {
 export function createIndivid(req, resp) {
   const { type, forSubject } = req.body;
   return Promise.all([
-    Method.typeExists(`${type}`),
-    Subject.individExists(`${forSubject}`),
-  ]).then(results => {
-    if (!results.every(p => p.data.boolean)) {
-      return onError({
-        success: false,
-        code: 404,
-        message: 'Not specified or there is no such a subject and a type of method',
-        data: null,
-      });
-    }
-    return Method.createIndivid(forSubject, req.body);
-  }).then(onSendResp(resp)).catch(onSendResp(resp));
+    Method.typeExists(`${type}`, true),
+    Subject.individExists(`${forSubject}`, true),
+  ]).then(() =>
+          Method.createIndivid(forSubject, req.body)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function updateIndivid(req, resp) {
@@ -86,40 +78,16 @@ export function updateIndivid(req, resp) {
   const { forSubject } = req.body;
 
   return Promise.all([
-    Method.individExists(`${fid}`),
-    forSubject ? Subject.individExists(`${forSubject}`) : 0,
-  ]).then(([existsFid, existsSubject]) => {
-    if (!existsFid.data.boolean) {
-      return onError({
-        success: false,
-        code: 404,
-        message: 'Not found',
-        data: null,
-      });
-    }
-    if (existsSubject && !existsSubject.data.boolean) {
-      return onError({
-        success: false,
-        code: 404,
-        message: 'Not specified the valid subject',
-        data: null,
-      });
-    }
-    return Method.updateIndivid(fid, req.body);
-  }).then(onSendResp(resp)).catch(onSendResp(resp));
+    Method.individExists(`${fid}`, true),
+    forSubject ? Subject.individExists(`${forSubject}`, true) : 0,
+  ]).then(() =>
+          Method.updateIndivid(fid, req.body)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function deleteIndivid(req, resp) {
   const { fid } = req.params;
-  return Method.individExists(`${fid}`).then(res => {
-    if (!res.data.boolean) {
-      return onError({
-        success: false,
-        code: 404,
-        message: 'Not found',
-        data: null,
-      });
-    }
-    return Method.deleteIndivid(fid);
-  }).then(onSendResp(resp)).catch(onSendResp(resp));
+  return Method.individExists(`${fid}`, true).then(() =>
+          Method.deleteIndivid(fid)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
 }

@@ -2,12 +2,12 @@ import { flatten } from './utils';
 
 // Extract the name of axiom without prefix
 export function axiomWithoutPrefix(a) {
-  return typeof !!a ? `${a}`.replace(/^.*(#|\/|:)/g, '') : null;
+  return !!a ? `${a}`.replace(/^.*(#|\/|:)/g, '') : null;
 }
 
 // Add prefix to the name of axiom
 export function axiomWithPrefix(a) {
-  return typeof !!a ? `:${axiomWithoutPrefix(a)}` : null;
+  return !!a ? `:${axiomWithoutPrefix(a)}` : null;
 }
 
 // Remove Uri prefix of axiom in SPARQL query
@@ -52,7 +52,7 @@ export function qType([s, p], types) {
 }
 
 // Create IN filter conditional for SPARQL query
-export function qInFilter([s, p, o, invert = false], filters) {
+export function qInFilter([s, p, o, invert = false], filters = void 0) {
   if (!filters) {
     return '';
   }
@@ -62,7 +62,7 @@ export function qInFilter([s, p, o, invert = false], filters) {
 }
 
 // Create NOT IN filter conditional for SPARQL query
-export function qNotInFilter([s, p, o, invert = false], filters) {
+export function qNotInFilter([s, p, o, invert = false], filters = void 0) {
   if (!filters) {
     return '';
   }

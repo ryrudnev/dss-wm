@@ -25,19 +25,52 @@ export function calcMethodCost(wasteAmount, { costOnWeight, costByService }) {
 
 export default {
   // Check exists individual of Method entity
-  individExists(individ) {
+  individExists(individ, falseAsReject = false) {
     const query = `
-      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(METHOD_TYPE)} }
+      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(METHOD_TYPE)} ; :title ?title }
     `;
-    return stardog.query({ query });
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 404,
+        message: `Individual ${individ} of Method entity is not exists`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Check exists type of Method entity
-  typeExists(type) {
+  typeExists(type, falseAsReject = false) {
     const query = `
-      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(METHOD_TYPE)} }
-    `;
-    return stardog.query({ query });
+      ASK {
+        ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(METHOD_TYPE)} ; rdfs:label ?title
+    }`;
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 404,
+        message: `Type ${type} of Method entity is not exists`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Create a new individual of Method entity
@@ -58,7 +91,7 @@ export default {
         }
       }, '');
       const query = `INSERT DATA {
-        ${fid} a ${axiomWithPrefix(METHOD_TYPE)} .
+        ${fid} a ${axiomWithPrefix(type)} .
         ${qdata}
       }`;
 
@@ -90,6 +123,10 @@ export default {
           qwhere = `${qwhere} ?subject :hasMethod ?m .`;
           qinsert = `${qinsert} ${axiomWithPrefix(data[key])} :hasMethod ?m .`;
           break;
+        case 'type':
+          qwhere = `${qwhere} ?m a ?${key} .`;
+          qinsert = `${qinsert} ?m a ${axiomWithPrefix(data[key])} .`;
+          break;
         default:
       }
     });
@@ -116,11 +153,26 @@ export default {
   },
 
   // Delete the individual of Method entity
-  deleteIndivid(fid) {
+  deleteIndivid(fid, falseAsReject = false) {
     const query = `DELETE { ?s ?p ?o }
-      INSERT { ?s a owl:Nothing }
       WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
-    return stardog.query({ query });
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 500,
+        message: `Deleting individual ${fid} of Method entity is failed`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Select all individuals of Method entity by options
@@ -160,7 +212,12 @@ export default {
     const dfd = new Deferred();
     stardog.query({ query }).then(resp => {
       if (!resp.data.length) {
-        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
+        dfd.reject({
+          success: false,
+          code: 404,
+          message: 'Not found',
+          data: null,
+        });
       } else {
         dfd.resolve({ ...resp, data: resp.data[0] });
       }
