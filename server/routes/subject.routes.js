@@ -8,6 +8,15 @@ const router = new Router();
 // &subtypes=[]&byMethods=[]&byWaste=[]&sort=[]&offset&limit
 router.get('/individuals', Controller.allIndivids);
 
+// Create a new individual of Subject entity
+router.post('/individuals', Controller.createIndivid);
+
+// Update an existing individual of Subject entity
+router.put('/individuals/:fid', Controller.updateIndivid);
+
+// Delete an existing individual of Subject entity
+router.delete('/individuals/:fid', Controller.deleteIndivid);
+
 // Get the individual of Subject entity by FID
 // /subjects/individuals/:fid?expand=['types', 'waste', 'methods', 'located']
 router.get('/individuals/:fid', Controller.individ);

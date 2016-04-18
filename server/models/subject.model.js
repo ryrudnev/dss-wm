@@ -5,11 +5,13 @@ import {
     qInFilter,
     qLimitOffset,
     axiomWithPrefix,
+    axiomWithoutPrefix,
 } from '../util/owlUtils';
-import { Deferred, intersectSet, getEqualKeySetmap } from '../util/utils';
+import { Deferred, intersectSet, getEqualKeySetmap, onError } from '../util/utils';
 import { getGeoDistance } from '../util/geoUtils';
 import { TRANSPORT_METHOD, calcMethodCost } from './method.model';
 import stardog from '../services/stardog';
+import uidCounter from '../services/counter';
 
 // Constant of base type of Subject entity
 export const SUBJECT_TYPE = 'Subject';
@@ -213,19 +215,150 @@ export default {
   },
 
   // Check exists individual of Subject entity
-  individExists(individ) {
+  individExists(individ, falseAsReject = false) {
     const query = `
-      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(SUBJECT_TYPE)} }
+      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(SUBJECT_TYPE)} ; :title ?title }
     `;
-    return stardog.query({ query });
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 404,
+        message: `Individual ${individ} of Subject entity is not exists`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Check exists type of Subject entity
-  typeExists(type) {
+  typeExists(type, falseAsReject = false) {
     const query = `
-      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(SUBJECT_TYPE)} }
-    `;
+      ASK {
+       ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(SUBJECT_TYPE)} ; rdfs:label ?title
+    }`;
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 404,
+        message: `Type ${type} of Subject entity is not exists`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
+  },
+
+  // Create a new individual of Subject entity
+  createIndivid(type = SUBJECT_TYPE, data = {}) {
+    return uidCounter.generateUid().then(uid => {
+      const fid = axiomWithPrefix(uid);
+      const qdata = Object.keys(data).reduce((prev, key) => {
+        switch (key) {
+          case 'title':
+            return `${prev} ${fid} :title "${data[key]}" .`;
+          case 'coordinates':
+            return `${prev} ${fid} :coordinates "${
+                Array.isArray(data[key]) ? JSON.stringify(data[key]) : data[key]
+                }" .`;
+          case 'budget':
+            return `${prev} ${fid} :budget ${+data[key]} .`;
+          default: return prev;
+        }
+      }, '');
+      const query = `INSERT DATA {
+        ${fid} a ${axiomWithPrefix(type)} .
+        ${qdata}
+      }`;
+
+      const dfd = new Deferred();
+      stardog.query({ query }).then(resp => {
+        dfd.resolve({ ...resp, data: { fid: axiomWithoutPrefix(fid) } });
+      }).catch(resp => dfd.reject(resp));
+      return dfd.promise;
+    });
+  },
+
+  // Update the individual of Subject entity
+  updateIndivid(fid, data) {
+    let [qinsert, qwhere] = ['', ''];
+    Object.keys(data || {}).forEach((key) => {
+      const pred = axiomWithPrefix(key);
+      switch (key) {
+        case 'title':
+          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
+          qinsert = `${qinsert} ?s ${pred} "${data[key]}" .`;
+          break;
+        case 'coordinates':
+          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
+          qinsert = `${qinsert} ?s ${pred} "${
+              Array.isArray(data[key]) ? JSON.stringify(data[key]) : data[key]
+              }" .`;
+          break;
+        case 'budget':
+          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
+          qinsert = `${qinsert} ?s ${pred} ${+data[key]} .`;
+          break;
+        default:
+      }
+    });
+
+    if (!qinsert || !qwhere) {
+      return onError({
+        code: 500,
+        success: false,
+        message: `Not valid condition to update the individual ${fid}`,
+        data: null,
+      });
+    }
+
+    const query = `DELETE {
+        ${qwhere}
+      } INSERT {
+        ${qinsert}
+      } WHERE {
+        ?m a ${axiomWithPrefix(SUBJECT_TYPE)} .
+        ${qwhere}
+        FILTER(?m = ${axiomWithPrefix(fid)})
+    }`;
     return stardog.query({ query });
+  },
+
+  // Delete the individual of Subject entity
+  deleteIndivid(fid, falseAsReject = false) {
+    const query = `DELETE { ?s ?p ?o }
+      WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
+    if (!falseAsReject) {
+      return stardog.query({ query });
+    }
+
+    const dfd = new Deferred();
+    stardog.query({ query }).then(resp => {
+      if (resp.data.boolean) {
+        return dfd.resolve(resp);
+      }
+      return dfd.reject({
+        success: false,
+        code: 500,
+        message: `Deleting individual ${fid} of Subject entity is failed`,
+        data: null,
+      });
+    }).catch(resp => dfd.reject(resp));
+    return dfd.promise;
   },
 
   // Select all individuals of Subject entity by options

@@ -69,7 +69,7 @@ export function createIndivid(req, resp) {
     Method.typeExists(`${type}`, true),
     Subject.individExists(`${forSubject}`, true),
   ]).then(() =>
-          Method.createIndivid(forSubject, req.body)
+          Method.createIndivid(type, req.body)
   ).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 

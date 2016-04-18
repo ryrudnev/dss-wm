@@ -175,3 +175,28 @@ export function searchStrategy(req, resp) {
     });
   }).catch(onSendResp(resp));
 }
+
+export function createIndivid(req, resp) {
+  const { type } = req.body;
+  return Promise.all([
+    Subject.typeExists(`${type}`, true),
+  ]).then(() =>
+          Subject.createIndivid(type, req.body)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function updateIndivid(req, resp) {
+  const { fid } = req.params;
+  return Promise.all([
+    Subject.individExists(`${fid}`, true),
+  ]).then(() =>
+          Subject.updateIndivid(fid, req.body)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function deleteIndivid(req, resp) {
+  const { fid } = req.params;
+  return Subject.individExists(`${fid}`, true).then(() =>
+          Subject.deleteIndivid(fid)
+  ).then(onSendResp(resp)).catch(onSendResp(resp));
+}
