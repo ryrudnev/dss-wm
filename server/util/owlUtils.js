@@ -51,6 +51,21 @@ export function qType([s, p], types) {
   }, '');
 }
 
+// Create type restriction conditional for SPARQL query
+export function qTypeRestrict([prop, p], values) {
+  return flatten([values]).reduce((res, val) => {
+    const axiom = axiomWithPrefix(val);
+    if (!axiom) {
+      return res;
+    }
+    const cond = `[ rdf:type owl:Restriction ;
+                    owl:onProperty ${axiomWithPrefix(prop)} ;
+                    ${p} ${axiom}
+                  ]`;
+    return `${res}${res.length ? ', ' : ''} ${cond}`;
+  }, '');
+}
+
 // Create IN filter conditional for SPARQL query
 export function qInFilter([s, p, o, invert = false], filters = void 0) {
   if (!filters) {

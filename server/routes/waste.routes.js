@@ -8,6 +8,15 @@ const router = new Router();
 // &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
 router.get('/individuals', Controller.allIndivids);
 
+// Create a new individual of Waste entity
+router.post('/individuals', Controller.createIndivid);
+
+// Update an existing individual of Waste entity
+router.put('/individuals/:fid', Controller.updateIndivid);
+
+// Delete an existing individual of Waste entity
+router.delete('/individuals/:fid', Controller.deleteIndivid);
+
 // Get the individual of Waste entity by FID
 // /waste/individuals/:fid?expand=['types', 'subject']
 router.get('/individuals/:fid', Controller.individ);
@@ -16,6 +25,15 @@ router.get('/individuals/:fid', Controller.individ);
 // /waste/types?
 // individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
 router.get('/types', Controller.allTypes);
+
+// Create a new type of Waste entity
+router.post('/types', Controller.createType);
+
+// Update an existing tyoe of Waste entity
+router.put('/types/:fid', Controller.updateType);
+
+// Delete an existing type of Waste entity
+router.delete('/types/:fid', Controller.deleteType);
 
 // Get all individuals of Origin entity
 // /waste/origins?sort&offset&limit

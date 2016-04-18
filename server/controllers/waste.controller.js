@@ -76,3 +76,46 @@ export function aggregateStates(req, resp) {
   return wasteStorage.selectAggregateStates(qsToJson(req))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
+
+export function createIndivid(req, resp) {
+  const { type } = req.body;
+  return Promise.all([
+    wasteStorage.typeExists(`${type}`, true),
+  ]).then(() => wasteStorage.createIndivid(type, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function updateIndivid(req, resp) {
+  const { fid } = req.params;
+  return Promise.all([
+    wasteStorage.individExists(`${fid}`, true),
+  ]).then(() => wasteStorage.updateIndivid(fid, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function deleteIndivid(req, resp) {
+  const { fid } = req.params;
+  return wasteStorage.individExists(`${fid}`, true).then(() => wasteStorage.deleteIndivid(fid))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function createType(req, resp) {
+  // TODO: Need check a type of methods
+  return wasteStorage.createType('SpecificWaste', req.body)
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function updateType(req, resp) {
+  // TODO: Need check a type of methods
+  const { fid } = req.params;
+  return Promise.all([
+    wasteStorage.typeExists(`${fid}`, true),
+  ]).then(() => wasteStorage.updateType(fid, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function deleteType(req, resp) {
+  const { fid } = req.params;
+  return wasteStorage.typeExists(`${fid}`, true).then(() => wasteStorage.deleteType(fid))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
+}

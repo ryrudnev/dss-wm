@@ -3,6 +3,46 @@ import { Deferred } from '../util/utils';
 import stardog from '../services/stardog';
 import uidCounter from '../services/counter';
 
+function exec(query) {
+  return stardog.query({ query });
+}
+
+function execWithHandle(query, cb) {
+  const dfd = new Deferred();
+  exec(query).then(resp => {
+    if (cb) {
+      cb(resp, dfd.resolve.bind(dfd), dfd.reject.bind(dfd));
+    } else {
+      dfd.resolve(resp);
+    }
+  }).catch(resp => dfd.reject(resp));
+  return dfd.promise;
+}
+
+// Common update method for a individual and type
+function update(cond, cb, fid, data) {
+  let [qinsert, qwhere] = ['', ''];
+  Object.keys(data || {}).forEach((key) => {
+    const [insert, where] = cb(key, data[key], fid);
+    if (!!insert) {
+      qinsert = `${qinsert} ${insert}`;
+    }
+    if (!!where) {
+      qwhere = `${qwhere} ${where}`;
+    }
+  });
+  const query = `DELETE {
+        ${qwhere.trim()}
+      } INSERT {
+        ${qinsert.trim()}
+      } WHERE {
+        ${cond}
+        ${qwhere.trim()}
+        FILTER(?ind = ${axiomWithPrefix(fid)})
+    }`;
+  return exec(query);
+}
+
 export default class RdfStorage {
   // Base type of entity
   get entity() {
@@ -23,20 +63,12 @@ export default class RdfStorage {
   // Execute a query to Stardog platform and handle response before to next promises chain
   // cb(response, next, error)
   static execWithHandle(query, cb) {
-    const dfd = new Deferred();
-    RdfStorage.exec(query).then(resp => {
-      if (cb) {
-        cb(resp, dfd.resolve.bind(dfd), dfd.reject.bind(dfd));
-      } else {
-        dfd.resolve(resp);
-      }
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
+    return execWithHandle(query, cb);
   }
 
   // Execute a query to Stardog platform. Returned promise
   static exec(query) {
-    return stardog.query({ query });
+    return exec(query);
   }
 
   // Check exists individual of entity
@@ -45,9 +77,9 @@ export default class RdfStorage {
       ASK { ${axiomWithPrefix(individ)} a ${this.entityWithPrefix} ; :title ?title }
     `;
     if (!falseAsReject) {
-      return RdfStorage.exec(query);
+      return exec(query);
     }
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
         return next(resp);
       }
@@ -69,7 +101,7 @@ export default class RdfStorage {
     if (!falseAsReject) {
       return stardog.query({ query });
     }
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
         return next(resp);
       }
@@ -94,36 +126,35 @@ export default class RdfStorage {
         ${fid} a ${axiomWithPrefix(type || this.entity)} .
         ${qdata.trim()}
       }`;
-      return RdfStorage.execWithHandle(query,
-          (resp, next) => next({ ...resp, data: { fid: uid } })
-      );
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: uid } }));
+    });
+  }
+
+  // Create a new type of entity
+  createType(subtype, data = {}) {
+    return uidCounter.generateUid().then(uid => {
+      const fid = axiomWithPrefix(uid);
+      const qdata = Object.keys(data).reduce((res, key) => {
+        const reduced = this.createTypeReducer(key, data[key], fid);
+        return !!reduced ? `${res} ${reduced}` : res;
+      }, '');
+      const query = `INSERT DATA {
+        ${fid} a owl:Class ; rdfs:subClassOf ${axiomWithPrefix(subtype)} .
+        ${qdata.trim()}
+      }`;
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: uid } }));
     });
   }
 
   // Update the individual of entity
   updateIndivid(fid, data) {
-    let [qinsert, qwhere] = ['', ''];
+    return update(`?ind a ${this.entityWithPrefix} .`,
+        this.updateIndividReducer.bind(this), fid, data);
+  }
 
-    Object.keys(data || {}).forEach((key) => {
-      const [insert, where] = this.updateIndividReducer(key, data[key], fid);
-      if (!!insert) {
-        qinsert = `${qinsert} ${insert}`;
-      }
-      if (!!where) {
-        qwhere = `${qwhere} ${where}`;
-      }
-    });
-
-    const query = `DELETE {
-        ${qwhere.trim()}
-      } INSERT {
-        ${qinsert.trim()}
-      } WHERE {
-        ?ind a ${this.entityWithPrefix} .
-        ${qwhere}
-        FILTER(?ind = ${axiomWithPrefix(fid)})
-    }`;
-    return RdfStorage.exec(query);
+  // Update the type of entity
+  updateType(fid, data) {
+    return update('', this.updateTypeReducer.bind(this), fid, data);
   }
 
   // Delete the individual of entity
@@ -131,19 +162,24 @@ export default class RdfStorage {
     const query = `DELETE { ?s ?p ?o }
       WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
     if (!falseAsReject) {
-      return RdfStorage.exec(query);
+      return exec(query);
     }
-    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+    return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
         return next(resp);
       }
       return error({
         success: false,
         code: 500,
-        message: `Deleting individual ${fid} of ${this.entity} entity is failed`,
+        message: `Deleting ${fid} of ${this.entity} entity is failed`,
         data: null,
       });
     });
+  }
+
+  // Delete the type of entity
+  deleteType(fid, falseAsReject = false) {
+    return this.deleteIndivid(fid, falseAsReject);
   }
 
   // Select all individuals of entity by options
@@ -168,6 +204,16 @@ export default class RdfStorage {
 
   // updateIndivid data reducer. Returned [insert:string, where:string]
   updateIndividReducer(/* key, value, fid */) {
+    throw new Error('Method not implemented');
+  }
+
+  // createType data reducer. Returned string
+  createTypeReducer() {
+    throw new Error('Method not implemented');
+  }
+
+  // updateType data reducer. Returned [insert:string, where:string]
+  updateTypeReducer() {
     throw new Error('Method not implemented');
   }
 }

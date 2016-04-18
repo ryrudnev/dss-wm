@@ -7,6 +7,7 @@ import {
     qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
+    qTypeRestrict,
 } from '../util/owlUtils';
 
 class WasteStorage extends RdfStorage {
@@ -27,6 +28,27 @@ class WasteStorage extends RdfStorage {
     }
   }
 
+  createTypeReducer(key, value, fid) {
+    switch (key) {
+      case 'title':
+        return `${fid} rdfs:label "${value}"@ru .`;
+      case 'aggregateState':
+        return `${fid} rdfs:subClassOf
+          ${qTypeRestrict(['hasAggregateState', 'owl:hasValue'], value)} .`;
+      case 'hazardClass':
+        return `${fid} rdfs:subClassOf
+          ${qTypeRestrict(['hasHazardClass', 'owl:hasValue'], value)} .`;
+      case 'origin':
+        return `${fid} rdfs:subClassOf
+          ${qTypeRestrict(['hasOrigin', 'owl:hasValue'], value)} .`;
+      case 'method':
+        return `${fid} rdfs:subClassOf
+          ${qTypeRestrict(['hasMethod', 'owl:someValuesFrom'], value)} .`;
+      default:
+        return '';
+    }
+  }
+
   updateIndividReducer(key, value) {
     switch (key) {
       case 'title':
@@ -37,6 +59,43 @@ class WasteStorage extends RdfStorage {
         return [`${axiomWithPrefix(value)} :hasMethod ?ind .`, '?subject :hasMethod ?ind .'];
       case 'type':
         return [`?ind a ${axiomWithPrefix(value)} .`, '?ind a ?type .'];
+      default:
+        return [];
+    }
+  }
+
+  updateTypeReducer(key, value) {
+    switch (key) {
+      case 'title':
+        return [`?ind rdfs:label "${value}"@ru .`, '?ind rdfs:label ?title .'];
+      case 'aggregateState':
+        return [
+          `?ind rdfs:subClassOf ${qTypeRestrict(['hasAggregateState', 'owl:hasValue'], value)} .`,
+          `?ind rdfs:subClassOf ?_aggregateState .
+           ?_aggregateState a owl:Restriction ; owl:onProperty :hasAggregateState ;
+           owl:hasValue ?aggregateState .`,
+        ];
+      case 'hazardClass':
+        return [
+          `?ind rdfs:subClassOf ${qTypeRestrict(['hasHazardClass', 'owl:hasValue'], value)} .`,
+          `?ind rdfs:subClassOf ?_hazardClass .
+           ?_hazardClass a owl:Restriction ; owl:onProperty :hasHazardClass ;
+           owl:hasValue ?hazardClass .`,
+        ];
+      case 'origin':
+        return [
+          `?ind rdfs:subClassOf ${qTypeRestrict(['hasOrigin', 'owl:hasValue'], value)} .`,
+          `?ind rdfs:subClassOf ?_origin .
+           ?_origin a owl:Restriction ; owl:onProperty :hasOrigin ;
+           owl:hasValue ?origin .`,
+        ];
+      case 'method':
+        return [
+          `?ind rdfs:subClassOf ${qTypeRestrict(['hasMethod', 'owl:someValuesFrom'], value)} .`,
+          `?ind rdfs:subClassOf ?_method .
+           ?_method a owl:Restriction ; owl:onProperty :hasMethod ;
+           owl:someValuesFrom ?method .`,
+        ];
       default:
         return [];
     }
