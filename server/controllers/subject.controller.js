@@ -1,20 +1,19 @@
-import { qsToJson, onSendResp, joinExpanded, onError } from '../util/utils';
-import Subject from '../models/subject.model';
-import Method from '../models/method.model';
-import Waste from '../models/waste.model';
+import { qsToJson, onSendResp, joinExpanded, onError, flatten } from '../util/utils';
+import subjectStorage from '../models/subject.storage';
+import methodStorage from '../models/method.storage';
+import wasteStorage from '../models/waste.storage';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
-  const exp = qs.expand || [];
-
-  return Subject.selectIndivids(qs).then(subject => {
+  const exp = flatten([qs.expand]);
+  return subjectStorage.selectIndivids(qs).then(subject => {
     const subjectFids = subject.data.map(s => s.fid);
     return Promise.all([
       subject,
-      exp.includes('waste') ? Waste.selectIndivids({ forSubjects: subjectFids }) : 0,
-      exp.includes('methods') ? Method.selectIndivids({ forSubjects: subjectFids }) : 0,
-      exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: subjectFids }) : 0,
-      exp.includes('types') ? Subject.selectTypes({ individs: subjectFids }) : 0,
+      exp.includes('waste') ? wasteStorage.selectIndivids({ forSubjects: subjectFids }) : 0,
+      exp.includes('methods') ? methodStorage.selectIndivids({ forSubjects: subjectFids }) : 0,
+      exp.includes('located') ? subjectStorage.selectLocationsFor({ forSubjects: subjectFids }) : 0,
+      exp.includes('types') ? subjectStorage.selectTypes({ individs: subjectFids }) : 0,
     ]);
   }).then(results => {
     const [subject] = results;
@@ -48,14 +47,13 @@ export function allIndivids(req, resp) {
 
 export function individ(req, resp) {
   const { fid } = req.params;
-  const exp = qsToJson(req).expand || [];
-
+  const exp = flatten([qsToJson(req).expand]);
   return Promise.all([
-    Subject.selectIndividByFid(fid),
-    exp.includes('waste') ? Waste.selectIndivids({ forSubjects: fid }) : 0,
-    exp.includes('methods') ? Method.selectIndivids({ forSubjects: fid }) : 0,
-    exp.includes('located') ? Subject.selectLocationsFor({ forSubjects: fid }) : 0,
-    exp.includes('types') ? Subject.selectTypes({ individs: fid }) : 0,
+    subjectStorage.selectIndividByFid(fid),
+    exp.includes('waste') ? wasteStorage.selectIndivids({ forSubjects: fid }) : 0,
+    exp.includes('methods') ? methodStorage.selectIndivids({ forSubjects: fid }) : 0,
+    exp.includes('located') ? subjectStorage.selectLocationsFor({ forSubjects: fid }) : 0,
+    exp.includes('types') ? subjectStorage.selectTypes({ individs: fid }) : 0,
   ]).then(results => {
     const [subject] = results;
     let [, waste, methods, locations, types] = results;
@@ -81,7 +79,7 @@ export function individ(req, resp) {
 }
 
 export function allTypes(req, resp) {
-  return Subject.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
+  return subjectStorage.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 // Generate waste management strategy for the subject by FID
@@ -89,9 +87,9 @@ export function searchStrategy(req, resp) {
   const subjectFid = req.params.fid;
 
   return Promise.all([
-    Subject.selectIndividByFid(subjectFid),
-    Waste.selectIndivids({ forSubjects: subjectFid }),
-    Method.selectIndivids(),
+    subjectStorage.selectIndividByFid(subjectFid),
+    wasteStorage.selectIndivids({ forSubjects: subjectFid }),
+    methodStorage.selectIndivids(),
   ]).then(([subject, ownWaste, allMethods]) => {
     try {
       JSON.parse(subject.data.coordinates);
@@ -128,9 +126,9 @@ export function searchStrategy(req, resp) {
       subject,
       ownWaste,
       allMethods,
-      Method.selectTypes({ individs: methodFids }),
-      Method.selectTypes({ forWaste: wasteFids }),
-      Subject.selectIndivids({ byMethods: methodFids }),
+      methodStorage.selectTypes({ individs: methodFids }),
+      methodStorage.selectTypes({ forWaste: wasteFids }),
+      subjectStorage.selectIndivids({ byMethods: methodFids }),
     ]);
   }).then(([subject, ownWaste, allMethods, allMethodTypes, wasteMethods, methodSubjects]) => {
     const ownMethods = {};
@@ -159,7 +157,7 @@ export function searchStrategy(req, resp) {
       return cur;
     }, {});
 
-    const strategy = Subject.genStrategy({
+    const strategy = subjectStorage.genStrategy({
       subject: subject.data,
       ownWaste: ownWaste.data,
       ownMethods,
@@ -179,24 +177,21 @@ export function searchStrategy(req, resp) {
 export function createIndivid(req, resp) {
   const { type } = req.body;
   return Promise.all([
-    Subject.typeExists(`${type}`, true),
-  ]).then(() =>
-          Subject.createIndivid(type, req.body)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+    subjectStorage.typeExists(`${type}`, true),
+  ]).then(() => subjectStorage.createIndivid(type, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function updateIndivid(req, resp) {
   const { fid } = req.params;
   return Promise.all([
-    Subject.individExists(`${fid}`, true),
-  ]).then(() =>
-          Subject.updateIndivid(fid, req.body)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+    subjectStorage.individExists(`${fid}`, true),
+  ]).then(() => subjectStorage.updateIndivid(fid, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function deleteIndivid(req, resp) {
   const { fid } = req.params;
-  return Subject.individExists(`${fid}`, true).then(() =>
-          Subject.deleteIndivid(fid)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+  return subjectStorage.individExists(`${fid}`, true).then(() => subjectStorage.deleteIndivid(fid))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }

@@ -1,20 +1,15 @@
+import RdfStorage from './rdf.storage';
+import { TRANSPORT_METHOD, calcMethodCost } from './method.storage';
+import { intersectSet, getEqualKeySetmap } from '../util/utils';
+import { getGeoDistance } from '../util/geoUtils';
 import {
+    qFidAs,
     qSort,
     qType,
-    qFidAs,
     qInFilter,
     qLimitOffset,
     axiomWithPrefix,
-    axiomWithoutPrefix,
 } from '../util/owlUtils';
-import { Deferred, intersectSet, getEqualKeySetmap, onError } from '../util/utils';
-import { getGeoDistance } from '../util/geoUtils';
-import { TRANSPORT_METHOD, calcMethodCost } from './method.model';
-import stardog from '../services/stardog';
-import uidCounter from '../services/counter';
-
-// Constant of base type of Subject entity
-export const SUBJECT_TYPE = 'Subject';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]
 const cachedDistances = new Map();
@@ -81,7 +76,11 @@ function getBestTransport(source, reciver, wasteAmount, transportations) {
   return cached[wasteAmount];
 }
 
-export default {
+class SubjectStorage extends RdfStorage {
+  get entity() {
+    return 'Subject';
+  }
+
   // Generate waste management strategy for a subject
   // {
   //  subject, - the waste management subject to which the generated strategy
@@ -212,156 +211,40 @@ export default {
     }
 
     return result;
-  },
+  }
 
-  // Check exists individual of Subject entity
-  individExists(individ, falseAsReject = false) {
-    const query = `
-      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(SUBJECT_TYPE)} ; :title ?title }
-    `;
-    if (!falseAsReject) {
-      return stardog.query({ query });
+  createIndividReducer(key, value, fid) {
+    switch (key) {
+      case 'title':
+        return `${fid} :title "${value}" .`;
+      case 'coordinates':
+        return `${fid} :coordinates "${
+            Array.isArray(value) ? JSON.stringify(value) : value
+            }" .`;
+      case 'budget':
+        return `${fid} :budget ${+value} .`;
+      default:
+        return '';
     }
+  }
 
-    const dfd = new Deferred();
-    stardog.query({ query }).then(resp => {
-      if (resp.data.boolean) {
-        return dfd.resolve(resp);
-      }
-      return dfd.reject({
-        success: false,
-        code: 404,
-        message: `Individual ${individ} of Subject entity is not exists`,
-        data: null,
-      });
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
-  },
-
-  // Check exists type of Subject entity
-  typeExists(type, falseAsReject = false) {
-    const query = `
-      ASK {
-       ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(SUBJECT_TYPE)} ; rdfs:label ?title
-    }`;
-    if (!falseAsReject) {
-      return stardog.query({ query });
+  updateIndividReducer(key, value) {
+    switch (key) {
+      case 'title':
+        return [`?ind :title "${value}" .`, '?ind :title ?title .'];
+      case 'coordinates':
+        return [`?ind :coordinates "${
+            Array.isArray(value) ? JSON.stringify(value) : value}
+            " .`, '?ind :coordinates ?coordinates .'];
+      case 'budget':
+        return [`?ind :budget ${+value} .`, '?ind :budget ?budget .'];
+      case 'type':
+        return [`?ind a ${axiomWithPrefix(value)} .`, `?ind a ?${key} .`];
+      default:
+        return [];
     }
+  }
 
-    const dfd = new Deferred();
-    stardog.query({ query }).then(resp => {
-      if (resp.data.boolean) {
-        return dfd.resolve(resp);
-      }
-      return dfd.reject({
-        success: false,
-        code: 404,
-        message: `Type ${type} of Subject entity is not exists`,
-        data: null,
-      });
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
-  },
-
-  // Create a new individual of Subject entity
-  createIndivid(type = SUBJECT_TYPE, data = {}) {
-    return uidCounter.generateUid().then(uid => {
-      const fid = axiomWithPrefix(uid);
-      const qdata = Object.keys(data).reduce((prev, key) => {
-        switch (key) {
-          case 'title':
-            return `${prev} ${fid} :title "${data[key]}" .`;
-          case 'coordinates':
-            return `${prev} ${fid} :coordinates "${
-                Array.isArray(data[key]) ? JSON.stringify(data[key]) : data[key]
-                }" .`;
-          case 'budget':
-            return `${prev} ${fid} :budget ${+data[key]} .`;
-          default: return prev;
-        }
-      }, '');
-      const query = `INSERT DATA {
-        ${fid} a ${axiomWithPrefix(type)} .
-        ${qdata}
-      }`;
-
-      const dfd = new Deferred();
-      stardog.query({ query }).then(resp => {
-        dfd.resolve({ ...resp, data: { fid: axiomWithoutPrefix(fid) } });
-      }).catch(resp => dfd.reject(resp));
-      return dfd.promise;
-    });
-  },
-
-  // Update the individual of Subject entity
-  updateIndivid(fid, data) {
-    let [qinsert, qwhere] = ['', ''];
-    Object.keys(data || {}).forEach((key) => {
-      const pred = axiomWithPrefix(key);
-      switch (key) {
-        case 'title':
-          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
-          qinsert = `${qinsert} ?s ${pred} "${data[key]}" .`;
-          break;
-        case 'coordinates':
-          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
-          qinsert = `${qinsert} ?s ${pred} "${
-              Array.isArray(data[key]) ? JSON.stringify(data[key]) : data[key]
-              }" .`;
-          break;
-        case 'budget':
-          qwhere = `${qwhere} ?s ${pred} ?${key} .`;
-          qinsert = `${qinsert} ?s ${pred} ${+data[key]} .`;
-          break;
-        default:
-      }
-    });
-
-    if (!qinsert || !qwhere) {
-      return onError({
-        code: 500,
-        success: false,
-        message: `Not valid condition to update the individual ${fid}`,
-        data: null,
-      });
-    }
-
-    const query = `DELETE {
-        ${qwhere}
-      } INSERT {
-        ${qinsert}
-      } WHERE {
-        ?m a ${axiomWithPrefix(SUBJECT_TYPE)} .
-        ${qwhere}
-        FILTER(?m = ${axiomWithPrefix(fid)})
-    }`;
-    return stardog.query({ query });
-  },
-
-  // Delete the individual of Subject entity
-  deleteIndivid(fid, falseAsReject = false) {
-    const query = `DELETE { ?s ?p ?o }
-      WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
-    if (!falseAsReject) {
-      return stardog.query({ query });
-    }
-
-    const dfd = new Deferred();
-    stardog.query({ query }).then(resp => {
-      if (resp.data.boolean) {
-        return dfd.resolve(resp);
-      }
-      return dfd.reject({
-        success: false,
-        code: 500,
-        message: `Deleting individual ${fid} of Subject entity is failed`,
-        data: null,
-      });
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
-  },
-
-  // Select all individuals of Subject entity by options
   selectIndivids({ subtypes, byMethods, byWaste, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('subject', 'fid')} ?title ?coordinates ?budget
@@ -369,18 +252,16 @@ export default {
       ${byWaste ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
         ?subject :title ?title .
-        ${qType(['subject', 'a'], [SUBJECT_TYPE, subtypes])}
+        ${qType(['subject', 'a'], [this.entity, subtypes])}
         OPTIONAL { ?subject :coordinates ?coordinates }
         OPTIONAL { ?subject :budget ?budget }
         ${qInFilter(['subject', ':hasMethod', 'method', true], byMethods)}
         ${qInFilter(['subject', ':hasWaste', 'waste', true], byWaste)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
+    return RdfStorage.exec(query);
+  }
 
-    return stardog.query({ query });
-  },
-
-  // Select the individual of Subject entity by FID
   selectIndividByFid(fid) {
     const query = `
       SELECT DISTINCT ${qFidAs('subject', 'fid')} ?title ?coordinates ?budget
@@ -388,50 +269,49 @@ export default {
         ?subject a ?type ; :title ?title
         OPTIONAL { ?subject :coordinates ?coordinates }
         OPTIONAL { ?subject :budget ?budget }
-        FILTER(?type = ${axiomWithPrefix(SUBJECT_TYPE)} && ?subject = ${axiomWithPrefix(fid)})
+        FILTER(?type = ${this.entityWithPrefix} && ?subject = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
-
-    const dfd = new Deferred();
-    stardog.query({ query }).then(resp => {
-      if (!resp.data.length) {
-        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
-      } else {
-        dfd.resolve({ ...resp, data: resp.data[0] });
+    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+      if (resp.data.length) {
+        return next({ ...resp, data: resp.data[0] });
       }
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
-  },
+      return error({
+        success: false,
+        code: 404,
+        message: 'Not found',
+        data: null,
+      });
+    });
+  }
 
-  // Select all locations for subjects
   selectLocationsFor({ subtypes, forSubjects, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('location', 'fid')} ?title
       ${qFidAs('subject', 'subjectFid')}
       WHERE {
         ?location :title ?title .
-        ${qType(['location', 'a'], [SUBJECT_TYPE, subtypes])} .
+        ${qType(['location', 'a'], [this.entity, subtypes])} .
         ${qInFilter(['subject', ':locatedIn', 'location'], forSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
+    return RdfStorage.exec(query);
+  }
 
-    return stardog.query({ query });
-  },
-
-  // Select all specific types of Subject entity by options
   selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
-        ${qType(['type', 'rdfs:subClassOf'], [SUBJECT_TYPE, subtypes])} ; rdfs:label ?title
-        FILTER(?type != ${axiomWithPrefix(SUBJECT_TYPE)})
+        ${qType(['type', 'rdfs:subClassOf'], [this.entity, subtypes])} ; rdfs:label ?title
+        FILTER(?type != ${this.entityWithPrefix})
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}
         ${qInFilter(['subject', 'a', 'type'], individs)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
+    return RdfStorage.exec(query);
+  }
+}
 
-    return stardog.query({ query });
-  },
-};
+export default new SubjectStorage();

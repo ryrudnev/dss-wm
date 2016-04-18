@@ -1,36 +1,47 @@
+import RdfStorage from './rdf.storage';
 import {
+    qFidAs,
     qSort,
     qType,
-    qFidAs,
     qInFilter,
     qNotInFilter,
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
-import { Deferred } from '../util/utils';
-import stardog from '../services/stardog';
 
-// Constant of base type of Waste entity
-export const WASTE_TYPE = 'Waste';
+class WasteStorage extends RdfStorage {
+  get entity() {
+    return 'Waste';
+  }
 
-export default {
-  // Check exists individual of Waste entity
-  individExists(individ) {
-    const query = `
-      ASK { ${axiomWithPrefix(individ)} a ${axiomWithPrefix(WASTE_TYPE)} }
-    `;
-    return stardog.query({ query });
-  },
+  createIndividReducer(key, value, fid) {
+    switch (key) {
+      case 'title':
+        return `${fid} :title "${value}" .`;
+      case 'amount':
+        return `${fid} ${axiomWithPrefix(key)} ${+value} .`;
+      case 'forSubject':
+        return `${axiomWithPrefix(value)} :hasMethod ${fid} .`;
+      default:
+        return '';
+    }
+  }
 
-  // Check exists type of Waste entity
-  typeExists(type) {
-    const query = `
-      ASK { ${axiomWithPrefix(type)} rdfs:subClassOf ${axiomWithPrefix(WASTE_TYPE)} }
-    `;
-    return stardog.query({ query });
-  },
+  updateIndividReducer(key, value) {
+    switch (key) {
+      case 'title':
+        return [`?ind :title "${value}" .`, '?ind :title ?title .'];
+      case 'amount':
+        return [`?ind :amount ${+value} .`, '?ind :amount ?amount .'];
+      case 'forSubject':
+        return [`${axiomWithPrefix(value)} :hasMethod ?ind .`, '?subject :hasMethod ?ind .'];
+      case 'type':
+        return [`?ind a ${axiomWithPrefix(value)} .`, '?ind a ?type .'];
+      default:
+        return [];
+    }
+  }
 
-  // Select all individuals of Waste entity by options
   selectIndivids({ forSubjects, forNotSubjects, subtypes, sort, offset, limit } = {}) {
     const query = `
       SELECT DISTINCT ${qFidAs('waste', 'fid')} ?amount ?title
@@ -42,11 +53,9 @@ export default {
         ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
+    return RdfStorage.exec(query);
+  }
 
-    return stardog.query({ query });
-  },
-
-  // Select the individual of Waste entity by FID
   selectIndividByFid(fid) {
     const query = `
       SELECT ${qFidAs('waste', 'fid')} ?amount ?title
@@ -55,19 +64,19 @@ export default {
         FILTER(?type = :SpecificWaste && ?waste = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;
-
-    const dfd = new Deferred();
-    stardog.query({ query }).then(resp => {
-      if (!resp.data.length) {
-        dfd.reject({ success: false, code: 404, message: 'Not found', data: null });
-      } else {
-        dfd.resolve({ ...resp, data: resp.data[0] });
+    return RdfStorage.execWithHandle(query, (resp, next, error) => {
+      if (resp.data.length) {
+        return next({ ...resp, data: resp.data[0] });
       }
-    }).catch(resp => dfd.reject(resp));
-    return dfd.promise;
-  },
+      return error({
+        success: false,
+        code: 404,
+        message: 'Not found',
+        data: null,
+      });
+    });
+  }
 
-  // Select all specific types of Waste entity by options
   selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
     if (!individs && !types) {
       const query = `
@@ -76,7 +85,7 @@ export default {
           FILTER(?type != :SpecificWaste)
         } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
-      return stardog.query({ query });
+      return RdfStorage.exec(query);
     }
 
     const evidences = [
@@ -92,16 +101,15 @@ export default {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
-        ?type rdfs:subClassOf ${axiomWithPrefix(WASTE_TYPE)} OPTIONAL { ?type rdfs:label ?title } .
+        ?type rdfs:subClassOf ${this.entityWithPrefix} OPTIONAL { ?type rdfs:label ?title } .
         ${qInFilter(['waste', 'a', 'type'], individs)}
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}
         ${qNotInFilter(['type'], evidences)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
-
-    return stardog.query({ query });
-  },
+    return RdfStorage.exec(query);
+  }
 
   // Select all individuals of Origin entity
   selectOrigins({ sort, offset, limit } = {}) {
@@ -109,8 +117,8 @@ export default {
       SELECT ${qFidAs('origin', 'fid')} ?title WHERE {
         ?origin a :Origin ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return stardog.query({ query });
-  },
+    return RdfStorage.exec(query);
+  }
 
   // Select all individuals of HazardClass entity
   selectHazardClasses({ sort, offset, limit } = {}) {
@@ -118,8 +126,8 @@ export default {
       SELECT ${qFidAs('class', 'fid')} ?title WHERE {
         ?class a :HazardClass ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return stardog.query({ query });
-  },
+    return RdfStorage.exec(query);
+  }
 
   // Select all individuals of AggregateState entity
   selectAggregateStates({ sort, offset, limit } = {}) {
@@ -127,6 +135,8 @@ export default {
       SELECT ${qFidAs('state', 'fid')} ?title WHERE {
         ?state a :AggregateState ; :title ?title
     } ${qSort(sort)} ${qLimitOffset(limit, offset)}`;
-    return stardog.query({ query });
-  },
-};
+    return RdfStorage.exec(query);
+  }
+}
+
+export default new WasteStorage();

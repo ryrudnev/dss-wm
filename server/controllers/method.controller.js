@@ -1,17 +1,16 @@
-import { qsToJson, onSendResp, joinExpanded } from '../util/utils';
-import Method from '../models/method.model';
-import Subject from '../models/subject.model';
+import { qsToJson, onSendResp, joinExpanded, flatten } from '../util/utils';
+import methodStorage from '../models/method.storage';
+import subjectStorage from '../models/subject.storage';
 
 export function allIndivids(req, resp) {
   const qs = qsToJson(req);
-  const exp = qs.expand || [];
-
-  return Method.selectIndivids(qs).then(method => {
+  const exp = flatten([qs.expand]);
+  return methodStorage.selectIndivids(qs).then(method => {
     const methodFids = method.data.map(m => m.fid);
     return Promise.all([
       method,
-      exp.includes('types') ? Method.selectTypes({ individs: methodFids }) : 0,
-      exp.includes('subject') ? Subject.selectIndivids({ byMethods: methodFids }) : 0,
+      exp.includes('types') ? methodStorage.selectTypes({ individs: methodFids }) : 0,
+      exp.includes('subject') ? subjectStorage.selectIndivids({ byMethods: methodFids }) : 0,
     ]);
   }).then(results => {
     const [method] = results;
@@ -37,12 +36,11 @@ export function allIndivids(req, resp) {
 
 export function individ(req, resp) {
   const { fid } = req.params;
-  const exp = qsToJson(req).expand || [];
-
+  const exp = flatten([qsToJson(req).expand]);
   return Promise.all([
-    Method.selectIndividByFid(fid),
-    exp.includes('types') ? Method.selectTypes({ individs: fid }) : 0,
-    exp.includes('subject') ? Subject.selectIndivids({ byMethods: fid }) : 0,
+    methodStorage.selectIndividByFid(fid),
+    exp.includes('types') ? methodStorage.selectTypes({ individs: fid }) : 0,
+    exp.includes('subject') ? subjectStorage.selectIndivids({ byMethods: fid }) : 0,
   ]).then(results => {
     const [method] = results;
     let [, types, subjects] = results;
@@ -60,34 +58,30 @@ export function individ(req, resp) {
 }
 
 export function allTypes(req, resp) {
-  return Method.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
+  return methodStorage.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function createIndivid(req, resp) {
   const { type, forSubject } = req.body;
   return Promise.all([
-    Method.typeExists(`${type}`, true),
-    Subject.individExists(`${forSubject}`, true),
-  ]).then(() =>
-          Method.createIndivid(type, req.body)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+    methodStorage.typeExists(`${type}`, true),
+    subjectStorage.individExists(`${forSubject}`, true),
+  ]).then(() => methodStorage.createIndivid(type, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function updateIndivid(req, resp) {
   const { fid } = req.params;
   const { forSubject } = req.body;
-
   return Promise.all([
-    Method.individExists(`${fid}`, true),
-    forSubject ? Subject.individExists(`${forSubject}`, true) : 0,
-  ]).then(() =>
-          Method.updateIndivid(fid, req.body)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+    methodStorage.individExists(`${fid}`, true),
+    forSubject ? subjectStorage.individExists(`${forSubject}`, true) : 0,
+  ]).then(() => methodStorage.updateIndivid(fid, req.body))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function deleteIndivid(req, resp) {
   const { fid } = req.params;
-  return Method.individExists(`${fid}`, true).then(() =>
-          Method.deleteIndivid(fid)
-  ).then(onSendResp(resp)).catch(onSendResp(resp));
+  return methodStorage.individExists(`${fid}`, true).then(() => methodStorage.deleteIndivid(fid))
+      .then(onSendResp(resp)).catch(onSendResp(resp));
 }
