@@ -125,7 +125,7 @@ class SubjectStorage extends RdfBaseStorage {
     // The subject as source for calculating distance
     const source = { coordinates };
 
-    const strategy = [];
+    const strategies = [];
     // Methods type as Set of their keys.
     const ownMethodTypes = new Set(Object.keys(ownMethods));
     const methodTypes = new Set(Object.keys(methods));
@@ -137,23 +137,23 @@ class SubjectStorage extends RdfBaseStorage {
       const totalAmount = waste.reduce((prev, val) => prev + +val.amount, 0);
 
       if (!group.size) {  // No available waste management methods for group of waste
-        strategy.push({ waste, totalAmount: totalAmount.toFixed(3) });
+        strategies.push({ waste, totalAmount });
         continue;
       }
 
-      const curStrategy = {};
+      const strategy = {};
       // The current group of waste can transportation
       const canTransport = group.has(TRANSPORT_METHOD);
 
       if (canTransport && ownMethodTypes.has(TRANSPORT_METHOD)) {
-        curStrategy.ownTransportations = ownMethods[TRANSPORT_METHOD];
+        strategy.ownTransportations = ownMethods[TRANSPORT_METHOD];
       }
 
       // Other own waste management methods for the current group of waste
       const ownAvailableMethodTypes = intersectSet(group, ownMethodTypes);
       ownAvailableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
       if (ownAvailableMethodTypes.size) {
-        curStrategy.ownMethods = [...ownAvailableMethodTypes].reduce(
+        strategy.ownMethods = [...ownAvailableMethodTypes].reduce(
             (prev, methodType) => [...prev, ...ownMethods[methodType]], []
         );
       }
@@ -161,11 +161,7 @@ class SubjectStorage extends RdfBaseStorage {
       // Try to find the best way of waste management method from other a subjects,
       // if the waste can be transported
       if (!canTransport || !methodTypes.has(TRANSPORT_METHOD)) {
-        strategy.push({
-          waste,
-          totalAmount: totalAmount.toFixed(3),
-          strategy: curStrategy,
-        });
+        strategies.push({ waste, totalAmount, strategy });
         continue;
       }
 
@@ -187,30 +183,21 @@ class SubjectStorage extends RdfBaseStorage {
       });
 
       if (bestCost !== undefined) {
-        curStrategy.bestTransportation = bestTransportation;
-        curStrategy.bestMethod = bestMethod;
-        curStrategy.bestCost = bestCost.toFixed(2);
+        Object.assign(strategy, { bestTransportation, bestMethod, bestCost });
       }
 
-      strategy.push({
-        waste,
-        totalAmount: totalAmount.toFixed(3),
-        strategy: curStrategy,
-      });
+      strategies.push({ waste, totalAmount, strategy });
     }
+
     // Results of searching algorithm of waste management strategy
-    const result = { subject, strategy };
-
-    // Get best total cost of uses best waste management methods for all group of waste
-    const totalBestCost = strategy.reduce((total, v) =>
-        (!v.strategy || !v.strategy.bestCost ? total : +total + +v.strategy.bestCost), null
-    );
-
-    if (totalBestCost) {
-      result.totalBestCost = totalBestCost.toFixed(2);
-    }
-
-    return result;
+    return {
+      subject,
+      strategies,
+      // Get best total cost of uses best waste management methods for all group of waste
+      totalBestCost: strategies.reduce((total, v) =>
+          (!v.strategy || !v.strategy.bestCost ? total : total + v.strategy.bestCost), null
+      ),
+    };
   }
 
   createIndividReducer(key, value, fid) {

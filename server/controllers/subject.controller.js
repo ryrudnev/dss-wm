@@ -2,8 +2,9 @@ import { qsToJson, onSendResp, joinExpanded, onError, flatten } from '../util/ut
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
 import wasteStorage from '../models/waste.storage';
+import Strategy from '../models/strategy.model';
 
-export function allIndivids(req, resp) {
+export function getAllIndivids(req, resp) {
   const qs = qsToJson(req);
   const exp = flatten([qs.expand]);
   return subjectStorage.selectIndivids(qs).then(subject => {
@@ -45,7 +46,7 @@ export function allIndivids(req, resp) {
   }).catch(onSendResp(resp));
 }
 
-export function individ(req, resp) {
+export function getIndivid(req, resp) {
   const { fid } = req.params;
   const exp = flatten([qsToJson(req).expand]);
   return Promise.all([
@@ -78,7 +79,7 @@ export function individ(req, resp) {
   }).catch(onSendResp(resp));
 }
 
-export function allTypes(req, resp) {
+export function getAllTypes(req, resp) {
   return subjectStorage.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
@@ -157,7 +158,7 @@ export function searchStrategy(req, resp) {
       return cur;
     }, {});
 
-    const strategy = subjectStorage.genStrategy({
+    const result = subjectStorage.genStrategy({
       subject: subject.data,
       ownWaste: ownWaste.data,
       ownMethods,
@@ -165,11 +166,16 @@ export function searchStrategy(req, resp) {
       methods,
     });
 
+    if (result) {
+      const strategy = new Strategy(result);
+      strategy.save();
+    }
+
     return onSendResp(resp)({
       success: true,
       code: 200,
       message: 'OK',
-      data: strategy,
+      data: result,
     });
   }).catch(onSendResp(resp));
 }
@@ -194,4 +200,15 @@ export function deleteIndivid(req, resp) {
   const { fid } = req.params;
   return subjectStorage.individExists(`${fid}`, true).then(() => subjectStorage.deleteIndivid(fid))
       .then(onSendResp(resp)).catch(onSendResp(resp));
+}
+
+export function getStrategies(req, resp) {
+  Strategy.find({ 'subject.fid': `${req.params.fid}` })
+      .sort({ created: -1 })
+      .exec((err, res) => onSendResp(resp)({
+        success: true,
+        code: 200,
+        message: 'OK',
+        data: res,
+      }));
 }

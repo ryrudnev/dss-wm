@@ -2,7 +2,7 @@ import { qsToJson, onSendResp, joinExpanded, flatten } from '../util/utils';
 import wasteStorage from '../models/waste.storage';
 import subjectStorage from '../models/subject.storage';
 
-export function allIndivids(req, resp) {
+export function getAllIndivids(req, resp) {
   const qs = qsToJson(req);
   const exp = flatten([qs.expand]);
   return wasteStorage.selectIndivids(qs).then(waste => {
@@ -34,7 +34,7 @@ export function allIndivids(req, resp) {
   }).catch(onSendResp(resp));
 }
 
-export function individ(req, resp) {
+export function getIndivid(req, resp) {
   const { fid } = req.params;
   const exp = flatten([qsToJson(req).expand]);
   return Promise.all([
@@ -57,22 +57,22 @@ export function individ(req, resp) {
   }).catch(onSendResp(resp));
 }
 
-export function allTypes(req, resp) {
+export function getAllTypes(req, resp) {
   return wasteStorage.selectTypes(qsToJson(req))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
-export function origins(req, resp) {
+export function getOrigins(req, resp) {
   return wasteStorage.selectOrigins(qsToJson(req))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
-export function hazardClasses(req, resp) {
+export function getHazardClasses(req, resp) {
   return wasteStorage.selectHazardClasses(qsToJson(req))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
-export function aggregateStates(req, resp) {
+export function getAggregateStates(req, resp) {
   return wasteStorage.selectAggregateStates(qsToJson(req))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
