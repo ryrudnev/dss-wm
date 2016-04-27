@@ -1,7 +1,7 @@
 import { axiomWithPrefix } from '../util/owlUtils';
 import { Deferred } from '../util/utils';
+import { genUid } from '../services/counter';
 import stardog from '../services/stardog';
-import uidCounter from '../services/counter';
 
 function exec(query) {
   return stardog.query({ query });
@@ -116,7 +116,7 @@ export default class RdfBaseStorage {
 
   // Create a new individual of entity
   createIndivid(type, data = {}) {
-    return uidCounter.generateUid().then(uid => {
+    return genUid().then(uid => {
       const fid = axiomWithPrefix(uid);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createIndividReducer(key, data[key], fid);
@@ -132,7 +132,7 @@ export default class RdfBaseStorage {
 
   // Create a new type of entity
   createType(subtype, data = {}) {
-    return uidCounter.generateUid().then(uid => {
+    return genUid().then(uid => {
       const fid = axiomWithPrefix(uid);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createTypeReducer(key, data[key], fid);

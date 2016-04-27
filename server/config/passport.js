@@ -1,6 +1,6 @@
 import passportJwt from 'passport-jwt';
 import _debug from 'debug';
-import User from '../models/user.model';
+import User from '../models/auth/user.model';
 import appConfig from '../config/app.config';
 
 const debug = _debug('app:passport');

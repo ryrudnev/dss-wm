@@ -49,15 +49,14 @@ export function getEqualKeySetmap(setmap, key) {
   return null;
 }
 
-export function head(array, defaults = void 0) {
-  if (!isArray(array)) {
-    return defaults;
-  }
-  return array[0] || defaults;
+export function diffArray(a, b) {
+  const flb = flatten([b]);
+  return flatten([a]).filter(i => flb.indexOf(i) < 0);
 }
 
-export function diff(a, b) {
-  return a.filter(i => b.indexOf(i) < 0);
+export function unionArray(a, b) {
+  const fla = flatten([a]);
+  return [...fla, ...flatten([b]).filter(i => fla.indexOf(i) < 0)];
 }
 
 export function omit(object, ...keys) {
@@ -65,13 +64,13 @@ export function omit(object, ...keys) {
     return {};
   }
   const res = {};
-  for (const key of diff(Object.keys(object), flatten([keys]))) {
+  for (const key of diffArray(Object.keys(object), keys)) {
     res[key] = object[key];
   }
   return res;
 }
 
-export function pluck(object, ...keys) {
+export function pick(object, ...keys) {
   if (!isObject(object)) {
     return {};
   }

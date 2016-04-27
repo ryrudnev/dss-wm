@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import md5 from 'md5';
-import { pluck } from '../util/utils';
+import { pick } from '../util/utils';
 
 const { Schema } = mongoose;
 
@@ -19,7 +19,7 @@ const Strategy = new Schema({
 
 Strategy.pre('save', function (next) {
   if (this.isNew || this.isModified('subject') || this.isModified('strategies')) {
-    const raw = JSON.stringify(pluck(this, ['subject', 'strategies']));
+    const raw = JSON.stringify(pick(this, ['subject', 'strategies']));
     this.hash = md5(raw);
   }
   return next();

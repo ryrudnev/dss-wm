@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
+import User from '../models/auth/user.model';
 import appConfig from '../config/app.config';
 
 export function signup(req, res) {
