@@ -22,7 +22,7 @@ class WasteStorage extends RdfBaseStorage {
       case 'amount':
         return `${fid} ${axiomWithPrefix(key)} ${+value} .`;
       case 'forSubject':
-        return `${axiomWithPrefix(value)} :hasMethod ${fid} .`;
+        return `${axiomWithPrefix(value)} :hasWaste ${fid} .`;
       default:
         return '';
     }
@@ -56,7 +56,7 @@ class WasteStorage extends RdfBaseStorage {
       case 'amount':
         return [`?ind :amount ${+value} .`, '?ind :amount ?amount .'];
       case 'forSubject':
-        return [`${axiomWithPrefix(value)} :hasMethod ?ind .`, '?subject :hasMethod ?ind .'];
+        return [`${axiomWithPrefix(value)} :hasWaste ?ind .`, '?subject :hasWaste ?ind .'];
       case 'type':
         return [`?ind a ${axiomWithPrefix(value)} .`, '?ind a ?type .'];
       default:

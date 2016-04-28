@@ -78,17 +78,20 @@ export function getAggregateStates(req, resp) {
 }
 
 export function createIndivid(req, resp) {
-  const { type } = req.body;
+  const { type, forSubject } = req.body;
   return Promise.all([
     wasteStorage.typeExists(`${type}`, true),
+    subjectStorage.individExists(`${forSubject}`, true),
   ]).then(() => wasteStorage.createIndivid(type, req.body))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
 
 export function updateIndivid(req, resp) {
   const { fid } = req.params;
+  const { forSubject } = req.body;
   return Promise.all([
     wasteStorage.individExists(`${fid}`, true),
+    forSubject ? subjectStorage.individExists(`${forSubject}`, true) : 0,
   ]).then(() => wasteStorage.updateIndivid(fid, req.body))
       .then(onSendResp(resp)).catch(onSendResp(resp));
 }
