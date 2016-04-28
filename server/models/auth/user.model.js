@@ -1,7 +1,9 @@
-import { omit } from '../util/utils';
+import { omit } from '../../util/utils';
+import { genUid } from '../../services/counter';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import Scope from ''
+// import Scope from './scope.model';
+// import Role from './role.model';
 
 const { Schema } = mongoose;
 
@@ -14,13 +16,17 @@ const PRIVATE_FIELDS = [
 ];
 
 const UserSchema = new Schema({
+  _id: Number,
+  email: String,
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  roles: []
+  roles: [{ type: String, ref: 'Role' }],
+  scopes: [{ type: String, ref: 'Scope' }],
+  subjects: [String],
 });
 
 UserSchema.pre('save', function (next) {
-  if (this.isModified('password') || this.isNew) {
+  const hashPass = () => {
     bcrypt.genSalt(SALT_ROUNDS, (saltErr, salt) => {
       if (saltErr) {
         return next(saltErr);
@@ -33,13 +39,18 @@ UserSchema.pre('save', function (next) {
         next();
       });
     });
-  } else {
-    return next();
-  }
-});
+  };
 
-UserSchema.virtual('userId').get(function () {
-  return this.id;
+  if (this.isNew) {
+    genUid('userId').then(id => {
+      this._id = id;
+      hashPass();
+    });
+  } else if (this.isModified('password')) {
+    hashPass();
+  } else {
+    next();
+  }
 });
 
 UserSchema.methods.comparePassword = function (password, cb) {
@@ -55,6 +66,8 @@ UserSchema.methods.toPublicJSON = function () {
   return omit(this.toJSON(), PRIVATE_FIELDS);
 };
 
-UserSchema.statics = {};
+UserSchema.methods.getScopes = function () {
+  // TODO: get all scopes for current user
+};
 
 export default mongoose.model('User', UserSchema);
