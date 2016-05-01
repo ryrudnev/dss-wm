@@ -1,6 +1,3 @@
-import _debug from 'debug';
-const debug = _debug('app:server');
-
 export function isArray(object) {
   return Array.isArray(object);
 }
@@ -83,25 +80,6 @@ export function pick(object, ...keys) {
   return res;
 }
 
-export function qsToJson({ query }) {
-  return Object.keys(query).reduce((res, val) => {
-    const cur = res;
-    let value = query[val];
-    if (typeof value === 'string') {
-      const isJson = value.startsWith('{') || value.startsWith('[');
-      if (isJson) {
-        try {
-          value = JSON.parse(value);
-        } catch (e) {
-          return cur;
-        }
-      }
-    }
-    cur[val] = value;
-    return cur;
-  }, {});
-}
-
 export function joinExpanded(joinField, expanded, isSingle) {
   return expanded.reduce((prev, val) => {
     const cur = prev;
@@ -118,19 +96,4 @@ export function joinExpanded(joinField, expanded, isSingle) {
     }
     return cur;
   }, {});
-}
-
-export function onSendResp(resp) {
-  return res => {
-    if (res instanceof Error) {
-      debug(res);
-      return resp.status(500).send(JSON.stringify(res));
-    }
-    debug(`The server sent response with ${res.code} code and message '${res.message}'`);
-    return resp.status(res.code).json(res);
-  };
-}
-
-export function onError(res) {
-  return new Promise((resolve, reject) => reject(res));
 }

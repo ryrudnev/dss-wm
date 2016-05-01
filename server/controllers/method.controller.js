@@ -1,9 +1,10 @@
-import { qsToJson, onSendResp, joinExpanded, flatten } from '../util/utils';
+import { joinExpanded, flatten } from '../util/utils';
+import { respondOk, respondError } from '../util/expressUtils';
 import methodStorage from '../models/method.storage';
 import subjectStorage from '../models/subject.storage';
 
-export function getAllIndivids(req, resp) {
-  const qs = qsToJson(req);
+export function getAllIndivids(req, res) {
+  const { qs } = req;
   const exp = flatten([qs.expand]);
   return methodStorage.selectIndivids(qs).then(method => {
     const methodFids = method.data.map(m => m.fid);
@@ -30,13 +31,13 @@ export function getAllIndivids(req, resp) {
         return curMethod;
       });
     }
-    return onSendResp(resp)(method);
-  }).catch(onSendResp(resp));
+    respondOk.call(res, method);
+  }).catch(err => respondError.call(res, err));
 }
 
-export function getIndivid(req, resp) {
+export function getIndivid(req, res) {
   const { fid } = req.params;
-  const exp = flatten([qsToJson(req).expand]);
+  const exp = flatten([req.qs.expand]);
   return Promise.all([
     methodStorage.selectIndividByFid(fid),
     exp.includes('types') ? methodStorage.selectTypes({ individs: fid }) : 0,
@@ -53,35 +54,40 @@ export function getIndivid(req, resp) {
     if (typeof subjects !== 'boolean') {
       method.data.subject = subjects[fid] || {};
     }
-    return onSendResp(resp)(method);
-  }).catch(onSendResp(resp));
+    respondOk.call(res, method);
+  }).catch(err => respondError.call(res, err));
 }
 
-export function getAllTypes(req, resp) {
-  return methodStorage.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
+export function getAllTypes(req, res) {
+  return methodStorage.selectTypes(req.qs)
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function createIndivid(req, resp) {
+export function createIndivid(req, res) {
   const { type, forSubject } = req.body;
   return Promise.all([
     methodStorage.typeExists(`${type}`, true),
     subjectStorage.individExists(`${forSubject}`, true),
   ]).then(() => methodStorage.createIndivid(type, req.body))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function updateIndivid(req, resp) {
+export function updateIndivid(req, res) {
   const { fid } = req.params;
   const { forSubject } = req.body;
   return Promise.all([
     methodStorage.individExists(`${fid}`, true),
     forSubject ? subjectStorage.individExists(`${forSubject}`, true) : 0,
   ]).then(() => methodStorage.updateIndivid(fid, req.body))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function deleteIndivid(req, resp) {
+export function deleteIndivid(req, res) {
   const { fid } = req.params;
   return methodStorage.individExists(`${fid}`, true).then(() => methodStorage.deleteIndivid(fid))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }

@@ -1,22 +1,23 @@
-import mongoose from 'mongoose';
 import _debug from 'debug';
 import appConfig from './app.config';
 
 const debug = _debug('app:mongodb');
 
-// For supporting full promises
-// mongoose.Promise = Promise;
+export default (mongoose) => {
+  // For supporting full promises
+  mongoose.Promise = Promise; // eslint-disable-line no-param-reassign
 
-export default () => {
+  const onConnect = (err) => {
+    if (err) {
+      debug(`Error connecting to ${appConfig.mongodb.url}`);
+      debug(`${err}`);
+    } else {
+      debug(`Succeeded in connecting to ${appConfig.mongodb.url}`);
+    }
+  };
+
   const connect = () => {
-    mongoose.connect(appConfig.mongodb.url, (err) => {
-      if (err) {
-        debug(`Error connecting to ${appConfig.mongodb.url}`);
-        debug(`${err}`);
-      } else {
-        debug(`Succeeded in connecting to ${appConfig.mongodb.url}`);
-      }
-    });
+    mongoose.connect(appConfig.mongodb.url, { promiseLibrary: Promise }, onConnect);
   };
 
   connect();

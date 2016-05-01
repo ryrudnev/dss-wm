@@ -1,11 +1,12 @@
-import { qsToJson, onSendResp, joinExpanded, onError, flatten } from '../util/utils';
+import { joinExpanded, flatten } from '../util/utils';
+import { respondOk, respondError } from '../util/expressUtils';
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
 import wasteStorage from '../models/waste.storage';
 import Strategy from '../models/strategy.model';
 
-export function getAllIndivids(req, resp) {
-  const qs = qsToJson(req);
+export function getAllIndivids(req, res) {
+  const { qs } = req;
   const exp = flatten([qs.expand]);
   return subjectStorage.selectIndivids(qs).then(subject => {
     const subjectFids = subject.data.map(s => s.fid);
@@ -42,13 +43,13 @@ export function getAllIndivids(req, resp) {
         return curSubject;
       });
     }
-    return onSendResp(resp)(subject);
-  }).catch(onSendResp(resp));
+    respondOk.call(res, subject);
+  }).catch(err => respondError.call(res, err));
 }
 
-export function getIndivid(req, resp) {
+export function getIndivid(req, res) {
   const { fid } = req.params;
-  const exp = flatten([qsToJson(req).expand]);
+  const exp = flatten([req.qs.expand]);
   return Promise.all([
     subjectStorage.selectIndividByFid(fid),
     exp.includes('waste') ? wasteStorage.selectIndivids({ forSubjects: fid }) : 0,
@@ -75,16 +76,18 @@ export function getIndivid(req, resp) {
     if (typeof waste !== 'boolean') {
       subject.data.waste = waste[fid];
     }
-    return onSendResp(resp)(subject);
-  }).catch(onSendResp(resp));
+    respondOk.call(res, subject);
+  }).catch(err => respondError.call(res, err));
 }
 
-export function getAllTypes(req, resp) {
-  return subjectStorage.selectTypes(qsToJson(req)).then(onSendResp(resp)).catch(onSendResp(resp));
+export function getAllTypes(req, res) {
+  return subjectStorage.selectTypes(req.qs)
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
 // Generate waste management strategy for the subject by FID
-export function searchStrategy(req, resp) {
+export function searchStrategy(req, res) {
   const subjectFid = req.params.fid;
 
   return Promise.all([
@@ -95,31 +98,31 @@ export function searchStrategy(req, resp) {
     try {
       JSON.parse(subject.data.coordinates);
     } catch (err) {
-      return onError({
+      return new Promise((_, reject) => reject({
         success: false,
         code: 500,
         message: 'This the subject has not coordinates',
         data: null,
-      });
+      }));
     }
 
     if (!ownWaste.data.length) {
-      return onError({
+      return new Promise((_, reject) => reject({
         success: false,
         code: 404,
         message: 'The subject has not a waste',
         data: null,
-      });
+      }));
     }
     const wasteFids = ownWaste.data.map(w => w.fid);
 
     if (!allMethods.data.length) {
-      return onError({
+      return new Promise((_, reject) => reject({
         success: false,
         code: 404,
         message: 'Available waste management methods not found',
         data: null,
-      });
+      }));
     }
     const methodFids = allMethods.data.map(m => m.fid);
 
@@ -171,44 +174,47 @@ export function searchStrategy(req, resp) {
       strategy.save();
     }
 
-    return onSendResp(resp)({
+    respondOk.call(res, {
       success: true,
       code: 200,
       message: 'OK',
       data: result,
     });
-  }).catch(onSendResp(resp));
+  }).catch(err => respondError.call(res, err));
 }
 
-export function createIndivid(req, resp) {
+export function createIndivid(req, res) {
   const { type } = req.body;
   return Promise.all([
     subjectStorage.typeExists(`${type}`, true),
   ]).then(() => subjectStorage.createIndivid(type, req.body))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function updateIndivid(req, resp) {
+export function updateIndivid(req, res) {
   const { fid } = req.params;
   return Promise.all([
     subjectStorage.individExists(`${fid}`, true),
   ]).then(() => subjectStorage.updateIndivid(fid, req.body))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function deleteIndivid(req, resp) {
+export function deleteIndivid(req, res) {
   const { fid } = req.params;
   return subjectStorage.individExists(`${fid}`, true).then(() => subjectStorage.deleteIndivid(fid))
-      .then(onSendResp(resp)).catch(onSendResp(resp));
+      .then(data => respondOk.call(res, data))
+      .catch(err => respondError.call(res, err));
 }
 
-export function getStrategies(req, resp) {
+export function getStrategies(req, res) {
   Strategy.find({ 'subject.fid': `${req.params.fid}` })
       .sort({ created: -1 })
-      .exec((err, res) => onSendResp(resp)({
+      .exec((err, data) => respondOk.call(res, {
         success: true,
         code: 200,
         message: 'OK',
-        data: res,
+        data,
       }));
 }
