@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 import { flatten, isObject } from '../../util/utils';
 
-const { Schema } = mongoose;
-
 const KEY = '_id';
 const EXTRACT_REGEX = /^(\w+):(\w+)$/;
+
+const { Schema } = mongoose;
+
+const ScopeSchema = new Schema({
+  [KEY]: { type: String, unique: true, required: true },
+  desc: String,
+});
 
 const extract = (key) => {
   if (!key) {
@@ -14,38 +19,31 @@ const extract = (key) => {
   return ext ? { action: ext[1], scope: ext[2] } : { scope: key };
 };
 
-export function scopesToObj(scopes, withDesc) {
-  return flatten([scopes]).reduce((prev, it) => {
-    const cur = prev;
-    if (!isObject(it)) {
-      return cur;
+export function scopesToObj(scopes) {
+  return flatten([scopes]).reduce((prev, item) => {
+    if (!isObject(item)) {
+      return prev;
     }
-    const { scope, action } = extract(it[KEY]);
-    if (!cur[scope]) {
-      cur[scope] = [];
+    const { scope, action } = extract(item[KEY]);
+    if (!prev[scope]) {
+      prev[scope] = [];
     }
-    cur[scope].push(withDesc ? { action, desc: it.desc } : action);
-    return cur;
+    prev[scope].push({ action, desc: item.desc });
+    return prev;
   }, {});
 }
 
 export function objToScopes(obj) {
-  return Object.keys(obj).reduce((prev, k) => {
-    const cur = prev;
-    if (!obj[k]) {
-      return cur;
+  return Object.keys(obj).reduce((prev, key) => {
+    if (!obj[key]) {
+      return prev;
     }
-    for (const a of obj[k]) {
-      cur.push(isObject(a) ? { [KEY]: `${a.action}:${k}`, desc: a.desc } : { [KEY]: `${a}:${k}` });
+    for (const item of obj[key]) {
+      prev.push({ [KEY]: `${item.action}:${key}`, desc: item.desc });
     }
-    return cur;
+    return prev;
   }, []);
 }
-
-const ScopeSchema = new Schema({
-  [KEY]: { type: String, unique: true, required: true },
-  desc: String,
-});
 
 ScopeSchema.virtual('extracted').get(function () {
   return extract(this[KEY]);

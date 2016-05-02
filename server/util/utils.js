@@ -8,9 +8,9 @@ export function isObject(object) {
 
 export class Deferred {
   constructor() {
-    this.promise = new Promise((resolve, reject) => {
-      this.reject = reject;
-      this.resolve = resolve;
+    this.promise = new Promise((res, rej) => {
+      this.reject = res;
+      this.resolve = rej;
     });
   }
 }
@@ -96,4 +96,12 @@ export function joinExpanded(joinField, expanded, isSingle) {
     }
     return cur;
   }, {});
+}
+
+export function reject(rejected) {
+  return new Promise((_, rej) => rej(rejected));
+}
+
+export function resolve(resolved) {
+  return new Promise((res) => res(resolved));
 }

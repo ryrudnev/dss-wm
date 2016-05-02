@@ -1,5 +1,5 @@
 import _debug from 'debug';
-import { Deferred } from '../util/utils';
+import { resolve, reject } from '../util/utils';
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
@@ -19,31 +19,16 @@ export default Counter;
 
 export function genUid(name = 'uid') {
   debug(`Generating a new unique ID for ${name}`);
-  const dfd = new Deferred();
-  Counter.findByIdAndUpdate(name, { $inc: { seq: 1 } }, { upsert: true },
-      (err, doc) => {
-        if (err) {
-          debug(`Generating unique ID error for ${name}`);
-          debug(`${err}`);
-          return dfd.reject(err);
-        }
+
+  return Counter.findByIdAndUpdate(name, { $inc: { seq: 1 } }, { upsert: true }).exec()
+      .then(doc => {
         const uid = doc.seq;
         debug(`Generated unique ID for ${name} = ${uid}`);
-        dfd.resolve(uid);
-      }
-  );
-  return dfd.promise;
-}
-
-export function genIdForSchema(schemaName, field = '_id') {
-  return (next) => {
-    if (this.isNew) {
-      genUid(`${schemaName}Id`).then(id => {
-        this[field] = id;
-        next();
+        return resolve(uid);
+      })
+      .catch(err => {
+        debug(`Generating unique ID error for ${name}`);
+        debug(`Reason: ${err}`);
+        return reject(err);
       });
-    } else {
-      next();
-    }
-  };
 }

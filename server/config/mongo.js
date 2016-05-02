@@ -5,14 +5,14 @@ const debug = _debug('app:mongodb');
 
 export default (mongoose) => {
   // For supporting full promises
-  mongoose.Promise = Promise; // eslint-disable-line no-param-reassign
+  mongoose.Promise = Promise;
 
   const onConnect = (err) => {
     if (err) {
       debug(`Error connecting to ${appConfig.mongodb.url}`);
       debug(`${err}`);
     } else {
-      debug(`Succeeded in connecting to ${appConfig.mongodb.url}`);
+      debug(`Successfully connecting to ${appConfig.mongodb.url}`);
     }
   };
 

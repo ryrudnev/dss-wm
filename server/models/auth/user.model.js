@@ -2,8 +2,6 @@ import { omit } from '../../util/utils';
 import { genUid } from '../../services/counter';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-// import Scope from './scope.model';
-// import Role from './role.model';
 
 const { Schema } = mongoose;
 
@@ -45,7 +43,7 @@ UserSchema.pre('save', function (next) {
     genUid('userId').then(id => {
       this._id = id;
       hashPass();
-    });
+    }).catch(err => next(err));
   } else if (this.isModified('password')) {
     hashPass();
   } else {

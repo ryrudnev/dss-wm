@@ -5,6 +5,7 @@ import { pick } from '../util/utils';
 const { Schema } = mongoose;
 
 const Strategy = new Schema({
+  _id: { type: String, unique: true },
   created: { type: Date, default: Date.now },
   subject: {
     title: String,
@@ -14,13 +15,12 @@ const Strategy = new Schema({
   },
   strategies: [],
   totalBestCost: Number,
-  hash: { type: String, unique: true },
 });
 
 Strategy.pre('save', function (next) {
   if (this.isNew || this.isModified('subject') || this.isModified('strategies')) {
     const raw = JSON.stringify(pick(this, ['subject', 'strategies']));
-    this.hash = md5(raw);
+    this._id = md5(raw);
   }
   return next();
 });

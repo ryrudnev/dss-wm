@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as Controller from '../controllers/waste.controller';
+import * as Controller from '../../controllers/waste.controller';
 
 const router = new Router();
 

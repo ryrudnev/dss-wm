@@ -8,24 +8,27 @@ import cors from 'cors';
 import mongoInit from './config/mongo';
 import passportInit from './config/passport';
 import appConfig from './config/app.config';
-import api from './routes/api';
-import auth from './routes/auth.routes';
 import { qsParser } from './util/expressUtils';
+import api from './routes/api';
 
 const debug = _debug('app:server');
 
 // Connect to MongoDB using mongoose
 mongoInit(mongoose);
 
+// Initialize seeds if needed
+import initSeeds from './config/seeds';
+initSeeds();
+
 // Initialize the express application
 const app = new Express();
-
-app.use(methodOverride());
 
 // Only for development mode
 if (appConfig.env === 'development') {
   //
 }
+
+app.use(methodOverride());
 
 // Bootstrap passport plugin settings
 passportInit(passport);
@@ -39,23 +42,7 @@ app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(qsParser());
 
 // API endpoints with authentication via passport
-app.use('/api', (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (user) {
-      return next();
-    }
-    return res.status(403).json({
-      code: 403,
-      success: false,
-      message: 'Token could not be authenticated',
-      data: null,
-    });
-  })(req, res, next);
-});
-app.use('/api', api);
-
-// Routes for an authentication
-app.use('/auth', auth);
+app.use(api(passport));
 
 // Run server
 const server = app.listen(appConfig.server.port, error => {

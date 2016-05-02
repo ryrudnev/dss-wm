@@ -1,4 +1,4 @@
-import { joinExpanded, flatten } from '../util/utils';
+import { joinExpanded, flatten, reject } from '../util/utils';
 import { respondOk, respondError } from '../util/expressUtils';
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
@@ -98,31 +98,16 @@ export function searchStrategy(req, res) {
     try {
       JSON.parse(subject.data.coordinates);
     } catch (err) {
-      return new Promise((_, reject) => reject({
-        success: false,
-        code: 500,
-        message: 'This the subject has not coordinates',
-        data: null,
-      }));
+      return reject({ message: 'This the subject has not coordinates' });
     }
 
     if (!ownWaste.data.length) {
-      return new Promise((_, reject) => reject({
-        success: false,
-        code: 404,
-        message: 'The subject has not a waste',
-        data: null,
-      }));
+      return reject({ message: 'The subject has not a waste' });
     }
     const wasteFids = ownWaste.data.map(w => w.fid);
 
     if (!allMethods.data.length) {
-      return new Promise((_, reject) => reject({
-        success: false,
-        code: 404,
-        message: 'Available waste management methods not found',
-        data: null,
-      }));
+      return reject({ message: 'Available waste management methods not found' });
     }
     const methodFids = allMethods.data.map(m => m.fid);
 
@@ -174,12 +159,7 @@ export function searchStrategy(req, res) {
       strategy.save();
     }
 
-    respondOk.call(res, {
-      success: true,
-      code: 200,
-      message: 'OK',
-      data: result,
-    });
+    respondOk.call(res, { data: result });
   }).catch(err => respondError.call(res, err));
 }
 
@@ -209,12 +189,7 @@ export function deleteIndivid(req, res) {
 }
 
 export function getStrategies(req, res) {
-  Strategy.find({ 'subject.fid': `${req.params.fid}` })
-      .sort({ created: -1 })
-      .exec((err, data) => respondOk.call(res, {
-        success: true,
-        code: 200,
-        message: 'OK',
-        data,
-      }));
+  Strategy.find({ 'subject.fid': `${req.params.fid}` }).sort({ created: -1 }).exec()
+      .then(data => respondOk.call(res, { data }))
+      .catch(err => respondError.call(res, err));
 }
