@@ -26,12 +26,11 @@ export function parseStardogResponse(body, resp) {
   const { bindings } = results;
   return {
     ...res,
-    data: bindings.map(b => Object.keys(b).reduce(
-      (r, val) => {
-        const cur = r;
-        cur[val] = b[val].value;
-        return cur;
-      }, {})) || [],
+    data: bindings.map(b => Object.keys(b).reduce((r, val) => {
+      const cur = r;
+      cur[val] = b[val].value;
+      return cur;
+    }, {})) || [],
   };
 }
 
@@ -52,7 +51,6 @@ class Stardog {
     this.connection.query({ ...options, database: appConfig.stardog.dbName },
       (body, resp) => {
         debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
-
         const res = parseResult(body, resp);
         dfd[res.success ? 'resolve' : 'reject'](res);
       });

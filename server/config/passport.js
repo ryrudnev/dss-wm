@@ -17,16 +17,19 @@ export default passport => {
 
   passport.use(new Strategy(options, (jwtPayload, done) => {
     debug(`JWT payload: ${JSON.stringify(jwtPayload)}`);
-    User.findOne({ username: jwtPayload.sub }, (err, user) => {
-      if (err) {
-        debug(`User verifying error: ${err}`);
-        return done(err, false);
-      }
-      if (user) {
-        return done(null, user, 'User successfully verified');
-      }
 
-      return done(null, false, 'User not verified');
+    User.findOne({ username: jwtPayload.sub }).exec().then(user => {
+      if (!user) {
+        return done(null, false, 'User not verified');
+      }
+      // get the user permissions and save it to the user model
+      user.calcPermissions().then(permissions => {
+        user.permissions = permissions;
+        done(null, user, 'User successfully verified');
+      });
+    }).catch(err => {
+      debug(`User verifying error: ${err}`);
+      done(err, false);
     });
   }));
 };

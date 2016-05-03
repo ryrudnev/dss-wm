@@ -9,4 +9,7 @@ router.post('/signup', Controller.signup);
 // Getting the JWT token by an username and password
 router.post('/token', Controller.auth);
 
+// Getting permissions for an extracted user from the JWT token
+router.get('/permissions', Controller.getPermissions);
+
 export default router;

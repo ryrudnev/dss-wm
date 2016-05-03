@@ -9,8 +9,8 @@ export function isObject(object) {
 export class Deferred {
   constructor() {
     this.promise = new Promise((res, rej) => {
-      this.reject = res;
-      this.resolve = rej;
+      this.resolve = res;
+      this.reject = rej;
     });
   }
 }
@@ -19,6 +19,19 @@ export function flatten(list) {
   return list.reduce(
       (a, b) => a.concat(isArray(b) ? flatten(b) : b), []
   );
+}
+
+export function arrayIndexOf(arr, val) {
+  for (let i = 0; i < arr.length; i++) {
+    const a = arr[i];
+    if (a === val) {
+      return i;
+    }
+    if (isObject(a) && isObject(val) && JSON.stringify(a) === JSON.stringify(val)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 // Intersection (a ∩ b): create a set that contains those elements of set a that are also in set b.
@@ -48,12 +61,22 @@ export function getEqualKeySetmap(setmap, key) {
 
 export function diffArray(a, b) {
   const flb = flatten([b]);
-  return flatten([a]).filter(i => flb.indexOf(i) < 0);
+  return flatten([a]).filter(i => arrayIndexOf(flb, i) < 0);
 }
 
 export function unionArray(a, b) {
   const fla = flatten([a]);
-  return [...fla, ...flatten([b]).filter(i => fla.indexOf(i) < 0)];
+  return [...fla, ...flatten([b]).filter(i => arrayIndexOf(fla, i) < 0)];
+}
+
+export function uniqueArray(arr) {
+  const uniq = [];
+  for (const a of flatten(arr)) {
+    if (arrayIndexOf(uniq, a) < 0) {
+      uniq.push(a);
+    }
+  }
+  return uniq;
 }
 
 export function omit(object, ...keys) {

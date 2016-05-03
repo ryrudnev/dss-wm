@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import User from '../../models/auth/user.model';
-import { resolve } from '../../util/utils';
+import { resolve, Deferred } from '../../util/utils';
 import _debug from 'debug';
 
 const debug = _debug('app:seeds');
@@ -30,17 +30,17 @@ export default {
         },
       ];
 
-      return new Promise((res, rej) => {
-        User.create(seeds, (err) => {
-          if (err) {
-            debug(`Error! Seeds for the User Model are missing. ${err}`);
-            rej(err);
-          } else {
-            debug('OK! Seeds for the User Model were successfully stored in db');
-            res();
-          }
-        });
+      const dfd = new Deferred();
+      User.create(seeds, (err) => {
+        if (err) {
+          debug(`Error! Seeds for the User Model are missing. ${err}`);
+          dfd.reject(err);
+        } else {
+          debug('OK! Seeds for the User Model were successfully stored in db');
+          dfd.resolve();
+        }
       });
+      return dfd.promise;
     });
   },
 };

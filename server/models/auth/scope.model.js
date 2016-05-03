@@ -1,14 +1,22 @@
 import mongoose from 'mongoose';
-import { flatten, isObject } from '../../util/utils';
+import { flatten, isObject, omit } from '../../util/utils';
 
-const KEY = '_id';
 const EXTRACT_REGEX = /^(\w+):(\w+)$/;
 
 const { Schema } = mongoose;
 
 const ScopeSchema = new Schema({
-  [KEY]: { type: String, unique: true, required: true },
+  _id: { type: String, unique: true, required: true },
   desc: String,
+});
+
+ScopeSchema.set('toJSON', {
+  getters: true,
+  virtuals: true,
+  versionKey: false,
+  transform(doc, ret /* , options */) {
+    return { ...omit(ret, ['_id']), id: ret._id };
+  },
 });
 
 const extract = (key) => {
@@ -24,7 +32,7 @@ export function scopesToObj(scopes) {
     if (!isObject(item)) {
       return prev;
     }
-    const { scope, action } = extract(item[KEY]);
+    const { scope, action } = extract(item._id);
     if (!prev[scope]) {
       prev[scope] = [];
     }
@@ -39,22 +47,18 @@ export function objToScopes(obj) {
       return prev;
     }
     for (const item of obj[key]) {
-      prev.push({ [KEY]: `${item.action}:${key}`, desc: item.desc });
+      prev.push({ _id: `${item.action}:${key}`, desc: item.desc });
     }
     return prev;
   }, []);
 }
 
-ScopeSchema.virtual('extracted').get(function () {
-  return extract(this[KEY]);
-});
-
 ScopeSchema.statics.getByScope = function (scope, cb) {
-  return this.find({ [KEY]: new RegExp(`^\w+:${scope}$`) }, cb);
+  return this.find({ _id: new RegExp(`^\w+:${scope}$`) }, cb);
 };
 
 ScopeSchema.statics.getByAction = function (action, cb) {
-  return this.find({ [KEY]: new RegExp(`^${action}:\w+$`) }, cb);
+  return this.find({ _id: new RegExp(`^${action}:\w+$`) }, cb);
 };
 
 export default mongoose.model('Scope', ScopeSchema);

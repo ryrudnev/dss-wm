@@ -189,7 +189,8 @@ export function deleteIndivid(req, res) {
 }
 
 export function getStrategies(req, res) {
-  Strategy.find({ 'subject.fid': `${req.params.fid}` }).sort({ created: -1 }).exec()
+  Strategy.find({ 'subject.fid': `${req.params.fid}` })
+      .sort({ created: -1 }).exec()
       .then(data => respondOk.call(res, { data }))
       .catch(err => respondError.call(res, err));
 }

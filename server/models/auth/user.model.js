@@ -1,17 +1,13 @@
-import { omit } from '../../util/utils';
+import { omit, resolve, uniqueArray } from '../../util/utils';
 import { genUid } from '../../services/counter';
 import mongoose from 'mongoose';
+import mongooseDeepPopulate from 'mongoose-deep-populate';
 import bcrypt from 'bcrypt';
 
 const { Schema } = mongoose;
 
 // Rounds constant for generating salt
 const SALT_ROUNDS = 10;
-
-// Private fields
-const PRIVATE_FIELDS = [
-  'password',
-];
 
 const UserSchema = new Schema({
   _id: Number,
@@ -22,6 +18,8 @@ const UserSchema = new Schema({
   scopes: [{ type: String, ref: 'Scope' }],
   subjects: [String],
 });
+const deepPopulate = mongooseDeepPopulate(mongoose);
+UserSchema.plugin(deepPopulate /* , {} */);
 
 UserSchema.pre('save', function (next) {
   const hashPass = () => {
@@ -51,21 +49,35 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-UserSchema.methods.comparePassword = function (password, cb) {
-  bcrypt.compare(password, this.password, (err, isMatch) => {
-    if (err) {
-      return cb(err);
-    }
-    cb(null, isMatch);
+UserSchema.set('toJSON', {
+  getters: true,
+  virtuals: true,
+  versionKey: false,
+  transform(doc, ret /* , options */) {
+    return { ...omit(ret, ['_id', 'password']), id: ret._id };
+  },
+});
+
+UserSchema.methods.comparePassword = function (password) {
+  return new Promise((res, rej) => {
+    bcrypt.compare(password, this.password, (err, isMatch) => {
+      if (err || !isMatch) {
+        return rej(err);
+      }
+      res();
+    });
   });
 };
 
-UserSchema.methods.toPublicJSON = function () {
-  return omit(this.toJSON(), PRIVATE_FIELDS);
-};
-
-UserSchema.methods.getScopes = function () {
-  // TODO: get all scopes for current user
+UserSchema.methods.calcPermissions = function () {
+  return this.deepPopulate('scopes roles.scopes').then(() => {
+    let { roles, scopes } = this.toJSON();
+    if (!scopes.length) {
+      scopes = uniqueArray(roles.reduce((prev, role) => [...prev, ...role.scopes], []));
+    }
+    roles = roles.map(r => omit(r, 'scopes'));
+    return resolve({ roles, scopes });
+  });
 };
 
 export default mongoose.model('User', UserSchema);
