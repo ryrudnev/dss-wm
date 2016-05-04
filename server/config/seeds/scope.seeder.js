@@ -1,4 +1,4 @@
-import Scope, { objToScopes } from '../../models/auth/scope.model';
+import Scope, { fromObjectToScopes } from '../../models/auth/scope.model';
 import { resolve, Deferred } from '../../util/utils';
 import _debug from 'debug';
 
@@ -13,7 +13,7 @@ export default {
         return resolve();
       }
 
-      const seeds = objToScopes({
+      const seeds = fromObjectToScopes({
         users: [
           { action: 'signup', desc: 'Регестрация новых пользователей' },
         ],
