@@ -21,12 +21,12 @@ export default {
           scopes: [
             'signup:users',
             'read:methods_individuals', 'create:methods_individuals', 'update:methods_individuals', 'delete:methods_individuals',
-            'read:methods_types',
+            'read:methods_types', 'create:methods_types', 'update:methods_types', 'delete:methods_types',
             'read:subjects_individuals', 'create:subjects_individuals', 'update:subjects_individuals', 'delete:subjects_individuals',
-            'read:subjects_types',
+            'read:subjects_types', 'create:subjects_types', 'update:subjects_types', 'delete:subjects_types',
             'read:waste_individuals', 'create:waste_individuals', 'update:waste_individuals', 'delete:waste_individuals',
             'read:waste_types', 'create:waste_types', 'update:waste_types', 'delete:waste_types',
-            'read:waste_evidence',
+            'waste_evidence',
           ],
         },
         {

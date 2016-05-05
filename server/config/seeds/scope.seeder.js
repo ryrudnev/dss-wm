@@ -18,11 +18,6 @@ export default {
           { action: 'signup', desc: 'Регестрация новых пользователей' },
         ],
 
-        user_subjects: [
-          { action: 'read', desc: 'Получение субъектов пользователя' },
-          { action: 'update', desc: 'Обновление субъектов пользователя' },
-        ],
-
         methods_individuals: [
           { action: 'read', desc: 'Получение индивидов сущности Метод' },
           { action: 'create', desc: 'Создание индивидов сущности Метод' },
@@ -32,6 +27,9 @@ export default {
 
         methods_types: [
           { action: 'read', desc: 'Получение типов сущности Метод' },
+          { action: 'create', desc: 'Создание типов сущности Метод' },
+          { action: 'update', desc: 'Обновление типов сущности Метод' },
+          { action: 'delete', desc: 'Удаление типов сущности Метод' },
         ],
 
         subjects_individuals: [
@@ -43,6 +41,9 @@ export default {
 
         subjects_types: [
           { action: 'read', desc: 'Получение типов сущности Субъект' },
+          { action: 'create', desc: 'Создание типов сущности Субъект' },
+          { action: 'update', desc: 'Обновление типов сущности Субъект' },
+          { action: 'delete', desc: 'Удаление типов сущности Субъект' },
         ],
 
         waste_individuals: [
@@ -60,7 +61,7 @@ export default {
         ],
 
         waste_evidence: [
-          { action: 'read', desc: 'Получение признаков сущности Отходы' },
+          { desc: 'Вспомогательные признака сущности Отходы' },
         ],
       });
 
