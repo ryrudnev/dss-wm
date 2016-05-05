@@ -20,8 +20,7 @@ export function getAllIndivids(req, res) {
       types = !types || joinExpanded('methodFid', types.data);
       subjects = !subjects || joinExpanded('methodFid', subjects.data, true);
 
-      method.data = method.data.map(m => {
-        const curMethod = m;
+      method.data = method.data.map(curMethod => {
         if (typeof types !== 'boolean') {
           curMethod.types = types[curMethod.fid] || [];
         }
@@ -39,7 +38,7 @@ export function getIndivid(req, res) {
   const { fid } = req.params;
   const exp = flatten([req.qs.expand]);
   return Promise.all([
-    methodStorage.selectIndividByFid(fid),
+    methodStorage.selectIndividByFid(fid, req.qs),
     exp.includes('types') ? methodStorage.selectTypes({ individs: fid }) : 0,
     exp.includes('subject') ? subjectStorage.selectIndivids({ byMethods: fid }) : 0,
   ]).then(results => {
@@ -67,8 +66,8 @@ export function getAllTypes(req, res) {
 export function createIndivid(req, res) {
   const { type, forSubject } = req.body;
   return Promise.all([
-    methodStorage.typeExists(`${type}`, true),
-    subjectStorage.individExists(`${forSubject}`, true),
+    methodStorage.typeExists(`${type}`, { falseAsReject: true }),
+    subjectStorage.individExists(`${forSubject}`, { falseAsReject: true }),
   ]).then(() => methodStorage.createIndivid(type, req.body))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
@@ -78,16 +77,17 @@ export function updateIndivid(req, res) {
   const { fid } = req.params;
   const { forSubject } = req.body;
   return Promise.all([
-    methodStorage.individExists(`${fid}`, true),
-    forSubject ? subjectStorage.individExists(`${forSubject}`, true) : 0,
+    methodStorage.individExists(`${fid}`, { falseAsReject: true }),
+    forSubject ? subjectStorage.individExists(`${forSubject}`, { falseAsReject: true }) : 0,
   ]).then(() => methodStorage.updateIndivid(fid, req.body))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
 }
 
 export function deleteIndivid(req, res) {
-  const { fid } = req.params;
-  return methodStorage.individExists(`${fid}`, true).then(() => methodStorage.deleteIndivid(fid))
+  const { fid, forSubject } = req.params;
+  return methodStorage.individExists(`${fid}`, { falseAsReject: true })
+      .then(() => methodStorage.deleteIndivid(fid, { forSubject, falseAsReject: true }))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
 }

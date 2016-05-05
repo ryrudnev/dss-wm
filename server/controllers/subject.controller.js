@@ -26,8 +26,7 @@ export function getAllIndivids(req, res) {
       locations = !locations || joinExpanded('subjectFid', locations.data);
       types = !types || joinExpanded('subjectFid', types.data);
 
-      subject.data = subject.data.map(s => {
-        const curSubject = s;
+      subject.data = subject.data.map(curSubject => {
         if (typeof waste !== 'boolean') {
           curSubject.waste = waste[curSubject.fid] || [];
         }
@@ -123,8 +122,7 @@ export function searchStrategy(req, res) {
     const ownMethods = {};
 
     // Reduce all available methods with subject and type
-    const methods = allMethodTypes.data.reduce((prev, methodType) => {
-      const cur = prev;
+    const methods = allMethodTypes.data.reduce((cur, methodType) => {
       const { fid, methodFid } = methodType;
       const curSubject = methodSubjects.data.find(s => s.methodFid === methodFid);
       if (!curSubject) {
@@ -146,7 +144,7 @@ export function searchStrategy(req, res) {
       return cur;
     }, {});
 
-    const result = subjectStorage.genStrategy({
+    const data = subjectStorage.genStrategy({
       subject: subject.data,
       ownWaste: ownWaste.data,
       ownMethods,
@@ -154,19 +152,19 @@ export function searchStrategy(req, res) {
       methods,
     });
 
-    if (result) {
-      const strategy = new Strategy(result);
+    if (data) {
+      const strategy = new Strategy(data);
       strategy.save();
     }
 
-    respondOk.call(res, { data: result });
+    respondOk.call(res, { data });
   }).catch(err => respondError.call(res, err));
 }
 
 export function createIndivid(req, res) {
   const { type } = req.body;
   return Promise.all([
-    subjectStorage.typeExists(`${type}`, true),
+    subjectStorage.typeExists(`${type}`, { falseAsReject: true }),
   ]).then(() => subjectStorage.createIndivid(type, req.body))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
@@ -175,7 +173,7 @@ export function createIndivid(req, res) {
 export function updateIndivid(req, res) {
   const { fid } = req.params;
   return Promise.all([
-    subjectStorage.individExists(`${fid}`, true),
+    subjectStorage.individExists(`${fid}`, { falseAsReject: true }),
   ]).then(() => subjectStorage.updateIndivid(fid, req.body))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
@@ -183,7 +181,8 @@ export function updateIndivid(req, res) {
 
 export function deleteIndivid(req, res) {
   const { fid } = req.params;
-  return subjectStorage.individExists(`${fid}`, true).then(() => subjectStorage.deleteIndivid(fid))
+  return subjectStorage.individExists(`${fid}`, { falseAsReject: true })
+      .then(() => subjectStorage.deleteIndivid(fid, { falseAsReject: true }))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
 }

@@ -14,6 +14,10 @@ class MethodStorage extends RdfBaseStorage {
     return 'Method';
   }
 
+  deleteReducer(fid, { forSubject }) {
+    return forSubject ? `${axiomWithPrefix(forSubject)} :hasMethod ?s` : '';
+  }
+
   createIndividReducer(key, value, fid) {
     switch (key) {
       case 'title':
@@ -65,15 +69,17 @@ class MethodStorage extends RdfBaseStorage {
     return RdfBaseStorage.exec(query);
   }
 
-  selectIndividByFid(fid) {
+  selectIndividByFid(fid, { forSubject } = {}) {
     const query = `
       SELECT ${qFidAs('method', 'fid')} ?title
       ?costOnWeight ?costOnDistance ?costByService
+      ${forSubject ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
         ?method a ?type ; :title ?title
         OPTIONAL { ?method :costOnWeight ?costOnWeight }
         OPTIONAL { ?method :costOnDistance ?costOnDistance }
         OPTIONAL { ?method :costByService ?costByService }
+        ${qInFilter(['subject', ':hasMethod', 'method'], forSubject)}
         FILTER(?type = ${this.entityWithPrefix} && ?method = ${axiomWithPrefix(fid)})
       } LIMIT 1 OFFSET 0
     `;

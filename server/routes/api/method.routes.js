@@ -16,10 +16,11 @@ export default (roles) => {
   router.put('/individuals/:fid', roles.can('update individ'), Controller.updateIndivid);
 
   // Delete an existing individual of Method entity
+  // /methods/individuals/:fid?forSubject
   router.delete('/individuals/:fid', roles.can('delete individ'), Controller.deleteIndivid);
 
   // Get the individual of Method entity by FID
-  // /methods/individuals/:fid?expand=['types', 'subject']
+  // /methods/individuals/:fid?expand=['types', 'subject']&forSubject
   router.get('/individuals/:fid', roles.can('read individ'), Controller.getIndivid);
 
   // Get all specific types of Method entity

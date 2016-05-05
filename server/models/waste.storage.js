@@ -15,6 +15,10 @@ class WasteStorage extends RdfBaseStorage {
     return 'Waste';
   }
 
+  deleteReducer(fid, { forSubject }) {
+    return forSubject ? `${axiomWithPrefix(forSubject)} :hasWaste ?s` : '';
+  }
+
   createIndividReducer(key, value, fid) {
     switch (key) {
       case 'title':
@@ -115,12 +119,14 @@ class WasteStorage extends RdfBaseStorage {
     return RdfBaseStorage.exec(query);
   }
 
-  selectIndividByFid(fid) {
+  selectIndividByFid(fid, { forSubject } = {}) {
     const query = `
       SELECT ${qFidAs('waste', 'fid')} ?amount ?title
+      ${forSubject ? qFidAs('subject', 'subjectFid') : ''}
       WHERE {
         ?waste a ?type ; :amount ?amount ; :title ?title
         FILTER(?type = :SpecificWaste && ?waste = ${axiomWithPrefix(fid)})
+        ${qInFilter(['subject', ':hasWaste', 'waste'], forSubject)}
       } LIMIT 1 OFFSET 0
     `;
     return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {

@@ -72,7 +72,7 @@ export default class RdfBaseStorage {
   }
 
   // Check exists individual of entity
-  individExists(individ, falseAsReject = false) {
+  individExists(individ, { falseAsReject } = {}) {
     const query = `
       ASK { ${axiomWithPrefix(individ)} a ${this.entityWithPrefix} ; :title ?title }
     `;
@@ -93,7 +93,7 @@ export default class RdfBaseStorage {
   }
 
   // Check exists type of entity
-  typeExists(type, falseAsReject = false) {
+  typeExists(type, { falseAsReject } = {}) {
     const query = `
       ASK {
         ${axiomWithPrefix(type)} rdfs:subClassOf ${this.entityWithPrefix} ; rdfs:label ?title
@@ -147,20 +147,31 @@ export default class RdfBaseStorage {
   }
 
   // Update the individual of entity
-  updateIndivid(fid, data) {
+  updateIndivid(fid, data = {}) {
     return update(`?ind a ${this.entityWithPrefix} .`,
         this.updateIndividReducer.bind(this), fid, data);
   }
 
   // Update the type of entity
-  updateType(fid, data) {
+  updateType(fid, data = {}) {
     return update('', this.updateTypeReducer.bind(this), fid, data);
   }
 
   // Delete the individual of entity
-  deleteIndivid(fid, falseAsReject = false) {
+  deleteIndivid(fid, options = {}) {
+    let cond;
+    try {
+      cond = this.deleteReducer(fid, options);
+    } catch (e) {
+      cond = '';
+    }
+
+    const { falseAsReject } = options;
     const query = `DELETE { ?s ?p ?o }
-      WHERE { ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)}) }`;
+      WHERE {
+        ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)})
+        ${cond}
+      }`;
     if (!falseAsReject) {
       return exec(query);
     }
@@ -178,8 +189,13 @@ export default class RdfBaseStorage {
   }
 
   // Delete the type of entity
-  deleteType(fid, falseAsReject = false) {
-    return this.deleteIndivid(fid, falseAsReject);
+  deleteType(fid, options = {}) {
+    return this.deleteIndivid(fid, options);
+  }
+
+  // delete data reducer. Returned string
+  deleteReducer(/* fid, options = {} */) {
+    throw new Error('Method not implemented');
   }
 
   // Select all individuals of entity by options
@@ -188,7 +204,7 @@ export default class RdfBaseStorage {
   }
 
   // Select the individual of entity by FID
-  selectIndividByFid(/* fid */) {
+  selectIndividByFid(/* fid, options = {} */) {
     throw new Error('Method not implemented');
   }
 
@@ -208,12 +224,12 @@ export default class RdfBaseStorage {
   }
 
   // createType data reducer. Returned string
-  createTypeReducer() {
+  createTypeReducer(/* key, value */) {
     throw new Error('Method not implemented');
   }
 
   // updateType data reducer. Returned [insert:string, where:string]
-  updateTypeReducer() {
+  updateTypeReducer(/* key, value */) {
     throw new Error('Method not implemented');
   }
 }

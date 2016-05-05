@@ -37,7 +37,6 @@ export function auth(req, res) {
       const token = jwt.sign(payload, appConfig.jwt.secret, {
         expiresIn: appConfig.jwt.tokenExpirationTime,
       });
-
       respondOk.call(res, { token: `JWT ${token}`, user });
     }).catch(() => respondUnauthorized.call(res, 'Authentication failed. Wrong password'));
   }).catch(err => respondError.call(res, err));
