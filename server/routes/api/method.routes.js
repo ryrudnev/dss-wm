@@ -1,29 +1,31 @@
 import { Router } from 'express';
 import * as Controller from '../../controllers/method.controller';
 
-const router = new Router();
+export default (roles) => {
+  const router = new Router();
 
-// Get all individuals of Method entity
-// /methods/individuals?expand=['types', 'subject']
-// &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
-router.get('/individuals', Controller.getAllIndivids);
+  // Get all individuals of Method entity
+  // /methods/individuals?expand=['types', 'subject']
+  // &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
+  router.get('/individuals', roles.can('all individs'), Controller.getAllIndivids);
 
-// Create a new individual of Method entity
-router.post('/individuals', Controller.createIndivid);
+  // Create a new individual of Method entity
+  router.post('/individuals', roles.can('create individ'), Controller.createIndivid);
 
-// Update an existing individual of Method entity
-router.put('/individuals/:fid', Controller.updateIndivid);
+  // Update an existing individual of Method entity
+  router.put('/individuals/:fid', roles.can('update individ'), Controller.updateIndivid);
 
-// Delete an existing individual of Method entity
-router.delete('/individuals/:fid', Controller.deleteIndivid);
+  // Delete an existing individual of Method entity
+  router.delete('/individuals/:fid', roles.can('delete individ'), Controller.deleteIndivid);
 
-// Get the individual of Method entity by FID
-// /methods/individuals/:fid?expand=['types', 'subject']
-router.get('/individuals/:fid', Controller.getIndivid);
+  // Get the individual of Method entity by FID
+  // /methods/individuals/:fid?expand=['types', 'subject']
+  router.get('/individuals/:fid', roles.can('read individ'), Controller.getIndivid);
 
-// Get all specific types of Method entity
-// /methods/types?
-// forWaste=[]&individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
-router.get('/types', Controller.getAllTypes);
+  // Get all specific types of Method entity
+  // /methods/types?
+  // forWaste=[]&individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
+  router.get('/types', roles.can('all types'), Controller.getAllTypes);
 
-export default router;
+  return router;
+};

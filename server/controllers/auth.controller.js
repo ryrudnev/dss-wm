@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/auth/user.model';
+import User from '../models/user.model';
 import { respondUnauthorized, respondError, respondOk } from '../util/expressUtils';
 import appConfig from '../config/app.config';
 
@@ -14,9 +14,7 @@ export function signup(req, res) {
     if (err) {
       return respondError.call(res, err);
     }
-    user.calcPermissions().then(({ scopes, roles }) => {
-      respondOk.call(res, { user: { ...user.toJSON(), scopes, roles } });
-    });
+    respondOk.call(res, { user });
   });
 }
 
@@ -40,13 +38,7 @@ export function auth(req, res) {
         expiresIn: appConfig.jwt.tokenExpirationTime,
       });
 
-      user.calcPermissions().then(({ scopes, roles }) => {
-        respondOk.call(res, { token: `JWT ${token}`, user: { ...user.toJSON(), scopes, roles } });
-      });
+      respondOk.call(res, { token: `JWT ${token}`, user });
     }).catch(() => respondUnauthorized.call(res, 'Authentication failed. Wrong password'));
   }).catch(err => respondError.call(res, err));
-}
-
-export function getPermissions(req, res) {
-  respondOk.call(res, { data: req.user.permissions });
 }

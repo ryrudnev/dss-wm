@@ -1,7 +1,6 @@
-import { omit, resolve, uniqueArray } from '../../util/utils';
-import { genUid } from '../../services/counter';
+import { omit } from '../util/utils';
+import { genUid } from '../services/counter';
 import mongoose from 'mongoose';
-import mongooseDeepPopulate from 'mongoose-deep-populate';
 import bcrypt from 'bcrypt';
 
 const { Schema } = mongoose;
@@ -10,16 +9,13 @@ const { Schema } = mongoose;
 const SALT_ROUNDS = 10;
 
 const UserSchema = new Schema({
-  _id: { type: Number, required: true },
+  _id: { type: Number, unique: true },
   email: String,
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  roles: [{ type: String, ref: 'Role' }],
-  scopes: [{ type: String, ref: 'Scope' }],
+  role: String,
   subjects: [String],
 });
-const deepPopulate = mongooseDeepPopulate(mongoose);
-UserSchema.plugin(deepPopulate /* , {} */);
 
 UserSchema.pre('save', function (next) {
   const hashPass = () => {
@@ -66,17 +62,6 @@ UserSchema.methods.comparePassword = function (password) {
       }
       res();
     });
-  });
-};
-
-UserSchema.methods.calcPermissions = function () {
-  return this.deepPopulate('scopes roles.scopes').then(() => {
-    let { roles, scopes } = this.toJSON();
-    if (!scopes.length) {
-      scopes = uniqueArray(roles.reduce((prev, role) => [...prev, ...role.scopes], []));
-    }
-    roles = roles.map(r => omit(r, 'scopes'));
-    return resolve({ roles, scopes });
   });
 };
 

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
-import User from '../../models/auth/user.model';
-import { resolve, Deferred } from '../../util/utils';
+import User from '../models/user.model';
+import { resolve, Deferred } from '../util/utils';
 import _debug from 'debug';
 
 const debug = _debug('app:seeds');
@@ -19,13 +19,13 @@ export default {
           email: 'admin@mail.example',
           username: 'admin',
           password: 'admin',
-          roles: ['admin'],
+          role: 'admin',
         },
         {
           email: 'test@mail.example',
           username: 'test',
           password: 'test',
-          roles: ['user'],
+          role: 'user',
           subjects: ['e6', 'e5'],
         },
       ];

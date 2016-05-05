@@ -1,19 +1,17 @@
 import { Router } from 'express';
 import { respondUnauthorized } from '../../util/expressUtils';
 import unless from 'express-unless';
-import waste from './waste.routes';
-import methods from './method.routes';
-import subjects from './subject.routes';
-import auth from './auth.routes';
+import wasteRouter from './waste.routes';
+import methodsRouter from './method.routes';
+import subjectsRouter from './subject.routes';
+import authRouter from './auth.routes';
 
-const subrouter = new Router();
-subrouter.use('/auth', auth);
-subrouter.use('/waste', waste);
-subrouter.use('/methods', methods);
-subrouter.use('/subjects', subjects);
-
-export default passport => {
+export default (passport, roles) => {
   const apiRouter = new Router();
+  apiRouter.use('/auth', authRouter(roles));
+  apiRouter.use('/waste', wasteRouter(roles));
+  apiRouter.use('/methods', methodsRouter(roles));
+  apiRouter.use('/subjects', subjectsRouter(roles));
 
   const authJwt = (req, res, next) => {
     passport.authenticate('jwt', { session: false }, (err, user) => {
@@ -26,9 +24,8 @@ export default passport => {
   };
   authJwt.unless = unless;
 
-  apiRouter.use(authJwt.unless({ path: '/api/auth/token' }));
-
-  apiRouter.use('/api', subrouter);
-
-  return apiRouter;
+  const router = new Router();
+  router.use(authJwt.unless({ path: '/api/auth/token' }));
+  router.use('/api', apiRouter);
+  return router;
 };

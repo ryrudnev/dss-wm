@@ -1,6 +1,6 @@
 import passportJwt from 'passport-jwt';
 import _debug from 'debug';
-import User from '../models/auth/user.model';
+import User from '../models/user.model';
 import appConfig from '../config/app.config';
 
 const debug = _debug('app:passport');
@@ -20,16 +20,15 @@ export default passport => {
 
     User.findOne({ username: jwtPayload.sub }).exec().then(user => {
       if (!user) {
-        return done(null, false, 'User not verified');
-      }
-      // get the user permissions and save it to the user model
-      user.calcPermissions().then(permissions => {
-        user.permissions = permissions;
+        done(null, false, 'User not verified');
+      } else {
         done(null, user, 'User successfully verified');
-      });
+      }
     }).catch(err => {
       debug(`User verifying error: ${err}`);
       done(err, false);
     });
   }));
+
+  return passport;
 };
