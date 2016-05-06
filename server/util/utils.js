@@ -65,8 +65,7 @@ export function diffArray(a, b) {
 }
 
 export function unionArray(a, b) {
-  const fla = flatten([a]);
-  return [...fla, ...flatten([b]).filter(i => arrayIndexOf(fla, i) < 0)];
+  return [...flatten([a]), ...diffArray(b, a)];
 }
 
 export function uniqueArray(arr) {
@@ -77,6 +76,11 @@ export function uniqueArray(arr) {
     }
   }
   return uniq;
+}
+
+export function intersectArray(a, b) {
+  const flb = flatten([b]);
+  return flatten([a]).filter(i => ~arrayIndexOf(flb, i));
 }
 
 export function omit(object, ...keys) {
@@ -104,8 +108,7 @@ export function pick(object, ...keys) {
 }
 
 export function joinExpanded(joinField, expanded, isSingle) {
-  return expanded.reduce((prev, val) => {
-    const cur = prev;
+  return expanded.reduce((cur, val) => {
     const item = val;
     const field = val[joinField];
     delete item[joinField];
