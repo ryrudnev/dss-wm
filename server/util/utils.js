@@ -1,9 +1,17 @@
-export function isArray(object) {
-  return Array.isArray(object);
+export function isArray(obj) {
+  return Array.isArray(obj);
 }
 
-export function isObject(object) {
-  return object !== null && typeof object === 'object';
+export function isObject(obj) {
+  return obj !== null && typeof obj === 'object';
+}
+
+export function isFunction(obj) {
+  return !!(obj && obj.constructor && obj.call && obj.apply);
+}
+
+export function isBool(obj) {
+  return typeof(obj) === 'boolean';
 }
 
 export class Deferred {

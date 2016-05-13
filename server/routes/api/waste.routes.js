@@ -39,15 +39,15 @@ export default (roles) => {
 
   // Get all individuals of Origin entity
   // /waste/origins?sort&offset&limit
-  router.get('/origins', roles.can('waste evidence'), Controller.getOrigins);
+  router.get('/origins', roles.can('all waste evidence'), Controller.getOrigins);
 
   // Get all individuals of HazardClass entity
   // /waste/hazard-classes?sort&offset&limit
-  router.get('/hazard-classes', roles.can('waste evidence'), Controller.getHazardClasses);
+  router.get('/hazard-classes', roles.can('all waste evidence'), Controller.getHazardClasses);
 
   // Get all individuals of AggregateState entity
   // /waste/aggregate-states?sort&offset&limit
-  router.get('/aggregate-states', roles.can('waste evidence'), Controller.getAggregateStates);
+  router.get('/aggregate-states', roles.can('all waste evidence'), Controller.getAggregateStates);
 
   return router;
 };

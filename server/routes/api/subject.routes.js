@@ -6,7 +6,7 @@ export default (roles) => {
 
   // Get all individuals of Subject entity
   // /subjects/individuals?expand=['types', 'waste', 'methods', 'located']
-  // &subtypes=[]&byMethods=[]&byWaste=[]&sort=[]&offset&limit
+  // &fids=[]&subtypes=[]&byMethods=[]&byWaste=[]&sort=[]&offset&limit
   router.get('/individuals', roles.can('get subjects'), Controller.getAllIndivids);
 
   // Create a new individual of Subject entity
