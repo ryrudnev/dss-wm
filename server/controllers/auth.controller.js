@@ -7,7 +7,7 @@ export function signup(req, res) {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return respondUnauthorized.call(res, 'Is necessary to specify a username and password');
+    return respondUnauthorized.call(res, res.__('You must specify a username and password'));
   }
   const user = new User({ username, password });
   user.save(err => {
@@ -23,7 +23,7 @@ export function auth(req, res) {
 
   User.findOne({ username }).exec().then(user => {
     if (!user) {
-      return respondUnauthorized.call(res, 'Authentication failed. User not found');
+      return respondUnauthorized.call(res, res.__('Authentication failed. User not found'));
     }
 
     user.comparePassword(password).then(() => {
@@ -38,6 +38,6 @@ export function auth(req, res) {
         expiresIn: appConfig.jwt.tokenExpirationTime,
       });
       respondOk.call(res, { token: `JWT ${token}`, user });
-    }).catch(() => respondUnauthorized.call(res, 'Authentication failed. Wrong password'));
+    }).catch(() => respondUnauthorized.call(res, res.__('Authentication failed. Wrong password')));
   }).catch(err => respondError.call(res, err));
 }

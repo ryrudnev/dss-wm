@@ -97,16 +97,16 @@ export function searchStrategy(req, res) {
     try {
       JSON.parse(subject.data.coordinates);
     } catch (err) {
-      return reject({ message: 'This the subject has not coordinates' });
+      return reject({ message: res.__('This the subject has not coordinates') });
     }
 
     if (!ownWaste.data.length) {
-      return reject({ message: 'The subject has not a waste' });
+      return reject({ message: res.__('The subject has not a waste') });
     }
     const wasteFids = ownWaste.data.map(w => w.fid);
 
     if (!allMethods.data.length) {
-      return reject({ message: 'Available waste management methods not found' });
+      return reject({ message: res.__('Available waste management methods not found') });
     }
     const methodFids = allMethods.data.map(m => m.fid);
 

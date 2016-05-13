@@ -10,6 +10,7 @@ import {
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
+import { __ } from '../config/translations';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]
 const cachedDistances = new Map();
@@ -265,9 +266,8 @@ class SubjectStorage extends RdfBaseStorage {
         return next({ ...resp, data: resp.data[0] });
       }
       return error({
-        success: false,
         code: 404,
-        message: 'Not found',
+        message: __('Not found'),
         data: null,
       });
     });

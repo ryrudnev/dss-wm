@@ -1,9 +1,26 @@
 import _debug from 'debug';
+import path from 'path';
 
 const debug = _debug('app:config');
 
 const config = {
   env: process.env.NODE_ENV || 'development',
+
+  translations: {
+    // setup some locales - other locales default to en silently
+    locales: ['en', 'ru'],
+
+    // default locale
+    defaultLocale: 'en',
+
+    extension: '.json',
+
+    // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
+    queryParameter: 'lang',
+
+    // where to store json files - defaults to './locales' relative to modules directory
+    directory: path.resolve(__dirname, 'locales'),
+  },
 
   // ----------------------------------
   // Server Configuration

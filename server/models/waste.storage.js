@@ -9,6 +9,7 @@ import {
     axiomWithPrefix,
     qTypeRestrict,
 } from '../util/owlUtils';
+import { __ } from '../config/translations';
 
 class WasteStorage extends RdfBaseStorage {
   get entity() {
@@ -134,9 +135,8 @@ class WasteStorage extends RdfBaseStorage {
         return next({ ...resp, data: resp.data[0] });
       }
       return error({
-        success: false,
         code: 404,
-        message: 'Not found',
+        message: __('Not found'),
         data: null,
       });
     });

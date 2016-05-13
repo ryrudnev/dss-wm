@@ -8,6 +8,7 @@ import cors from 'cors';
 import mongoInit from './config/mongo';
 import passportInit from './config/passport';
 import roles from './config/roles';
+import translations from './config/translations';
 import { qsParser } from './util/expressUtils';
 import api from './routes/api';
 import appConfig from './config/app.config';
@@ -37,6 +38,8 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(qsParser());
+
+app.use(translations());
 
 // Bootstrap passport plugin settings
 app.use(passportInit(passport).initialize());

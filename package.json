@@ -29,6 +29,7 @@
     "debug": "^2.2.0",
     "express": "^4.13.4",
     "express-unless": "^0.3.0",
+    "i18n": "^0.8.2",
     "jsonwebtoken": "^5.7.0",
     "md5": "^2.1.0",
     "method-override": "^2.3.5",

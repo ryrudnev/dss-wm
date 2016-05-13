@@ -19,7 +19,7 @@ export default (passport, roles) => {
         req.user = user;
         return next();
       }
-      respondUnauthorized.call(res, 'Token could not be authenticated');
+      respondUnauthorized.call(res, res.__('Token could not be authenticated'));
     })(req, res, next);
   };
   authJwt.unless = unless;

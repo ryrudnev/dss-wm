@@ -2,6 +2,7 @@ import { axiomWithPrefix } from '../util/owlUtils';
 import { Deferred } from '../util/utils';
 import { genUid } from '../services/counter';
 import stardog from '../services/stardog';
+import { __ } from '../config/translations';
 
 function exec(query) {
   return stardog.query({ query });
@@ -84,9 +85,8 @@ export default class RdfBaseStorage {
         return next(resp);
       }
       return error({
-        success: false,
         code: 404,
-        message: `Individual ${individ} of ${this.entity} entity is not exists`,
+        message: __('Individual %s of %s entity is not exists', individ, this.entity),
         data: null,
       });
     });
@@ -106,9 +106,8 @@ export default class RdfBaseStorage {
         return next(resp);
       }
       return error({
-        success: false,
         code: 404,
-        message: `Type ${type} of ${this.entity} entity is not exists`,
+        message: __('Type %s of %s entity is not exists', type, this.entity),
         data: null,
       });
     });
@@ -180,9 +179,8 @@ export default class RdfBaseStorage {
         return next(resp);
       }
       return error({
-        success: false,
         code: 500,
-        message: `Deleting ${fid} of ${this.entity} entity is failed`,
+        message: __('Deleting %s of %s entity is failed', fid, this.entity),
         data: null,
       });
     });

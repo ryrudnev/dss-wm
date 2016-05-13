@@ -1,6 +1,7 @@
 import passportJwt from 'passport-jwt';
 import _debug from 'debug';
 import User from '../models/user.model';
+import { __ } from '../config/translations';
 import appConfig from '../config/app.config';
 
 const debug = _debug('app:passport');
@@ -20,9 +21,9 @@ export default passport => {
 
     User.findOne({ username: jwtPayload.sub }).exec().then(user => {
       if (!user) {
-        done(null, false, 'User not verified');
+        done(null, false, __('User not verified'));
       } else {
-        done(null, user, 'User successfully verified');
+        done(null, user, __('User successfully verified'));
       }
     }).catch(err => {
       debug(`User verifying error: ${err}`);
