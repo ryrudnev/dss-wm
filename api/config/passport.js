@@ -4,7 +4,7 @@ import User from '../models/user.model';
 import { __ } from '../config/translations';
 import appConfig from '../config/app.config';
 
-const debug = _debug('app:passport');
+const debug = _debug('api:passport');
 
 const { Strategy, ExtractJwt } = passportJwt;
 

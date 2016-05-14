@@ -1,7 +1,7 @@
 import _debug from 'debug';
 import appConfig from './app.config';
 
-const debug = _debug('app:mongodb');
+const debug = _debug('api:mongodb');
 
 export default (mongoose) => {
   // For supporting full promises

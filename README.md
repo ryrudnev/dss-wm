@@ -1,2 +1,2 @@
 # Decision Support System in Waste Management
-Simple realization intelligent decision support system in waste management.
+Simple realization an intelligent decision support system in a waste management.

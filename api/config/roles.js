@@ -4,7 +4,7 @@ import objectPath from 'object-path';
 import { respondForbidden } from '../util/expressUtils';
 import { intersectArray, isFunction, isBool, flatten } from '../util/utils';
 
-const debug = _debug('app:roles');
+const debug = _debug('api:roles');
 
 // Get only allowed subjects for the user.
 function allowedSubjects(req, subjectsPath) {

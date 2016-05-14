@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const debug = _debug('app:counter');
+const debug = _debug('api:counter');
 
 // A helpful model of uid-counter needed for generating an unique ID for entity
 // (for example an axiom of ontological knowledge base generated via the stardog platform)

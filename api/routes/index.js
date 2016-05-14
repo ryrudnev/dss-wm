@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { respondUnauthorized } from '../../util/expressUtils';
+import { respondUnauthorized } from '../util/expressUtils';
 import unless from 'express-unless';
 import wasteRouter from './waste.routes';
 import methodsRouter from './method.routes';
@@ -8,6 +8,7 @@ import authRouter from './auth.routes';
 
 export default (passport, roles) => {
   const apiRouter = new Router();
+
   apiRouter.use('/auth', authRouter(roles));
   apiRouter.use('/waste', wasteRouter(roles));
   apiRouter.use('/methods', methodsRouter(roles));
@@ -27,5 +28,6 @@ export default (passport, roles) => {
   const router = new Router();
   router.use(authJwt.unless({ path: '/api/auth/token' }));
   router.use('/api', apiRouter);
+
   return router;
 };

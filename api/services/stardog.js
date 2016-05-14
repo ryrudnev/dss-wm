@@ -3,7 +3,7 @@ import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
 import appConfig from '../config/app.config';
 
-const debug = _debug('app:stardog');
+const debug = _debug('api:stardog');
 
 // Parse response form Stardog platform
 export function parseStardogResponse(body, resp) {

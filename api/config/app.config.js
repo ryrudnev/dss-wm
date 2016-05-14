@@ -1,10 +1,12 @@
 import _debug from 'debug';
 import path from 'path';
 
-const debug = _debug('app:config');
+const debug = _debug('api:config');
 
 const config = {
   env: process.env.NODE_ENV || 'development',
+
+  logPath: path.resolve(__dirname, '../../logs/api.log'),
 
   translations: {
     // setup some locales - other locales default to en silently

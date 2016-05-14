@@ -3,7 +3,7 @@ import User from '../models/user.model';
 import { resolve, Deferred } from '../util/utils';
 import _debug from 'debug';
 
-const debug = _debug('app:seeds');
+const debug = _debug('api:seeds:user');
 
 export default {
   run() {
