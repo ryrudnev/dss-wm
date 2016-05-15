@@ -1,13 +1,12 @@
-import _debug from 'debug';
 import path from 'path';
 
-const debug = _debug('api:config');
-
-const config = {
-  env: process.env.NODE_ENV || 'development',
-
+export default {
+  // Log path
   logPath: path.resolve(__dirname, '../../logs/api.log'),
 
+  // ----------------------------------
+  // Localizations Configuration
+  // ----------------------------------
   translations: {
     // setup some locales - other locales default to en silently
     locales: ['en', 'ru'],
@@ -28,8 +27,7 @@ const config = {
   // Server Configuration
   // ----------------------------------
   server: {
-    host: '0.0.0.0',
-    port: process.env.PORT || 1337,
+    port: process.env.API_PORT || 1337,
   },
 
   // ----------------------------------
@@ -58,8 +56,3 @@ const config = {
     dbName: process.env.STARDOG_DB || 'wm-test',
   },
 };
-
-debug('Create configuration.');
-debug(`Apply environment overrides for NODE_ENV "${config.env}".`);
-
-export default config;

@@ -1,5 +1,5 @@
 import _debug from 'debug';
-import appConfig from './app.config';
+import apiConfig from './api.config';
 
 const debug = _debug('api:mongodb');
 
@@ -9,15 +9,15 @@ export default (mongoose) => {
 
   const onConnect = (err) => {
     if (err) {
-      debug(`Error connecting to ${appConfig.mongodb.url}`);
+      debug(`Error connecting to ${apiConfig.mongodb.url}`);
       debug(`${err}`);
     } else {
-      debug(`Successfully connecting to ${appConfig.mongodb.url}`);
+      debug(`Successfully connecting to ${apiConfig.mongodb.url}`);
     }
   };
 
   const connect = () => {
-    mongoose.connect(appConfig.mongodb.url, { promiseLibrary: Promise }, onConnect);
+    mongoose.connect(apiConfig.mongodb.url, { promiseLibrary: Promise }, onConnect);
   };
 
   connect();

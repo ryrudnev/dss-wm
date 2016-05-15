@@ -1,7 +1,7 @@
 import i18n from 'i18n';
-import appConfig from './app.config';
+import apiConfig from './api.config';
 
-i18n.configure({ ...appConfig.translations });
+i18n.configure({ ...apiConfig.translations });
 
 export default () => (req, res, next) => {
   i18n.init(req, res);

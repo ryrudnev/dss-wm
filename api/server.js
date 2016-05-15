@@ -16,9 +16,10 @@ import roles from './config/roles';
 import translations from './config/translations';
 import { qsParser } from './util/expressUtils';
 import routes from './routes';
-import appConfig from './config/app.config';
+import apiConfig from './config/api.config';
 
-const debug = _debug('api:server');
+const errorLog = _debug('api:error');
+const serverLog = _debug('api:server');
 
 // Connect to MongoDB using mongoose
 mongoInit(mongoose);
@@ -30,7 +31,7 @@ initSeeds();
 // Initialize the express application
 const app = new Express();
 const server = new http.Server(app);
-const stream = fs.createWriteStream(appConfig.logPath, { flags: 'a' });
+const stream = fs.createWriteStream(apiConfig.logPath, { flags: 'a' });
 
 app.set('trust proxy', 1);
 
@@ -64,11 +65,12 @@ app.use(roles.middleware());
 app.use(routes(passport, roles));
 
 // Run server
-server.listen(appConfig.server.port, error => {
-  const host = server.address().address;
+server.listen(apiConfig.server.port, error => {
   const port = server.address().port;
 
-  if (!error) {
-    debug(`Api server is running on http://${host}:${port}`);
+  if (error) {
+    errorLog(`Error ${error}`);
+  } else {
+    serverLog(`Api server is running on http://localhost:${port}`);
   }
 });
