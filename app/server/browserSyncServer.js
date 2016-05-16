@@ -29,7 +29,7 @@ if (!config.isProd) {
         stats: { colors: true },
 
         // Set to false to display a list of each file that is being bundled.
-        noInfo: true,
+        // noInfo: true,
 
         hot: true,
         // for other settings see

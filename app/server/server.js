@@ -25,7 +25,7 @@ if (!config.isProd) {
     hot: true,
 
     // Set to false to display a list of each file that is being bundled.
-    noInfo: true,
+    // noInfo: true,
 
     // Dev middleware can't access config, so we provide publicPath
     publicPath: webpackConfig.output.publicPath,

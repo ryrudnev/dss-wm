@@ -5,11 +5,11 @@
   "scripts": {
     "start": "rimraf dist && DEBUG=server,server:* NODE_ENV=development node bin/server.js",
     "start:prod": "rimraf dist && NODE_ENV=production node bin/server.js",
-    "bsync": "rimraf dist && mkdir dist && NODE_ENV=development node bin/bsyncServer.js",
-    "bsync:prod": "rimraf dist && mkdir dist && NODE_ENV=production node bin/bsyncServer.js",
+    "bsync": "rimraf dist && mkdir dist && NODE_ENV=development node bin/browserSyncServer.js",
+    "bsync:prod": "rimraf dist && mkdir dist && NODE_ENV=production node bin/browserSyncServer.js",
     "api": "DEBUG=api,api:* NODE_ENV=development nodemon --watch api bin/api.js",
     "api:prod": "NODE_ENV=production node bin/api.js",
-    "api-debug": "NODE_ENV=development concurrently --kill-others \"nodemon --debug --watch api bin/api.js\"  \"node-inspector -p 3020\"",
+    "api-debug": "DEBUG=api,api:* NODE_ENV=development concurrently --kill-others \"nodemon --debug --watch api bin/api.js\"  \"node-inspector -p 3020\"",
     "build": "rimraf dist && NODE_ENV=production webpack --progress --verbose --display-error-details --config webpack/webpack.config.js",
     "build:analyze": "NODE_ENV=production webpack --json --config bin/webpack.config.js | webpack-bundle-size-analyzer > logs/build-analyze.log"
   },
@@ -34,7 +34,6 @@
   "dependencies": {
     "backbone": "^1.3.3",
     "backbone-associations": "^0.6.2",
-    "backbone-react-component": "^0.10.0",
     "backbone.base-router": "^1.3.0",
     "backbone.radio": "^1.0.4",
     "bcrypt": "^0.8.5",

@@ -2,30 +2,24 @@ var webpack = require('webpack');
 var webpackMerge = require('webpack-merge');
 var prodConfig = require('./prod.config');
 var devConfig = require('./dev.config');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 var path = require('path');
-
-var host = (process.env.HOST || 'localhost');
-var port = (process.env.PORT || 3000);
-
-var outputPath = path.resolve(__dirname, '../dist');
-var publicPath = process.env.NODE_ENV === 'production' ? '/dist/' : ('http://' + host + ':' + port + '/dist/');
 
 var commonConfig = {
   context: path.resolve(__dirname, '..'),
 
   output: {
     // Note: Physical files are only output by the production
-    path: outputPath,
+    path: path.resolve(__dirname, '../dist'),
     // Note: Only necessary in Dev
-    publicPath: publicPath,
+    publicPath: '/dist/',
     // entry
     filename: 'bundle.js',
   },
 
   resolve: {
+    root: path.resolve(__dirname, '../app'),
     extensions: ['', '.jsx', '.js', '.json', '.scss'],
     modulesDirectories: [
       'node_modules'
@@ -37,7 +31,8 @@ var commonConfig = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        include: path.join(__dirname, '../app'), loaders: ['babel'],
+        include: path.join(__dirname, '../app'),
+        loaders: ['babel'],
       },
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
@@ -83,8 +78,6 @@ var commonConfig = {
 
     new CopyWebpackPlugin([{ from: './app/static' }]),
 
-    new ExtractTextPlugin('bundle.css'),
-
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(
@@ -100,8 +93,6 @@ var commonConfig = {
 
 if (process.env.NODE_ENV === 'production') {
   module.exports = webpackMerge(prodConfig, commonConfig);
-}
-
-if (process.env.NODE_ENV === 'development') {
+} else {
   module.exports = webpackMerge(devConfig, commonConfig);
 }
