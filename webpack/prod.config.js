@@ -14,13 +14,13 @@ module.exports = {
       {
         test: /(\.css|\.scss)$/,
         include: path.join(__dirname, '../app'),
-        loader: ExtractTextPlugin.extract('css?minimize!sass'),
+        loader: ExtractTextPlugin.extract('style', 'css?minimize!sass'),
       },
     ],
   },
 
   plugins: [
-    new ExtractTextPlugin('bundle.css'),
+    new ExtractTextPlugin('style.css'),
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({

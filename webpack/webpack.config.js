@@ -9,15 +9,18 @@ var path = require('path');
 
 var isProd = process.env.NODE_ENV === 'production';
 
+var host = (process.env.HOST || 'localhost');
+var port = (process.env.PORT || 3000);
+
 var commonConfig = {
   context: path.resolve(__dirname, '..'),
 
   output: {
-    // Note: Physical files are only output by the production
+    // Physical files are only output by the production
     path: path.resolve(__dirname, '../dist'),
-    // Note: Only necessary in Dev
-    publicPath: '/dist/',
-    // entry
+    // Only necessary in Dev
+    publicPath: isProd ? '/dist/' : ('http://' + host + ':' + port + '/dist/'),
+    // output entry file
     filename: 'bundle.js',
   },
 
@@ -77,7 +80,7 @@ var commonConfig = {
   },
 
   plugins: [
-    new CleanWebpackPlugin(['dist']),
+    new CleanWebpackPlugin(['dist'], { root: path.resolve(__dirname, '..') }),
 
     new CopyWebpackPlugin([{ from: './app/static' }]),
 

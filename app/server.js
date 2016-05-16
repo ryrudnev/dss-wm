@@ -26,10 +26,19 @@ if (!config.isProd) {
     hot: true,
 
     // Set to false to display a list of each file that is being bundled.
-    // noInfo: true,
+    noInfo: true,
 
     // Dev middleware can't access config, so we provide publicPath
     publicPath: webpackConfig.output.publicPath,
+
+    // watch options
+    // The solution for webpack reload in Vagrant shared folders and Windows
+    // https://github.com/webpack/webpack-dev-server/issues/155
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: true,
+    },
+
   }));
 
   app.use(webpackHotMiddleware(compiler, {
@@ -64,10 +73,11 @@ if (!config.isProd) {
   });
 }
 
-app.listen(config.port, error => {
+// Can not run a server by host in Vagrant shared folder
+app.listen(config.port, /* config.host */ error => {
   if (error) {
     errorLog(`Error ${error}`);
   } else {
-    serverLog(`Server is listening on http://localhost:${config.port}`);
+    serverLog(`Server is listening on http://${config.host}:${config.port}`);
   }
 });
