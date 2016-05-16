@@ -1,15 +1,16 @@
 import _debug from 'debug';
 import Express from 'express';
 import webpack from 'webpack';
-import webpackConfig from '../../webpack/webpack.config';
+import webpackConfig from '../webpack/webpack.config';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
-import config from '../config';
-import { renderFullPage } from './util/renderer';
+import config from './config';
 import morgan from 'morgan';
 import proxy from 'http-proxy-middleware';
+import path from 'path';
 
 const serverLog = _debug('server');
+const webpackLog = _debug('server:webpack');
 const errorLog = _debug('server:error');
 
 const compiler = webpack(webpackConfig);
@@ -34,6 +35,8 @@ if (!config.isProd) {
   app.use(webpackHotMiddleware(compiler, {
     path: '/__webpack_hmr',
 
+    log: webpackLog,
+
     heartbeat: 10 * 1000,
   }));
 }
@@ -47,10 +50,19 @@ app.use('/api', proxy({
 // Static directory for express
 app.use('/dist', Express.static(`${__dirname}/../../dist/`));
 
-app.get(/.*/, (req, res) => {
-  const host = req.get('host').replace(/\:.*/, ''); // eslint-disable-line no-useless-escape
-  res.end(renderFullPage(host, config.port));
-});
+if (!config.isProd) {
+  app.get('*', (req, res, next) => {
+    const filename = path.join(compiler.outputPath, 'index.html');
+    compiler.outputFileSystem.readFile(filename, (err, result) => {
+      if (err) {
+        return next(err);
+      }
+      res.set('content-type', 'text/html');
+      res.send(result);
+      res.end();
+    });
+  });
+}
 
 app.listen(config.port, error => {
   if (error) {

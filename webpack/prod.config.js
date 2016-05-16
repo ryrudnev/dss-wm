@@ -7,7 +7,7 @@ module.exports = {
 
   devtool: 'source-map',
 
-  entry: './app/index',
+  entry: './app/main',
 
   module: {
     loaders: [

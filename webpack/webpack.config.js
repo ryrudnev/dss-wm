@@ -4,7 +4,10 @@ var prodConfig = require('./prod.config');
 var devConfig = require('./dev.config');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
+
+var isProd = process.env.NODE_ENV === 'production';
 
 var commonConfig = {
   context: path.resolve(__dirname, '..'),
@@ -78,20 +81,26 @@ var commonConfig = {
 
     new CopyWebpackPlugin([{ from: './app/static' }]),
 
+    new HtmlWebpackPlugin({
+      title: 'DSS WM',
+      favicon: 'app/static/favicon.ico',
+      template: 'app/index.ejs',
+      inject: true,
+      hash: isProd,
+    }),
+
     new webpack.DefinePlugin({
       'process.env': {
-        NODE_ENV: JSON.stringify(
-            process.env.NODE_ENV === 'development' ? 'development' : 'production'
-        ),
+        NODE_ENV: JSON.stringify(isProd ? 'production' : 'development'),
       },
-      __DEV__: process.env.NODE_ENV === 'development',
-      __PROD__: process.env.NODE_ENV === 'production',
+      __DEV__: !isProd,
+      __PROD__: isProd,
     }),
   ],
 
 };
 
-if (process.env.NODE_ENV === 'production') {
+if (isProd) {
   module.exports = webpackMerge(prodConfig, commonConfig);
 } else {
   module.exports = webpackMerge(devConfig, commonConfig);
