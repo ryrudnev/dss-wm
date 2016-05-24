@@ -34,7 +34,7 @@ function distance({ coordinates }) {
 function groupWaste(waste, wasteMethodTypes) {
   const wasteMap = new Map();
   for (const curWaste of waste) {
-    const curKey = new Set((wasteMethodTypes[curWaste.fid] || []).map(w => w.fid));
+    const curKey = new Set(Array.from(wasteMethodTypes[curWaste.fid]).map(w => w.fid));
     const existingKey = getEqualKeySetmap(wasteMap, curKey);
     if (!existingKey) {
       wasteMap.set(curKey, [curWaste]);
@@ -171,7 +171,7 @@ class SubjectStorage extends RdfBaseStorage {
 
       // Find best method from other a subjects by a cost
       let [bestTransportation, bestMethod, bestCost] = [];
-      [...availableMethodTypes].forEach(methodType => {
+      Array.from(availableMethodTypes).forEach(methodType => {
         methods[methodType].forEach(method => {
           const transport = getBestTransport(source, method.subject, totalAmount, transportation);
           const cost = calcMethodCost(totalAmount, method) + transport.cost;

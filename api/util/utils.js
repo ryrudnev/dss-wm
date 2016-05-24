@@ -44,12 +44,12 @@ export function arrayIndexOf(arr, val) {
 
 // Intersection (a ∩ b): create a set that contains those elements of set a that are also in set b.
 export function intersectSet(a, b) {
-  return new Set([...a].filter(element => b.has(element)));
+  return new Set(Array.from(a).filter(element => b.has(element)));
 }
 
 // Check if one set contains another (all members of a are in b).
 export function containsSet(a, b) {
-  return [...a].every(element => b.has(element));
+  return Array.from(a).every(element => b.has(element));
 }
 
 // Set equality: a contains b, and b contains a
