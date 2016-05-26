@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import { respondUnauthorized, respondError, respondOk } from '../util/expressUtils';
-import apiConfig from '../config/api.config';
+import config from '../config/config';
 
 export function signup(req, res) {
   const { username, password } = req.body;
@@ -28,14 +28,14 @@ export function auth(req, res) {
 
     user.comparePassword(password).then(() => {
       const iat = new Date().getTime() / 1000;
-      const exp = iat + apiConfig.jwt.tokenExpirationTime;
+      const exp = iat + config.jwt.tokenExpirationTime;
       const payload = {
-        aud: apiConfig.jwt.audience, iss: apiConfig.jwt.issuer,
+        aud: config.jwt.audience, iss: config.jwt.issuer,
         iat, exp,
         sub: user.username,
       };
-      const token = jwt.sign(payload, apiConfig.jwt.secret, {
-        expiresIn: apiConfig.jwt.tokenExpirationTime,
+      const token = jwt.sign(payload, config.jwt.secret, {
+        expiresIn: config.jwt.tokenExpirationTime,
       });
       respondOk.call(res, { token: `JWT ${token}`, user });
     }).catch(() => respondUnauthorized.call(res, res.__('Authentication failed. Wrong password')));

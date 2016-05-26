@@ -1,23 +1,24 @@
 import _debug from 'debug';
-import apiConfig from './api.config';
+import mongoose from 'mongoose';
+import config from './config';
 
 const debug = _debug('api:mongodb');
 
-export default (mongoose) => {
+export default () => {
   // For supporting full promises
   mongoose.Promise = Promise;
 
   const onConnect = (err) => {
     if (err) {
-      debug(`Error connecting to ${apiConfig.mongodb.url}`);
+      debug(`Error connecting to ${config.mongodb.url}`);
       debug(`${err}`);
     } else {
-      debug(`Successfully connecting to ${apiConfig.mongodb.url}`);
+      debug(`Successfully connecting to ${config.mongodb.url}`);
     }
   };
 
   const connect = () => {
-    mongoose.connect(apiConfig.mongodb.url, { promiseLibrary: Promise }, onConnect);
+    mongoose.connect(config.mongodb.url, { promiseLibrary: Promise }, onConnect);
   };
 
   connect();
@@ -26,4 +27,6 @@ export default (mongoose) => {
 
   connection.on('error', debug);
   connection.on('disconnected', connect);
+
+  return 0;
 };

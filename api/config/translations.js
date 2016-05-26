@@ -1,14 +1,21 @@
 import i18n from 'i18n';
-import apiConfig from './api.config';
+import _debug from 'debug';
+import config from './config';
 
-i18n.configure({ ...apiConfig.translations });
+const debug = _debug('api:translations');
 
-export default () => (req, res, next) => {
-  i18n.init(req, res);
+i18n.configure({ ...config.translations });
 
-  i18n.setLocale(req.getLocale());
+export default () => {
+  debug('Localizations successfully initialized');
 
-  return next();
+  return (req, res, next) => {
+    i18n.init(req, res);
+
+    i18n.setLocale(req.getLocale());
+
+    return next();
+  };
 };
 
 export function __(...rest) {

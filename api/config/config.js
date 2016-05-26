@@ -1,6 +1,8 @@
 import path from 'path';
 
 export default {
+  env: process.env.NODE_ENV || 'development',
+
   // Log path
   logPath: path.resolve(__dirname, '../../logs/api.log'),
 
@@ -52,7 +54,7 @@ export default {
   // ----------------------------------
   stardog: {
     endpoint: process.env.STARDOG_ENDPOINT || 'http://localhost:5820/',
-    credentials: ['admin', 'admin'],
+    credentials: ['admin', 'admin'], // as super user
     dbName: process.env.STARDOG_DB || 'wm-test',
   },
 };

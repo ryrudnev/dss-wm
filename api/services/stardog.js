@@ -1,7 +1,7 @@
 import _debug from 'debug';
 import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
-import apiConfig from '../config/api.config';
+import config from '../config/config';
 
 const debug = _debug('api:stardog');
 
@@ -39,8 +39,13 @@ class Stardog {
   constructor() {
     const conn = this.connection = new Connection();
     conn.setReasoning(true);
-    conn.setEndpoint(apiConfig.stardog.endpoint);
-    conn.setCredentials(...apiConfig.stardog.credentials);
+    conn.setEndpoint(config.stardog.endpoint);
+    conn.setCredentials(...config.stardog.credentials);
+  }
+
+  init() {
+    debug('Stardog is initialized');
+    return 1;
   }
 
   query(options, parseResult = parseStardogResponse) {
@@ -48,7 +53,7 @@ class Stardog {
 
     const dfd = new Deferred();
 
-    this.connection.query({ ...options, database: apiConfig.stardog.dbName },
+    this.connection.query({ ...options, database: config.stardog.dbName },
       (body, resp) => {
         debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
         const res = parseResult(body, resp);

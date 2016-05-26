@@ -2,7 +2,7 @@ import passportJwt from 'passport-jwt';
 import _debug from 'debug';
 import User from '../models/user.model';
 import { __ } from '../config/translations';
-import apiConfig from './api.config';
+import config from './config';
 
 const debug = _debug('api:passport');
 
@@ -10,10 +10,10 @@ const { Strategy, ExtractJwt } = passportJwt;
 
 export default passport => {
   const options = {
-    secretOrKey: apiConfig.jwt.secret,
+    secretOrKey: config.jwt.secret,
     jwtFromRequest: ExtractJwt.fromAuthHeader(),
-    audience: apiConfig.jwt.audience,
-    issuer: apiConfig.jwt.issuer,
+    audience: config.jwt.audience,
+    issuer: config.jwt.issuer,
   };
 
   passport.use(new Strategy(options, (jwtPayload, done) => {
@@ -31,5 +31,6 @@ export default passport => {
     });
   }));
 
+  debug('Passport successfully initialized');
   return passport;
 };
