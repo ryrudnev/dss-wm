@@ -1,9 +1,13 @@
 import path from 'path';
 import fs from 'fs';
 
-const config = {
-  env: process.env.NODE_ENV || 'development',
+// set specific parameters if it's testing
+const isTesting = process.env.NODE_ENV === 'test';
 
+const stardogDb = isTesting ? 'wm-test' : (process.env.STARDOG_DB || 'wm');
+const mongodb = isTesting ? 'mongodb://localhost/wm-test' : (process.env.MONGO_URL || 'mongodb://localhost/wm');
+
+const config = {
   // Log path
   logDir: path.resolve(__dirname, '../logs'),
 
@@ -37,7 +41,7 @@ const config = {
   // MongoDB Configuration
   // ----------------------------------
   mongodb: {
-    url: process.env.MONGO_URL || 'mongodb://localhost/wm-test',
+    url: mongodb,
   },
 
   // ----------------------------------
@@ -56,11 +60,14 @@ const config = {
   stardog: {
     endpoint: process.env.STARDOG_ENDPOINT || 'http://localhost:5820/',
     credentials: ['admin', 'admin'], // as super user
-    database: process.env.STARDOG_DB || 'wm-test',
 
-    // Options for creating a new db in stardog.
+    database: stardogDb,
+
+    // Default options for creating a new db
     newDbOptions: {
-      database: 'wm-test-2',
+
+      database: stardogDb,
+
       options: {
         'database.namespaces': [
           'rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -96,15 +103,14 @@ const config = {
         'search.reindex.mode': 'sync',
         'transaction.logging': false,
         'transaction.isolation': 'SNAPSHOT',
-        'database.name': 'tasda',
         'database.archetypes': [],
+        'database.name': stardogDb,
       },
-      files: [
-        {
-          filename: path.resolve(__dirname, '../owl/wm-test.ttl'),
-          context: ':',
-        },
-      ],
+
+      files: [{
+        filename: path.resolve(__dirname, '../owl/example-ontology.ttl'), context: ':',
+      }],
+
     },
   },
 };

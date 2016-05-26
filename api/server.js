@@ -19,12 +19,9 @@ function runServer(app) {
   });
 }
 
-Promise.resolve(mongoConnect())
+Promise.all([mongoConnect(), stardog.init()])
   .then(() => Promise.resolve(
     initSeeds()
-  ))
-  .then(() => Promise.resolve(
-    stardog.init()
   ))
   .then(() => Promise.resolve(
     initApp()

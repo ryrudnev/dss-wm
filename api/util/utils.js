@@ -131,12 +131,3 @@ export function joinExpanded(joinField, expanded, isSingle) {
     return cur;
   }, {});
 }
-
-export function wrapResolve(fn, ...args) {
-  const dfd = new Deferred();
-  const callback = (...a) => {
-    dfd.resolve.apply(dfd, a);
-  };
-  fn.apply(this, [...(args || []), callback]);
-  return dfd.promise;
-}

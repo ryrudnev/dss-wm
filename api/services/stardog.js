@@ -1,5 +1,5 @@
 import _debug from 'debug';
-import { Deferred, wrapResolve } from '../util/utils';
+import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
 import config from '../config/config';
 
@@ -34,11 +34,6 @@ export function parseStardogResponse(body, resp) {
   };
 }
 
-function createDb(conn) {
-  wrapResolve.call(conn, conn.createDB, config.stardog.newDbOptions)
-    .then((body) => debug(body));
-}
-
 // Stardog connection wrapper
 class Stardog {
   constructor() {
@@ -51,40 +46,68 @@ class Stardog {
   }
 
   init() {
-    const { conn, database } = this;
-
-    return wrapResolve.call(conn, conn.listDBs, {})
-      .then(body => {
-        const { databases = [] } = body;
-        if (databases.includes(database)) {
-          return createDb(conn);
-        }
-      })
-      .catch(err => debug(`Error ${err}`))
-      .then(() => debug('Stardog successfully initialized'));
+    return this.createDbIfNotExists()
+        .then(() => debug('Stardog successfully initialized'))
+        .catch(err => debug(`Error ${err}`));
   }
 
-  createDb(options = config.stardog.newDbOptions) {
+  listDbs() {
+    const { conn } = this;
+    const dfd = new Deferred();
+    conn.listDBs({}, (body, resp) => {
+      if (!(resp.statusCode < 400)) {
+        return dfd.reject(body);
+      }
+      dfd.resolve(body.databases);
+    });
+    return dfd.promise;
+  }
 
-  },
+  createDbIfNotExists(options = {}) {
+    const { database = this.database } = options;
+    return this.listDbs().then(databases => {
+      if (!databases.includes(database)) {
+        return this.createDb(options);
+      }
+      return Promise.resolve(true);
+    });
+  }
 
-  removeDb(database = config.stardog.database) {
+  createDb(options = {}) {
+    const { conn } = this;
+    const dfd = new Deferred();
+    conn.createDB({ ...config.stardog.newDbOptions, ...options }, (body, resp) => {
+      if (!(resp.statusCode < 400)) {
+        return dfd.reject(body);
+      }
+      dfd.resolve(body);
+    });
+    return dfd.promise;
+  }
 
-  },
-
-  query(options, parseResult = parseStardogResponse) {
+  removeDb(dbname) {
     const { conn, database } = this;
-
-    debug(`Query to Stardog platform: ${options.query}`);
-
     const dfd = new Deferred();
 
-    conn.query({ ...options, database },
-      (body, resp) => {
-        debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
-        const res = parseResult(body, resp);
-        dfd[res.success ? 'resolve' : 'reject'](res);
-      });
+    conn.dropDB({ database: dbname || database }, (body, resp) => {
+      if (!(resp.statusCode < 400)) {
+        return dfd.reject(body);
+      }
+      dfd.resolve(body);
+    });
+    return dfd.promise;
+  }
+
+  query(options, parseResult = parseStardogResponse) {
+    debug(`Query to Stardog platform: ${options.query}`);
+
+    const { conn, database } = this;
+    const dfd = new Deferred();
+    conn.query({ ...options, database }, (body, resp) => {
+      debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
+      const res = parseResult(body, resp);
+      dfd[res.success ? 'resolve' : 'reject'](res);
+    });
     return dfd.promise;
   }
 }
