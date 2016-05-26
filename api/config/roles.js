@@ -63,8 +63,10 @@ const rulesRoles = {
     'all waste evidence': () => true,
 
     'get subjects': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.fids')),
+    'create subject': req => ifRole(req, 'user'),
     'update subject': req => ifRole(req, 'user', () => allowedSubjects(req, 'params.fid')),
     'read subject': req => ifRole(req, 'user', () => allowedSubjects(req, 'params.fid')),
+    'delete subject': req => ifRole(req, 'user', () => allowedSubjects(req, 'params.fid')),
     'all subjects types': () => true,
   },
 };
