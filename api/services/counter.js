@@ -1,5 +1,4 @@
 import _debug from 'debug';
-import { resolve, reject } from '../util/utils';
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
@@ -24,11 +23,11 @@ export function genUid(name = 'uid') {
       .then(doc => {
         const uid = doc.seq;
         debug(`Generated unique ID for ${name} = ${uid}`);
-        return resolve(uid);
+        return Promise.resolve(uid);
       })
       .catch(err => {
         debug(`Generating unique ID error for ${name}`);
         debug(`Reason: ${err}`);
-        return reject(err);
+        return Promise.reject(err);
       });
 }

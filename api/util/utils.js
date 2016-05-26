@@ -16,9 +16,9 @@ export function isBool(obj) {
 
 export class Deferred {
   constructor() {
-    this.promise = new Promise((res, rej) => {
-      this.resolve = res;
-      this.reject = rej;
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
     });
   }
 }
@@ -132,10 +132,11 @@ export function joinExpanded(joinField, expanded, isSingle) {
   }, {});
 }
 
-export function reject(rejected) {
-  return new Promise((_, rej) => rej(rejected));
-}
-
-export function resolve(resolved) {
-  return new Promise((res) => res(resolved));
+export function wrapResolve(fn, ...args) {
+  const dfd = new Deferred();
+  const callback = (...a) => {
+    dfd.resolve.apply(dfd, a);
+  };
+  fn.apply(this, [...(args || []), callback]);
+  return dfd.promise;
 }

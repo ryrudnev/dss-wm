@@ -13,14 +13,18 @@ import translations from './translations';
 import { qsParser } from '../util/expressUtils';
 import routes from '../routes';
 import config from './config';
+import fs from 'fs';
+import path from 'path';
 
 const debug = _debug('api:express');
+
+const stream = fs.createWriteStream(path.join(config.logDir, 'access.log'), { flags: 'a' });
 
 // Initialize the express application
 export default (app = new Express()) => {
   app.set('port', config.server.port);
 
-  app.use(morgan('combined'));
+  app.use(morgan('combined', { stream }));
 
   // Method override for support old browsers
   app.use(methodOverride());

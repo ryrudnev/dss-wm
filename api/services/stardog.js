@@ -1,5 +1,5 @@
 import _debug from 'debug';
-import { Deferred } from '../util/utils';
+import { Deferred, wrapResolve } from '../util/utils';
 import { Connection } from 'stardog';
 import config from '../config/config';
 
@@ -34,26 +34,52 @@ export function parseStardogResponse(body, resp) {
   };
 }
 
+function createDb(conn) {
+  wrapResolve.call(conn, conn.createDB, config.stardog.newDbOptions)
+    .then((body) => debug(body));
+}
+
 // Stardog connection wrapper
 class Stardog {
   constructor() {
-    const conn = this.connection = new Connection();
+    const conn = this.conn = new Connection();
     conn.setReasoning(true);
     conn.setEndpoint(config.stardog.endpoint);
     conn.setCredentials(...config.stardog.credentials);
+
+    this.database = config.stardog.database;
   }
 
   init() {
-    debug('Stardog is initialized');
-    return 1;
+    const { conn, database } = this;
+
+    return wrapResolve.call(conn, conn.listDBs, {})
+      .then(body => {
+        const { databases = [] } = body;
+        if (databases.includes(database)) {
+          return createDb(conn);
+        }
+      })
+      .catch(err => debug(`Error ${err}`))
+      .then(() => debug('Stardog successfully initialized'));
   }
 
+  createDb(options = config.stardog.newDbOptions) {
+
+  },
+
+  removeDb(database = config.stardog.database) {
+
+  },
+
   query(options, parseResult = parseStardogResponse) {
+    const { conn, database } = this;
+
     debug(`Query to Stardog platform: ${options.query}`);
 
     const dfd = new Deferred();
 
-    this.connection.query({ ...options, database: config.stardog.dbName },
+    conn.query({ ...options, database },
       (body, resp) => {
         debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
         const res = parseResult(body, resp);

@@ -1,4 +1,4 @@
-import { joinExpanded, flatten, reject } from '../util/utils';
+import { joinExpanded, flatten } from '../util/utils';
 import { respondOk, respondError } from '../util/expressUtils';
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
@@ -97,16 +97,16 @@ export function searchStrategy(req, res) {
     try {
       JSON.parse(subject.data.coordinates);
     } catch (err) {
-      return reject({ message: res.__('This the subject has not coordinates') });
+      return Promise.reject({ message: res.__('This the subject has not coordinates') });
     }
 
     if (!ownWaste.data.length) {
-      return reject({ message: res.__('The subject has not a waste') });
+      return Promise.reject({ message: res.__('The subject has not a waste') });
     }
     const wasteFids = ownWaste.data.map(w => w.fid);
 
     if (!allMethods.data.length) {
-      return reject({ message: res.__('Available waste management methods not found') });
+      return Promise.reject({ message: res.__('Available waste management methods not found') });
     }
     const methodFids = allMethods.data.map(m => m.fid);
 

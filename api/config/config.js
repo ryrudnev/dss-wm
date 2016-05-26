@@ -1,10 +1,11 @@
 import path from 'path';
+import fs from 'fs';
 
-export default {
+const config = {
   env: process.env.NODE_ENV || 'development',
 
   // Log path
-  logPath: path.resolve(__dirname, '../../logs/api.log'),
+  logDir: path.resolve(__dirname, '../logs'),
 
   // ----------------------------------
   // Localizations Configuration
@@ -55,6 +56,61 @@ export default {
   stardog: {
     endpoint: process.env.STARDOG_ENDPOINT || 'http://localhost:5820/',
     credentials: ['admin', 'admin'], // as super user
-    dbName: process.env.STARDOG_DB || 'wm-test',
+    database: process.env.STARDOG_DB || 'wm-test',
+
+    // Options for creating a new db in stardog.
+    newDbOptions: {
+      database: 'wm-test-2',
+      options: {
+        'database.namespaces': [
+          'rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+          'rdfs=http://www.w3.org/2000/01/rdf-schema#',
+          'xsd=http://www.w3.org/2001/XMLSchema#',
+          'owl=http://www.w3.org/2002/07/owl#',
+          'stardog=tag:stardog:api:',
+        ],
+        'database.online': true,
+        'database.connection.timeout': '1h',
+        'index.differential.enable.limit': 1000000,
+        'index.differential.merge.limit': 10000,
+        'index.literals.canonical': true,
+        'index.named.graphs': true,
+        'index.persist': true,
+        'index.persist.sync': false,
+        'index.statistics.update.automatic': true,
+        'index.type': 'Disk',
+        'spatial.enabled': false,
+        'icv.active.graphs': 'tag:stardog:api:context:default',
+        'icv.consistency.automatic': false,
+        'icv.enabled': false,
+        'icv.reasoning.enabled': false,
+        'reasoning.type': 'SL',
+        'reasoning.approximate': false,
+        'reasoning.sameas': 'OFF',
+        'reasoning.schema.graphs': 'tag:stardog:api:context:all',
+        'reasoning.virtual.graph.enabled': true,
+        'reasoning.punning.enabled': false,
+        'reasoning.consistency.automatic': false,
+        'reasoning.schema.timeout': '60s',
+        'search.enabled': false,
+        'search.reindex.mode': 'sync',
+        'transaction.logging': false,
+        'transaction.isolation': 'SNAPSHOT',
+        'database.name': 'tasda',
+        'database.archetypes': [],
+      },
+      files: [
+        {
+          filename: path.resolve(__dirname, '../owl/wm-test.ttl'),
+          context: ':',
+        },
+      ],
+    },
   },
 };
+
+if (!fs.existsSync(config.logDir)) {
+  fs.mkdirSync(config.logDir);
+}
+
+export default config;

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import User from '../models/user.model';
-import { resolve, Deferred } from '../util/utils';
+import { Deferred } from '../util/utils';
 import _debug from 'debug';
 
 const debug = _debug('api:seeds:user');
@@ -11,7 +11,7 @@ export default {
     return User.count({}).exec().then(count => {
       if (count > 0) {
         debug('Users documents already exists. Seeds not needed.');
-        return resolve();
+        return Promise.resolve();
       }
 
       const seeds = [
