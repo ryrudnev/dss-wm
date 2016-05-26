@@ -8,23 +8,15 @@
 
 <http://localhost/owl/wm> rdf:type owl:Ontology .
 
-
 #################################################################
 #
 #    Annotation properties
 #
 #################################################################
 
-
 ###  http://localhost/owl/wm#ecolTax
-
 :ecolTax rdf:type owl:AnnotationProperty ;
-         
          rdfs:range xsd:float .
-
-
-
-
 
 #################################################################
 #
@@ -32,87 +24,47 @@
 #
 #################################################################
 
-
 ###  http://localhost/owl/wm#hasAggregateState
-
 :hasAggregateState rdf:type owl:ObjectProperty ,
                             owl:FunctionalProperty ;
-                   
                    rdfs:domain :Waste ;
-                   
                    rdfs:range :AggregateState .
 
-
-
 ###  http://localhost/owl/wm#hasHarmfulEffect
-
 :hasHarmfulEffect rdf:type owl:ObjectProperty ,
                            owl:FunctionalProperty ;
-                  
                   rdfs:range :HarmfulEffect .
 
-
-
 ###  http://localhost/owl/wm#hasHazardClass
-
 :hasHazardClass rdf:type owl:ObjectProperty ,
                          owl:FunctionalProperty ;
-                
                 rdfs:domain :Waste ;
-                
                 rdfs:range :HazardClass .
 
-
-
 ###  http://localhost/owl/wm#hasMethod
-
 :hasMethod rdf:type owl:ObjectProperty ;
-           
            owl:inverseOf :processedBy ;
-           
            rdfs:range :Method .
 
-
-
 ###  http://localhost/owl/wm#hasOrigin
-
 :hasOrigin rdf:type owl:ObjectProperty ,
                     owl:FunctionalProperty ;
-           
            rdfs:domain :Waste ;
-           
            rdfs:range :Origin .
 
-
-
 ###  http://localhost/owl/wm#hasWaste
-
 :hasWaste rdf:type owl:ObjectProperty ;
-          
           rdfs:range :Waste .
 
-
-
 ###  http://localhost/owl/wm#locatedIn
-
 :locatedIn rdf:type owl:ObjectProperty ,
                     owl:TransitiveProperty ;
-           
            rdfs:domain :Subject ;
-           
            rdfs:range :Subject .
 
-
-
 ###  http://localhost/owl/wm#processedBy
-
 :processedBy rdf:type owl:ObjectProperty ;
-             
              rdfs:domain :Method .
-
-
-
-
 
 #################################################################
 #
@@ -120,103 +72,57 @@
 #
 #################################################################
 
-
 ###  http://localhost/owl/wm#amount
-
 :amount rdf:type owl:DatatypeProperty ,
                  owl:FunctionalProperty ;
-        
         rdfs:domain :Waste ;
-        
         rdfs:range xsd:float .
-
-
 
 ###  http://localhost/owl/wm#budget
-
 :budget rdf:type owl:DatatypeProperty ,
                  owl:FunctionalProperty ;
-        
         rdfs:domain :Subject ;
-        
         rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#coordinates
-
 :coordinates rdf:type owl:DatatypeProperty ,
                       owl:FunctionalProperty ;
-             
              rdfs:domain :Subject ;
-             
              rdfs:range xsd:string .
 
-
-
 ###  http://localhost/owl/wm#costByService
-
 :costByService rdf:type owl:DatatypeProperty ,
                         owl:FunctionalProperty ;
-               
                rdfs:domain :Method ;
-               
                rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#costOnDistance
-
 :costOnDistance rdf:type owl:DatatypeProperty ,
                          owl:FunctionalProperty ;
-                
                 rdfs:domain :Method ;
-                
                 rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#costOnWeight
-
 :costOnWeight rdf:type owl:DatatypeProperty ,
                        owl:FunctionalProperty ;
-              
               rdfs:domain :Method ;
-              
               rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#ecolFactorOfAir
-
 :ecolFactorOfAir rdf:type owl:DatatypeProperty ,
                           owl:FunctionalProperty ;
-                 
                  rdfs:domain :Subject ;
-                 
                  rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#ecolFactorOfGround
-
 :ecolFactorOfGround rdf:type owl:DatatypeProperty ,
                              owl:FunctionalProperty ;
-                    
                     rdfs:domain :Subject ;
-                    
                     rdfs:range xsd:float .
 
-
-
 ###  http://localhost/owl/wm#title
-
 :title rdf:type owl:DatatypeProperty ,
                 owl:FunctionalProperty .
-
-
-
-
 
 #################################################################
 #
@@ -224,348 +130,239 @@
 #
 #################################################################
 
-
 ###  http://localhost/owl/wm#AggregateState
-
 :AggregateState rdf:type owl:Class ;
-                
                 owl:equivalentClass [ rdf:type owl:Class ;
-                                      owl:oneOf ( :gas
-                                                  :liquid
-                                                  :solid
-                                                )
-                                    ] ;
-                
+                                owl:oneOf ( :gas
+                                            :liquid
+                                            :solid
+                                          )
+                ] ;
                 rdfs:label "Агрегатное состояние"@ru .
 
-
-
 ###  http://localhost/owl/wm#BiologicalWaste
-
 :BiologicalWaste rdf:type owl:Class ;
-                 
-                 owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                            [ rdf:type owl:Restriction ;
-                                                              owl:onProperty :hasOrigin ;
-                                                              owl:hasValue :biological
-                                                            ]
-                                                          ) ;
-                                       rdf:type owl:Class
-                                     ] ;
-                 
+                 owl:equivalentClass [
+                        owl:intersectionOf ( :Waste
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :hasOrigin ;
+                                owl:hasValue :biological
+                              ]
+                        ) ;
+                       rdf:type owl:Class
+                 ] ;
                  rdfs:subClassOf :Composition ;
-                 
                  rdfs:label "Биологические отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#City
-
 :City rdf:type owl:Class ;
-      
       rdfs:subClassOf :Subject ;
-      
       rdfs:label "Населенный пункт"@ru .
 
-
-
 ###  http://localhost/owl/wm#Company
-
 :Company rdf:type owl:Class ;
-         
          rdfs:subClassOf :Subject ;
-         
          rdfs:label "Предприятие"@ru .
 
-
-
 ###  http://localhost/owl/wm#Composition
-
 :Composition rdf:type owl:Class ;
-             
-             owl:equivalentClass [ rdf:type owl:Class ;
-                                   owl:unionOf ( :BiologicalWaste
-                                                 :ConsumptionWaste
-                                                 :MedicalWaste
-                                                 :ProductionWaste
-                                                 :RadioactiveWaste
-                                               )
-                                 ] ;
-             
+             owl:equivalentClass [
+                        rdf:type owl:Class ;
+                           owl:unionOf ( :BiologicalWaste
+                                         :ConsumptionWaste
+                                         :MedicalWaste
+                                         :ProductionWaste
+                                         :RadioactiveWaste
+                                       )
+             ] ;
              rdfs:subClassOf :Waste ;
-             
              rdfs:label "По композиции"@ru .
 
-
-
 ###  http://localhost/owl/wm#ConsumptionWaste
-
 :ConsumptionWaste rdf:type owl:Class ;
-                  
-                  owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                             [ rdf:type owl:Restriction ;
-                                                               owl:onProperty :hasOrigin ;
-                                                               owl:hasValue :consumption
-                                                             ]
-                                                           ) ;
-                                        rdf:type owl:Class
-                                      ] ;
-                  
+                  owl:equivalentClass [
+                        owl:intersectionOf ( :Waste
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :hasOrigin ;
+                                   owl:hasValue :consumption
+                                 ]
+                        ) ;
+                        rdf:type owl:Class
+                  ] ;
                   rdfs:subClassOf :Composition ;
-                  
                   rdfs:label "Бытовые отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#ExtremelyHazardousWaste
-
 :ExtremelyHazardousWaste rdf:type owl:Class ;
-                         
-                         owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                                    [ rdf:type owl:Restriction ;
-                                                                      owl:onProperty :hasHazardClass ;
-                                                                      owl:hasValue :class1
-                                                                    ]
-                                                                  ) ;
-                                               rdf:type owl:Class
-                                             ] ;
-                         
+                         owl:equivalentClass [
+                                owl:intersectionOf ( :Waste
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :hasHazardClass ;
+                                      owl:hasValue :firstClass
+                                    ]
+                                ) ;
+                               rdf:type owl:Class
+                         ] ;
                          rdfs:subClassOf :Hazardous ;
-                         
                          owl:disjointWith :HarmlessWaste ,
                                           :HighlyHazardousWaste ,
                                           :LowHazardousWaste ,
                                           :ModeratelyHazardousWaste ;
-                         
                          :ecolTax "1739.2"^^xsd:float ;
-                         
                          rdfs:label "Черезвычайно опасные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#GasWaste
-
 :GasWaste rdf:type owl:Class ;
-          
-          owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                     [ rdf:type owl:Restriction ;
-                                                       owl:onProperty :hasAggregateState ;
-                                                       owl:hasValue :gas
-                                                     ]
-                                                   ) ;
-                                rdf:type owl:Class
-                              ] ;
-          
+          owl:equivalentClass [
+                owl:intersectionOf ( :Waste
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :hasAggregateState ;
+                             owl:hasValue :gas
+                           ]
+                         ) ;
+                      rdf:type owl:Class
+          ] ;
           rdfs:subClassOf :Substance ;
-          
           owl:disjointWith :LiquidWaste ,
                            :SolidWaste ;
-          
           rdfs:label "Газообразные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#HarmfulEffect
-
 :HarmfulEffect rdf:type owl:Class ;
-               
                rdfs:subClassOf owl:Thing ;
-               
                rdfs:label "Степень вредного воздействия"@ru .
 
-
-
 ###  http://localhost/owl/wm#HarmlessWaste
-
 :HarmlessWaste rdf:type owl:Class ;
-               
-               owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                          [ rdf:type owl:Restriction ;
-                                                            owl:onProperty :hasHazardClass ;
-                                                            owl:hasValue :class5
-                                                          ]
-                                                        ) ;
+               owl:equivalentClass [
+                    owl:intersectionOf ( :Waste
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty :hasHazardClass ;
+                                  owl:hasValue :fiveClass
+                                ]
+                              ) ;
                                      rdf:type owl:Class
-                                   ] ;
-               
+               ] ;
                rdfs:subClassOf :Hazardous ;
-               
                owl:disjointWith :HighlyHazardousWaste ,
                                 :LowHazardousWaste ,
                                 :ModeratelyHazardousWaste ;
-               
                :ecolTax "15.0"^^xsd:float ;
-               
                rdfs:label "Практически неопасные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#HazardClass
-
 :HazardClass rdf:type owl:Class ;
-             
              owl:equivalentClass [ rdf:type owl:Class ;
-                                   owl:oneOf ( :class1
-                                               :class2
-                                               :class3
-                                               :class4
-                                               :class5
+                                   owl:oneOf ( :firstClass
+                                               :fiveClass
+                                               :fourthClass
+                                               :secondClass
+                                               :thirdClass
                                              )
                                  ] ;
-             
              rdfs:label "Класс опасности"@ru .
 
-
-
 ###  http://localhost/owl/wm#Hazardous
-
 :Hazardous rdf:type owl:Class ;
-           
            owl:equivalentClass [ rdf:type owl:Class ;
-                                 owl:unionOf ( :ExtremelyHazardousWaste
-                                               :HarmlessWaste
-                                               :HighlyHazardousWaste
-                                               :LowHazardousWaste
-                                               :ModeratelyHazardousWaste
-                                             )
+                             owl:unionOf ( :ExtremelyHazardousWaste
+                                           :HarmlessWaste
+                                           :HighlyHazardousWaste
+                                           :LowHazardousWaste
+                                           :ModeratelyHazardousWaste
+                                         )
                                ] ;
-           
            rdfs:subClassOf :Waste ;
-           
            rdfs:label "По степени опасности"@ru .
 
-
-
 ###  http://localhost/owl/wm#HighlyHazardousWaste
-
 :HighlyHazardousWaste rdf:type owl:Class ;
-                      
-                      owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                                 [ rdf:type owl:Restriction ;
-                                                                   owl:onProperty :hasHazardClass ;
-                                                                   owl:hasValue :class2
-                                                                 ]
-                                                               ) ;
-                                            rdf:type owl:Class
-                                          ] ;
-                      
+                      owl:equivalentClass [
+                            owl:intersectionOf ( :Waste
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty :hasHazardClass ;
+                                       owl:hasValue :secondClass
+                                     ]
+                                   ) ;
+                              rdf:type owl:Class
+                      ] ;
                       rdfs:subClassOf :Hazardous ;
-                      
                       owl:disjointWith :LowHazardousWaste ,
                                        :ModeratelyHazardousWaste ;
-                      
                       :ecolTax "745.4"^^xsd:float ;
-                      
                       rdfs:label "Высокоопасные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#LiquidWaste
-
 :LiquidWaste rdf:type owl:Class ;
-             
-             owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                        [ rdf:type owl:Restriction ;
-                                                          owl:onProperty :hasAggregateState ;
-                                                          owl:hasValue :liquid
-                                                        ]
-                                                      ) ;
-                                   rdf:type owl:Class
-                                 ] ;
-             
+             owl:equivalentClass [
+                  owl:intersectionOf ( :Waste
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :hasAggregateState ;
+                                owl:hasValue :liquid
+                              ]
+                            ) ;
+                   rdf:type owl:Class
+             ] ;
              rdfs:subClassOf :Substance ;
-             
              owl:disjointWith :SolidWaste ;
-             
              rdfs:label "Жидкие отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#LowHazardousWaste
-
 :LowHazardousWaste rdf:type owl:Class ;
-                   
-                   owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                              [ rdf:type owl:Restriction ;
-                                                                owl:onProperty :hasHazardClass ;
-                                                                owl:hasValue :class4
-                                                              ]
-                                                            ) ;
-                                         rdf:type owl:Class
-                                       ] ;
-                   
+                   owl:equivalentClass [
+                        owl:intersectionOf ( :Waste
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :hasHazardClass ;
+                                    owl:hasValue :fourthClass
+                                  ]
+                                ) ;
+                        rdf:type owl:Class
+                   ] ;
                    rdfs:subClassOf :Hazardous ;
-                   
                    owl:disjointWith :ModeratelyHazardousWaste ;
-                   
                    :ecolTax "248.4"^^xsd:float ;
-                   
                    rdfs:label "Малоопасные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#MedicalWaste
-
 :MedicalWaste rdf:type owl:Class ;
-              
-              owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                         [ rdf:type owl:Restriction ;
-                                                           owl:onProperty :hasOrigin ;
-                                                           owl:hasValue :medical
-                                                         ]
-                                                       ) ;
-                                    rdf:type owl:Class
-                                  ] ;
-              
+              owl:equivalentClass [
+                    owl:intersectionOf ( :Waste
+                                       [ rdf:type owl:Restriction ;
+                                         owl:onProperty :hasOrigin ;
+                                         owl:hasValue :medical
+                                       ]
+                                     ) ;
+                    rdf:type owl:Class
+              ] ;
               rdfs:subClassOf :Composition ;
-              
               rdfs:label "Медицинские отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Method
-
 :Method rdf:type owl:Class ;
-        
         rdfs:label "Метод управления отходами"@ru .
 
-
-
 ###  http://localhost/owl/wm#ModeratelyHazardousWaste
-
 :ModeratelyHazardousWaste rdf:type owl:Class ;
-                          
-                          owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                                     [ rdf:type owl:Restriction ;
-                                                                       owl:onProperty :hasHazardClass ;
-                                                                       owl:hasValue :class3
-                                                                     ]
-                                                                   ) ;
-                                                rdf:type owl:Class
-                                              ] ;
-                          
+                          owl:equivalentClass [
+                              owl:intersectionOf ( :Waste
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty :hasHazardClass ;
+                                     owl:hasValue :thirdClass
+                                   ]
+                                 ) ;
+                             rdf:type owl:Class
+                          ] ;
                           rdfs:subClassOf :Hazardous ;
-                          
                           :ecolTax "497.0"^^xsd:float ;
-                          
                           rdfs:label "Умеренно опасные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Municipal
-
 :Municipal rdf:type owl:Class ;
-           
            rdfs:subClassOf :Subject ;
-           
            rdfs:label "Муниципальный субъект"@ru .
 
-
-
 ###  http://localhost/owl/wm#Origin
-
 :Origin rdf:type owl:Class ;
-        
         owl:equivalentClass [ rdf:type owl:Class ;
                               owl:oneOf ( :biological
                                           :consumption
@@ -574,15 +371,10 @@
                                           :radioactive
                                         )
                             ] ;
-        
         rdfs:label "Происхождение"@ru .
 
-
-
 ###  http://localhost/owl/wm#Processable
-
 :Processable rdf:type owl:Class ;
-             
              owl:equivalentClass [ rdf:type owl:Class ;
                                    owl:unionOf ( :RecyclableWaste
                                                  :StorableWaste
@@ -590,250 +382,160 @@
                                                  :UtilableWaste
                                                )
                                  ] ;
-             
              rdfs:subClassOf :Waste ;
-             
              rdfs:label "По обрабатываемости"@ru .
 
-
-
 ###  http://localhost/owl/wm#ProductionWaste
-
 :ProductionWaste rdf:type owl:Class ;
-                 
-                 owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                            [ rdf:type owl:Restriction ;
-                                                              owl:onProperty :hasOrigin ;
-                                                              owl:hasValue :production
-                                                            ]
-                                                          ) ;
-                                       rdf:type owl:Class
-                                     ] ;
-                 
+                 owl:equivalentClass [
+                      owl:intersectionOf ( :Waste
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :hasOrigin ;
+                                      owl:hasValue :production
+                                    ]
+                                  ) ;
+                     rdf:type owl:Class
+                 ] ;
                  rdfs:subClassOf :Composition ;
-                 
                  rdfs:label "Промышленные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#RadioactiveWaste
-
 :RadioactiveWaste rdf:type owl:Class ;
-                  
-                  owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                             [ rdf:type owl:Restriction ;
-                                                               owl:onProperty :hasOrigin ;
-                                                               owl:hasValue :radioactive
-                                                             ]
-                                                           ) ;
-                                        rdf:type owl:Class
-                                      ] ;
-                  
+                  owl:equivalentClass [
+                      owl:intersectionOf ( :Waste
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty :hasOrigin ;
+                                       owl:hasValue :radioactive
+                                     ]
+                                   ) ;
+                      rdf:type owl:Class
+                  ] ;
                   rdfs:subClassOf :Composition ;
-                  
                   rdfs:label "Радиоактивные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#RecyclableWaste
-
 :RecyclableWaste rdf:type owl:Class ;
-                 
-                 owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                            [ rdf:type owl:Restriction ;
-                                                              owl:onProperty :hasMethod ;
-                                                              owl:someValuesFrom :Recycling
-                                                            ]
-                                                          ) ;
-                                       rdf:type owl:Class
-                                     ] ;
-                 
+                 owl:equivalentClass [
+                      owl:intersectionOf ( :Waste
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :hasMethod ;
+                                      owl:someValuesFrom :Recycling
+                                    ]
+                                  ) ;
+                     rdf:type owl:Class
+                 ] ;
                  rdfs:subClassOf :Processable ;
-                 
                  rdfs:label "Перерабатываемые отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Recycling
-
 :Recycling rdf:type owl:Class ;
-           
            rdfs:subClassOf :Method ;
-           
            rdfs:label "Переработка"@ru .
 
-
-
 ###  http://localhost/owl/wm#Region
-
 :Region rdf:type owl:Class ;
-        
         rdfs:subClassOf :Subject ;
-        
         rdfs:label "Регион"@ru .
 
-
-
 ###  http://localhost/owl/wm#SolidWaste
-
 :SolidWaste rdf:type owl:Class ;
-            
-            owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                       [ rdf:type owl:Restriction ;
-                                                         owl:onProperty :hasAggregateState ;
-                                                         owl:hasValue :solid
-                                                       ]
-                                                     ) ;
-                                  rdf:type owl:Class
-                                ] ;
-            
+            owl:equivalentClass [
+                  owl:intersectionOf ( :Waste
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :hasAggregateState ;
+                               owl:hasValue :solid
+                             ]
+                           ) ;
+              rdf:type owl:Class
+            ] ;
             rdfs:subClassOf :Substance ;
-            
             rdfs:label "Твердые отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#SpecificWaste
-
 :SpecificWaste rdf:type owl:Class ;
-               
                rdfs:subClassOf :Waste ;
-               
                rdfs:label "Конкретные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#State
-
 :State rdf:type owl:Class ;
-       
        rdfs:subClassOf :Subject ;
-       
        rdfs:label "Государство"@ru .
 
-
-
 ###  http://localhost/owl/wm#StorableWaste
-
 :StorableWaste rdf:type owl:Class ;
-               
-               owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                          [ rdf:type owl:Restriction ;
-                                                            owl:onProperty :hasMethod ;
-                                                            owl:someValuesFrom :Storage
-                                                          ]
-                                                        ) ;
-                                     rdf:type owl:Class
-                                   ] ;
-               
+               owl:equivalentClass [
+                    owl:intersectionOf ( :Waste
+                                        [ rdf:type owl:Restriction ;
+                                          owl:onProperty :hasMethod ;
+                                          owl:someValuesFrom :Storage
+                                        ]
+                                      ) ;
+                    rdf:type owl:Class
+               ] ;
                rdfs:subClassOf :Processable ;
-               
                rdfs:label "Хранимые отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Storage
-
 :Storage rdf:type owl:Class ;
-         
          rdfs:subClassOf :Method ;
-         
          rdfs:label "Захоронение"@ru .
 
-
-
 ###  http://localhost/owl/wm#Subject
-
 :Subject rdf:type owl:Class ;
-         
          rdfs:label "Субъект управления отходами"@ru .
 
-
-
 ###  http://localhost/owl/wm#Substance
-
 :Substance rdf:type owl:Class ;
-           
            owl:equivalentClass [ rdf:type owl:Class ;
                                  owl:unionOf ( :GasWaste
                                                :LiquidWaste
                                                :SolidWaste
                                              )
                                ] ;
-           
            rdfs:subClassOf :Waste ;
-           
            rdfs:label "По структуре"@ru .
 
-
-
 ###  http://localhost/owl/wm#TransportableWaste
-
 :TransportableWaste rdf:type owl:Class ;
-                    
-                    owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                               [ rdf:type owl:Restriction ;
-                                                                 owl:onProperty :hasMethod ;
-                                                                 owl:someValuesFrom :Transportation
-                                                               ]
-                                                             ) ;
-                                          rdf:type owl:Class
-                                        ] ;
-                    
+                    owl:equivalentClass [
+                        owl:intersectionOf ( :Waste
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :hasMethod ;
+                               owl:someValuesFrom :Transportation
+                             ]
+                           ) ;
+                      rdf:type owl:Class
+                    ] ;
                     rdfs:subClassOf :Processable ;
-                    
                     rdfs:label "Транспортабельные отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Transportation
-
 :Transportation rdf:type owl:Class ;
-                
                 rdfs:subClassOf :Method ;
-                
                 rdfs:label "Транспортировка"@ru .
 
-
-
 ###  http://localhost/owl/wm#UtilableWaste
-
 :UtilableWaste rdf:type owl:Class ;
-               
-               owl:equivalentClass [ owl:intersectionOf ( :Waste
-                                                          [ rdf:type owl:Restriction ;
-                                                            owl:onProperty :hasMethod ;
-                                                            owl:someValuesFrom :Utilization
-                                                          ]
-                                                        ) ;
-                                     rdf:type owl:Class
-                                   ] ;
-               
+               owl:equivalentClass [
+                    owl:intersectionOf ( :Waste
+                                      [ rdf:type owl:Restriction ;
+                                        owl:onProperty :hasMethod ;
+                                        owl:someValuesFrom :Utilization
+                                      ]
+                                    ) ;
+                   rdf:type owl:Class
+               ] ;
                rdfs:subClassOf :Processable ;
-               
                rdfs:label "Утилизируемые отходы"@ru .
 
-
-
 ###  http://localhost/owl/wm#Utilization
-
 :Utilization rdf:type owl:Class ;
-             
              rdfs:subClassOf :Method ;
-             
              rdfs:label "Утилизация"@ru .
 
-
-
 ###  http://localhost/owl/wm#Waste
-
 :Waste rdf:type owl:Class ;
-       
        rdfs:label "Отходы"@ru .
-
-
-
-
 
 #################################################################
 #
@@ -841,159 +543,92 @@
 #
 #################################################################
 
-
 ###  http://localhost/owl/wm#biological
-
 :biological rdf:type owl:NamedIndividual ,
-                     :Origin .
-
-
-
-###  http://localhost/owl/wm#class1
-
-:class1 rdf:type owl:NamedIndividual ,
-                 :HazardClass ;
-        
-        :title "1 класс"@ru .
-
-
-
-###  http://localhost/owl/wm#class2
-
-:class2 rdf:type owl:NamedIndividual ,
-                 :HazardClass ;
-        
-        :title "2 класс"@ru .
-
-
-
-###  http://localhost/owl/wm#class3
-
-:class3 rdf:type owl:NamedIndividual ,
-                 :HazardClass ;
-        
-        :title "3 класс"@ru .
-
-
-
-###  http://localhost/owl/wm#class4
-
-:class4 rdf:type owl:NamedIndividual ,
-                 :HazardClass ;
-        
-        :title "4 класс"@ru .
-
-
-
-###  http://localhost/owl/wm#class5
-
-:class5 rdf:type owl:NamedIndividual ,
-                 :HazardClass ;
-        
-        :title "5 класс"@ru .
-
-
+                     :Origin ;
+            :title "Биологическое"@ru .
 
 ###  http://localhost/owl/wm#consumption
-
 :consumption rdf:type owl:NamedIndividual ,
-                      :Origin .
+                      :Origin ;
+             :title "Бытовое"@ru .
 
+###  http://localhost/owl/wm#firstClass
+:firstClass rdf:type owl:NamedIndividual ,
+                     :HazardClass ;
+            :title "1 класс"@ru .
 
+###  http://localhost/owl/wm#fiveClass
+:fiveClass rdf:type owl:NamedIndividual ,
+                    :HazardClass ;
+           :title "5 класс"@ru .
+
+###  http://localhost/owl/wm#fourthClass
+:fourthClass rdf:type owl:NamedIndividual ,
+                      :HazardClass ;
+             :title "4 класс"@ru .
 
 ###  http://localhost/owl/wm#gas
-
 :gas rdf:type owl:NamedIndividual ,
               :AggregateState ;
-     
      :title "Газообразный"@ru .
 
-
-
 ###  http://localhost/owl/wm#high
-
 :high rdf:type owl:NamedIndividual ,
                :HarmfulEffect ;
-      
       :title "Высокое"@ru .
 
-
-
 ###  http://localhost/owl/wm#liquid
-
 :liquid rdf:type owl:NamedIndividual ,
                  :AggregateState ;
-        
         :title "Жидкий"@ru .
 
-
-
 ###  http://localhost/owl/wm#low
-
 :low rdf:type owl:NamedIndividual ,
               :HarmfulEffect ;
-     
      :title "Низкое"@ru .
 
-
-
 ###  http://localhost/owl/wm#medical
-
 :medical rdf:type owl:NamedIndividual ,
-                  :Origin .
-
-
+                  :Origin ;
+         :title "Медецинское"@ru .
 
 ###  http://localhost/owl/wm#middle
-
 :middle rdf:type owl:NamedIndividual ,
                  :HarmfulEffect ;
-        
         :title "Среднее"@ru .
 
-
-
 ###  http://localhost/owl/wm#production
-
 :production rdf:type owl:NamedIndividual ,
-                     :Origin .
-
-
+                     :Origin ;
+            :title "Промышленное"@ru .
 
 ###  http://localhost/owl/wm#radioactive
-
 :radioactive rdf:type owl:NamedIndividual ,
-                      :Origin .
+                      :Origin ;
+             :title "Радиоактивное"@ru .
 
-
+###  http://localhost/owl/wm#secondClass
+:secondClass rdf:type owl:NamedIndividual ,
+                      :HazardClass ;
+             :title "2 класс"@ru .
 
 ###  http://localhost/owl/wm#solid
-
 :solid rdf:type owl:NamedIndividual ,
                 :AggregateState ;
-       
        :title "Твердый"@ru .
 
-
+###  http://localhost/owl/wm#thirdClass
+:thirdClass rdf:type owl:NamedIndividual ,
+                     :HazardClass ;
+            :title "3 класс"@ru .
 
 ###  http://localhost/owl/wm#veryHigh
-
 :veryHigh rdf:type owl:NamedIndividual ,
                    :HarmfulEffect ;
-          
           :title "Очень высокое"@ru .
 
-
-
 ###  http://localhost/owl/wm#veryLow
-
 :veryLow rdf:type owl:NamedIndividual ,
                   :HarmfulEffect ;
-         
          :title "Очень низкое"@ru .
-
-
-
-
-###  Generated by the OWL API (version 4.1.3.20151118-2017) https://github.com/owlcs/owlapi
-

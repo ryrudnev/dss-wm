@@ -1,0 +1,389 @@
+###  http://localhost/owl/wm#W20
+:W20 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fourthClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :production
+                     ] ;
+     rdfs:label "Отходы лакокрасочных средств (кисти малярные)"@ru .
+
+###  http://localhost/owl/wm#W21
+:W21 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fourthClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :production
+                     ] ;
+     rdfs:label "Лом и отходы черных металлов с примесями"@ru .
+
+###  http://localhost/owl/wm#W22
+:W22 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Storage
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fourthClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+     rdfs:label "Отходы потребления на производстве"@ru .
+
+###  http://localhost/owl/wm#W23
+:W23 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+
+     rdfs:label "Отходы бумаги от канцелярской деятельности"@ru .
+
+###  http://localhost/owl/wm#W24
+:W24 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+     rdfs:label "Отходы упаковочного картона незагрязненные"@ru .
+
+###  http://localhost/owl/wm#W25
+:W25 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Storage
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :production
+                     ] ;
+     rdfs:label "Отходы гипса в кусковой форме"@ru .
+
+###  http://localhost/owl/wm#W26
+:W26 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :production
+                     ] ;
+
+     rdfs:label "Остатки и огарки стальных сварочных электродов"@ru .
+
+###  http://localhost/owl/wm#W27
+:W27 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+     rdfs:label "Отходы упаковочной бумаги незагрязненные"@ru .
+
+###  http://localhost/owl/wm#W28
+:W28 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+     rdfs:label "Отходы керамики в кусковой форме"@ru .
+
+###  http://localhost/owl/wm#W29
+:W29 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Storage
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ;
+     rdfs:label "Пищевые отходы кухонь и организаций питания"@ru .
+
+###  http://localhost/owl/wm#W30
+:W30 rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Storage
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Utilization
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fiveClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ;
+     rdfs:label "Очистки овощного сырья"@ru .
+
+###  http://localhost/owl/wm#c1
+:c1 rdf:type owl:NamedIndividual ,
+             :Company ;
+    :hasWaste :w1 ,
+              :w10 ,
+              :w11 ,
+              :w12 ,
+              :w13 ,
+              :w14 ,
+              :w15 ,
+              :w16 ,
+              :w17 ,
+              :w18 ,
+              :w19 ,
+              :w2 ,
+              :w20 ,
+              :w21 ,
+              :w22 ,
+              :w23 ,
+              :w3 ,
+              :w4 ,
+              :w5 ,
+              :w6 ,
+              :w7 ,
+              :w8 ,
+              :w9 ;
+    :budget "420000.0"^^xsd:float ;
+    :coordinates "50.0249,45.4451"^^xsd:string ;
+    :title "ГБУЗ Николаевское ЦРБ"@ru .
+
+###  http://localhost/owl/wm#w10
+:w10 rdf:type owl:NamedIndividual ,
+              :W25 ;
+     :amount "0.3"^^xsd:float .
+
+###  http://localhost/owl/wm#w11
+:w11 rdf:type owl:NamedIndividual ,
+              :W28 ;
+     :amount "0.01"^^xsd:float .
+
+###  http://localhost/owl/wm#w12
+:w12 rdf:type owl:NamedIndividual ,
+              :W20 ;
+     :amount "0.0015"^^xsd:float .
+
+###  http://localhost/owl/wm#w14
+:w14 rdf:type owl:NamedIndividual ,
+              :W22 ;
+     :amount "7.8"^^xsd:float .
+
+###  http://localhost/owl/wm#w15
+:w15 rdf:type owl:NamedIndividual ,
+              :W24 ;
+     :amount "20.9"^^xsd:float .
+
+###  http://localhost/owl/wm#w16
+:w16 rdf:type owl:NamedIndividual ,
+              :W27 ;
+     :amount "21.733"^^xsd:float .
+
+###  http://localhost/owl/wm#w17
+:w17 rdf:type owl:NamedIndividual ,
+              :W30 ;
+     :amount "15.0"^^xsd:float .
+
+###  http://localhost/owl/wm#w19
+:w19 rdf:type owl:NamedIndividual ,
+              :W29 ;
+     :amount "7.0"^^xsd:float .
+
+###  http://localhost/owl/wm#w2
+:w2 rdf:type owl:NamedIndividual ,
+             :W21 ;
+    :amount "0.025"^^xsd:float .
+
+###  http://localhost/owl/wm#w8
+:w8 rdf:type owl:NamedIndividual ,
+             :W26 ;
+    :amount "0.0053"^^xsd:float .
+
+###  http://localhost/owl/wm#w9
+:w9 rdf:type owl:NamedIndividual ,
+             :W23 ;
+    :amount "0.085"^^xsd:float .

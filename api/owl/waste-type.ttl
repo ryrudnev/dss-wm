@@ -1,0 +1,31 @@
+:NonferrousMetal rdf:type owl:Class ;
+     rdfs:subClassOf :SpecificWaste ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Recycling
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Storage
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasMethod ;
+                       owl:someValuesFrom :Transportation
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasAggregateState ;
+                       owl:hasValue :solid
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasHazardClass ;
+                       owl:hasValue :fourthClass
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :consumption
+                     ] ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :hasOrigin ;
+                       owl:hasValue :production
+                     ] ;
+     rdfs:label "Цветной металлалом"@ru .
