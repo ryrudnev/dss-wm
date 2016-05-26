@@ -9,7 +9,7 @@ const mongodb = isTesting ? 'mongodb://localhost/wm-test' : (process.env.MONGO_U
 
 const config = {
   // Log path
-  logDir: path.resolve(__dirname, '../logs'),
+  logDir: path.resolve(__dirname, '../../logs'),
 
   // ----------------------------------
   // Localizations Configuration

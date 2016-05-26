@@ -19,7 +19,7 @@ function runServer(app) {
   });
 }
 
-Promise.all([mongoConnect(), stardog.init()])
+export default Promise.all([mongoConnect(), stardog.init()])
   .then(() => Promise.resolve(
     initSeeds()
   ))

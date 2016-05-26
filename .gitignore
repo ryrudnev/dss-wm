@@ -1,6 +1,6 @@
 /node_modules/
 /.idea/
 /logs/
-/api/logs/
 /dist/
+/coverage/
 npm-debug.log

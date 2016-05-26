@@ -18,7 +18,7 @@ import path from 'path';
 
 const debug = _debug('api:express');
 
-const stream = fs.createWriteStream(path.join(config.logDir, 'access.log'), { flags: 'a' });
+const stream = fs.createWriteStream(path.join(config.logDir, 'api.log'), { flags: 'a' });
 
 // Initialize the express application
 export default (app = new Express()) => {
