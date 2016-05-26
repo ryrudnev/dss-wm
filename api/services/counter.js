@@ -19,8 +19,9 @@ export default Counter;
 export function genUid(name = 'uid') {
   debug(`Generating a new unique ID for ${name}`);
 
-  return Counter.findByIdAndUpdate(name, { $inc: { seq: 1 } }, { upsert: true }).exec()
+  return Counter.findByIdAndUpdate(name, { $inc: { seq: 1 } }, { upsert: true, new: true }).exec()
       .then(doc => {
+        console.log(doc);
         const uid = doc.seq;
         debug(`Generated unique ID for ${name} = ${uid}`);
         return Promise.resolve(uid);
