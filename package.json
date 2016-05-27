@@ -8,12 +8,12 @@
     "start-prod": "cross-env NODE_ENV=production node bin/server.js",
     "api": "cross-env DEBUG=api,api:* && NODE_ENV=development nodemon --watch api bin/api.js",
     "api-prod": "cross-env NODE_ENV=production node bin/api.js",
-    "api-debug": "cross-env DEBUG=api,api:* && NODE_ENV=development concurrently --kill-others \"nodemon --debug --watch api bin/api.js\"  \"node-inspector -p 3020\"",
+    "api-debug": "cross-env DEBUG=api,api:* && NODE_ENV=development concurrently --kill-others \"nodemon --debug --watch api bin/api.js\" \"node-inspector -p 3020\"",
     "build": "cross-env NODE_ENV=production webpack --progress --verbose --display-error-details --config webpack/webpack.config.js",
     "build-analyze": "cross-env NODE_ENV=production webpack --json --config bin/webpack.config.js | webpack-bundle-size-analyzer > logs/build-analyze.log",
-    "test-api": "cross-env NODE_ENV=test node_modules/mocha/bin/mocha --compilers js:babel-core/register api/tests/**/*.js",
+    "test-api": "cross-env NODE_ENV=test node_modules/mocha/bin/mocha --compilers js:babel-core/register api/tests/**/*.spec.js",
     "test-api-watch": "npm run test-api -- --watch",
-    "coverage-api": "rimraf coverage && cross-env NODE_ENV=test babel-node node_modules/isparta/bin/isparta cover --report text --report html  node_modules/mocha/bin/_mocha -- --reporter spec api/tests/**/*.js"
+    "coverage-api": "rimraf coverage && cross-env NODE_ENV=test babel-node node_modules/isparta/bin/isparta cover --report text --report html  node_modules/mocha/bin/_mocha -- --reporter spec api/tests/**/*.spec.js"
   },
   "repository": {
     "type": "git",
@@ -75,6 +75,7 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
     "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
     "clean-webpack-plugin": "^0.1.9",
     "concurrently": "^2.1.0",
     "copy-webpack-plugin": "^3.0.0",
