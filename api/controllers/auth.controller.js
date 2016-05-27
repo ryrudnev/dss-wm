@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
+import User, { NEW_ALLOWED_ATTRS } from '../models/user.model';
 import { respondUnauthorized, respondError, respondOk } from '../util/expressUtils';
+import { pick } from '../util/utils';
 import config from '../config/config';
 
 export function signup(req, res) {
@@ -9,7 +10,7 @@ export function signup(req, res) {
   if (!username || !password) {
     return respondUnauthorized.call(res, res.__('You must specify a username and password'));
   }
-  const user = new User({ username, password });
+  const user = new User(pick(req.body, NEW_ALLOWED_ATTRS));
   user.save(err => {
     if (err) {
       return respondError.call(res, err);

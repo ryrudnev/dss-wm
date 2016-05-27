@@ -1,4 +1,4 @@
-import { omit } from '../util/utils';
+import { omit, pick } from '../util/utils';
 import { genUid } from '../services/counter';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -7,6 +7,10 @@ const { Schema } = mongoose;
 
 // Rounds constant for generating salt
 const SALT_ROUNDS = 10;
+
+export const NEW_ALLOWED_ATTRS = ['email', 'username', 'password', 'role', 'subjects'];
+
+export const PUBLIC_ATTRS = ['id', ...omit(NEW_ALLOWED_ATTRS, 'password')];
 
 const UserSchema = new Schema({
   _id: { type: Number, unique: true },
@@ -50,7 +54,7 @@ UserSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform(doc, ret /* , options */) {
-    return { ...omit(ret, ['_id', 'password']), id: ret._id };
+    return { ...pick(ret, PUBLIC_ATTRS), id: ret._id };
   },
 });
 
