@@ -4,7 +4,7 @@ import { applyFn } from '../util/utils';
 import { isString, isFunction, flatten } from 'underscore';
 
 export class Route extends Events {
-  render() {
+  render(/* props, context */) {
     throw new Error('Method not implemented');
   }
 /*
@@ -38,7 +38,7 @@ export class StateRouter extends BaseRouter {
       return;
     }
 
-    if (isFunction(this.authenticate) && !this.authenticate(newRoute, routeData)) {
+    if (isFunction(this.auth) && !this.auth(routeData)) {
       newRoute.trigger('unauthorized', routeData);
       this.trigger('unauthorized', routeData);
       return;
@@ -52,29 +52,27 @@ export class StateRouter extends BaseRouter {
     this.currentRoute = newRoute;
     newRoute.trigger('enter', routeData);
 
-    Promise.all([this.startBreadcrumbs(), this.startFetch()])
-      .then(([, data]) => {
-        if (newRoute !== this.currentRoute) {
-          return;
-        }
-        this.trigger('route', newRoute, routeData, data);
-      })
-      .catch(error => {
-        if (newRoute !== this.currentRoute) {
-          return;
-        }
-        newRoute.trigger('error', error, routeData);
-      });
+    Promise.all([this.startBreadcrumb(), this.startFetch()]).then(() => {
+      if (newRoute !== this.currentRoute) {
+        return;
+      }
+      this.trigger('route', routeData);
+    })
+    .catch(error => {
+      if (newRoute !== this.currentRoute) {
+        return;
+      }
+      newRoute.trigger('error', error, routeData);
+    });
   }
 
-  startBreadcrumbs(route, routeData) {
-    if (isFunction(this.initBreadcrumbs)) {
-      this.trigger('before:breadcrumbs');
-      return Promise.resolve(this.initBreadcrumbs(route, routeData))
-        .then(breadcrumbs => {
-          this.trigger('breadcrumbs', breadcrumbs);
-          return Promise.resolve(breadcrumbs);
-        });
+  startBreadcrumb(route, routeData) {
+    if (isFunction(this.initBreadcrumb)) {
+      this.trigger('before:breadcrumb');
+      return Promise.resolve(this.initBreadcrumb(route, routeData)).then(b => {
+        this.trigger('breadcrumb', b);
+        return Promise.resolve(b);
+      });
     }
     return 0;
   }
@@ -82,12 +80,11 @@ export class StateRouter extends BaseRouter {
   startFetch(route, routeData) {
     if (isFunction(route.fetch)) {
       this.trigger('before:fetch');
-      return Promise.all(flatten[route.fetch(routeData)])
-        .then(data => {
-          this.trigger('fetch', routeData, data);
-          route.trigger('fetch', routeData, data);
-          return Promise.resolve(data);
-        });
+      return Promise.all(flatten[route.fetch(routeData)]).then(data => {
+        this.trigger('fetch', routeData, data);
+        route.trigger('fetch', routeData, data);
+        return Promise.resolve(data);
+      });
     }
     return 0;
   }
