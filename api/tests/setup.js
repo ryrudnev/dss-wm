@@ -3,4 +3,4 @@ import chaiAsPromised from 'chai-as-promised';
 
 // init chai
 chai.use(chaiAsPromised);
-chai.should();
+export const should = chai.should();

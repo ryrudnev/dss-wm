@@ -117,16 +117,18 @@ export function pick(object, ...keys) {
 
 export function joinExpanded(joinField, expanded, isSingle) {
   return expanded.reduce((cur, val) => {
-    const item = val;
     const field = val[joinField];
-    delete item[joinField];
+    if (!field) {
+      return cur;
+    }
+    delete val[joinField];
     if (!isSingle) {
       if (!cur[field]) {
         cur[field] = [];
       }
-      cur[field].push(item);
+      cur[field].push(val);
     } else {
-      cur[field] = item;
+      cur[field] = val;
     }
     return cur;
   }, {});
