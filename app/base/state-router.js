@@ -1,7 +1,7 @@
-import { Events } from 'backbone';
+import { Events, history } from 'backbone';
 import BaseRouter from 'backbone.base-router';
 import { applyFn } from '../util/utils';
-import { isString, isFunction, flatten } from 'underscore';
+import { isString, isFunction, flatten, pick } from 'underscore';
 
 export class Route extends Events {
   render(/* props, context */) {
@@ -20,49 +20,67 @@ export class Route extends Events {
 }
 
 export class StateRouter extends BaseRouter {
-  onNavigate(routeData) {
-    let newRoute = routeData.linked;
-
-    if (!(newRoute instanceof Route) && newRoute.uses) {
-      newRoute = newRoute.uses;
+  navigate(uriFragment, options = {}) {
+    if (applyFn.call(this.currentRoute, 'preventNavigation') !== true) {
+      history.navigate(uriFragment, { ...options, trigger: true });
     }
-    if (!(newRoute instanceof Route)) {
+    return this;
+  }
+
+  onNavigate(routeData) {
+    let { linked } = routeData;
+
+    if (!(linked instanceof Route) && linked.uses) {
+      linked = linked.uses;
+    }
+    if (!(linked instanceof Route)) {
       throw new Error('A Route object must be associated with each route.');
     }
 
-    const redirect = applyFn.call(newRoute, 'redirect', routeData);
+    routeData = pick(routeData, 'params', 'query', 'uriFragment', 'originalRoute');
+
+    const redirect = applyFn.call(linked, 'redirect', routeData);
     if (isString(redirect)) {
       this.navigate(redirect, { trigger: true });
-      newRoute.trigger('redirect', routeData);
-      this.trigger('redirect', routeData);
+      linked.trigger('redirect', routeData);
+      this.trigger('redirect', linked, routeData);
       return;
     }
 
-    if (isFunction(this.auth) && !this.auth(routeData)) {
-      newRoute.trigger('unauthorized', routeData);
-      this.trigger('unauthorized', routeData);
+    if (isFunction(this.authenticate) && !this.authenticate(linked, routeData)) {
+      linked.trigger('unauthorized', routeData);
+      this.trigger('unauthorized', linked, routeData);
       return;
     }
 
-    this.trigger('before:route', routeData);
+    this._transitioningTo = linked;
 
-    if (this.currentRoute) {
-      this.currentRoute.trigger('exit', routeData);
-    }
-    this.currentRoute = newRoute;
-    newRoute.trigger('enter', routeData);
+    this.trigger('before:route', linked, routeData);
 
-    Promise.all([this.startBreadcrumb(), this.startFetch()]).then(() => {
-      if (newRoute !== this.currentRoute) {
-        return;
+    const promises = [this.startBreadcrumb(linked, routeData), this.startFetch(linked, routeData)];
+    Promise.all(promises).then(() => {
+      if (this._transitioningTo !== linked) { return; }
+
+      if (this.currentRoute) {
+        this.currentRoute.trigger('exit');
       }
-      this.trigger('route', routeData);
+      if (this._transitioningTo !== linked) { return; }
+
+      this.currentRoute = linked;
+      linked.trigger('enter', routeData);
+
+      if (this._transitioningTo === linked) {
+        delete this._transitioningTo;
+      }
+
+      this.trigger('route', linked, routeData);
     })
-    .catch(error => {
-      if (newRoute !== this.currentRoute) {
-        return;
+    .catch(e => {
+      if (isFunction(linked.onError)) {
+        linked.onError(e, routeData);
+      } else {
+        this.onError(e, routeData);
       }
-      newRoute.trigger('error', error, routeData);
     });
   }
 
@@ -81,11 +99,20 @@ export class StateRouter extends BaseRouter {
     if (isFunction(route.fetch)) {
       this.trigger('before:fetch');
       return Promise.all(flatten[route.fetch(routeData)]).then(data => {
-        this.trigger('fetch', routeData, data);
+        if (this._transitioningTo !== route) { return; }
+
+        this.trigger('fetch', route, routeData, data);
         route.trigger('fetch', routeData, data);
         return Promise.resolve(data);
       });
     }
     return 0;
+  }
+
+  onError(e /* , routeData */) {
+    if (typeof console === 'object') {
+      console.error(e, e.stack);
+    }
+    return this;
   }
 }

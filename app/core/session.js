@@ -23,23 +23,19 @@ class Session extends Model {
 
     this.user = new User();
     this.updateUser();
-
-    if (this.isAuth()) {
-      sessionChannel.trigger('authorize', this.user);
-    }
   }
 
   attachEvents() {
     sessionChannel.reply({
       inst: () => this,
 
-      authorized: this.isAuth,
+      authorized: () => !!this.get('token'),
 
       token: () => this.get('token'),
 
       currentUser: () => this.user,
 
-      sigin: this.sigin,
+      login: this.login,
 
       logout: this.logout,
 
@@ -80,11 +76,7 @@ class Session extends Model {
     return this.user.clear().set(this.get('userData'));
   }
 
-  isAuth() {
-    return !!this.get('token');
-  }
-
-  sigin({ username, password }, { success, error } = {}) {
+  login({ username, password }, { success, error } = {}) {
     return $.ajax({
       xhrFields: { withCredentials: true },
       contentType: 'application/json',
@@ -95,7 +87,7 @@ class Session extends Model {
       if (resp.success) {
         this.updateUser(resp.user);
         this.set('token', resp.token);
-        sessionChannel.trigger('authorize', this.user);
+        sessionChannel.trigger('login', this.user);
         if (isFunction(success)) {
           success(resp);
         }
@@ -115,6 +107,7 @@ class Session extends Model {
       data,
     }).done(resp => {
       if (resp.success) {
+        sessionChannel.trigger('signup', resp.user);
         if (isFunction(success)) {
           success(resp);
         }
