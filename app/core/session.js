@@ -22,6 +22,8 @@ class Session extends Model {
     this.attachEvents();
 
     this.user = new User();
+    this.user.isAuth = () => !!this.get('token');
+
     this.updateUser();
   }
 

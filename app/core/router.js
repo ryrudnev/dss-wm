@@ -4,13 +4,17 @@ import { applyFn } from '../util/utils';
 import { each, isEmpty, findKey, isString, has } from 'underscore';
 import radio from 'backbone.radio';
 
+const routes = {
+
+};
+
 const routerChannel = radio.channel('router');
 const sessionChannel = radio.channel('session');
-const errorChannel = radio.channel('error');
+const errorChannel = radio.channel('errors');
 
 class Router extends StateRouter {
-  constructor({ routes }) {
-    this.routes = routes;
+  constructor(options) {
+    this.routes = options.routes;
     this.breadcrumb = new Collection();
 
     this.attachEvents();
@@ -25,6 +29,8 @@ class Router extends StateRouter {
       breadcrumb: () => this.breadcrumb,
 
       currentRoute: () => this.currentRoute,
+
+      currentRouteData: () => this.currentRouteData,
     });
 
     sessionChannel.on('login', () => {
@@ -47,12 +53,11 @@ class Router extends StateRouter {
 
     errorChannel.on({
       'error:401': () => {
-        const details = this.routeDetails(this.currentRoute);
-        if (!details || details.routeOriginal !== 'login') {
+        if (this.currentRouteData.originalRoute !== 'login') {
           this.navigate('login');
         }
       },
-      'error:403': () => {},
+      'error:403': () => { /* */ },
       'error:404': () => this.navigate('*notfound'),
     });
   }
@@ -131,4 +136,4 @@ class Router extends StateRouter {
   }
 }
 
-export default new Router();
+export default new Router({ routes });

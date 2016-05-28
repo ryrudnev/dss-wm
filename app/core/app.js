@@ -1,29 +1,56 @@
-import Backbone from 'backbone';
+import { history, $ } from 'backbone';
+import radio from 'backbone.radio';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { App as AppComponent } from '../components';
-import Session from './session';
-import Router from './router';
+import { AppContainer } from '../components';
 
-export default class App {
+import './session';
+import './router';
+
+const sessionChannel = radio.channel('session');
+const routerChannel = radio.channel('router');
+const errorChannel = radio.channel('errors');
+
+class App {
   constructor() {
-    this.session = new Session;
-    this.router = new Router;
+    this.errorHandler();
 
-    this.router.on('route', this.onRoute.bind(this));
+    routerChannel.on('route', () => this.render());
+    errorChannel.on('error', error => this.render({ error }));
   }
 
-  onRoute(route) {
+  errorHandler() {
+    $(document).ajaxError((e, xhr) => {
+      const resp = JSON.parse(xhr.responseText) || {};
+      const { success, code, message } = resp;
+      if (success) { return; }
+      const error = { code: code || xhr.code, name: xhr.statusText, message };
+      errorChannel.trigger(`error: ${error.code}`, error);
+      errorChannel.trigger('error', error);
+    });
+  }
+
+  render({ error }) {
+    const route = routerChannel.request('currentRoute');
+    const routeData = routerChannel.request('currentRouteData');
+    const breadcrumb = routerChannel.request('breadcrumb');
+    const user = sessionChannel.request('currentUser');
+
     ReactDOM.render(
-      <AppComponent
-        page={route.render()}
-        breadcrumbs={this.router.breadcrumbs}
+      < AppContainer
+        error={error}
+        user={user}
+        routeData={routeData}
+        breadcrumb={breadcrumb}
+        Page={(props, context) => route.render(props, context)}
       />,
       document.getElementById('app')
     );
   }
 
   start() {
-    Backbone.history.start({ pushState: true });
+    history.start({ pushState: true });
   }
 }
+
+export default new App();

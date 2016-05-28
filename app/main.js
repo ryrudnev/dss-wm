@@ -1,5 +1,5 @@
 import './styles/main.scss';
-import App from './core/app';
+import app from './core/app';
 
-const app = window.app = new App;
+window.app = app;
 app.start();

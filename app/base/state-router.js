@@ -67,6 +67,7 @@ export class StateRouter extends BaseRouter {
       if (this._transitioningTo !== linked) { return; }
 
       this.currentRoute = linked;
+      this.currentRouteData = routeData;
       linked.trigger('enter', routeData);
 
       if (this._transitioningTo === linked) {
