@@ -1,26 +1,41 @@
+import React, { PropTypes } from 'react';
+import classNames from 'classnames';
 import { Model, Collection } from 'backbone';
-import { StateRouter, Route } from '../base/state-router';
+import { StateRouter, Route as BaseRoute } from './state-router';
 import { applyFn } from '../util/utils';
 import { each, isEmpty, findKey, isString, has } from 'underscore';
 import radio from 'backbone.radio';
-
-const routes = {
-
-};
 
 const routerChannel = radio.channel('router');
 const sessionChannel = radio.channel('session');
 const errorChannel = radio.channel('errors');
 
+export class Route extends BaseRoute {}
+
+export const NavLink = (props) => (
+  <a
+    {...props}
+    href={props.uriFragment}
+    className={classNames(props.className, 'nav-link')}
+    onClick={() => routerChannel.request('navigate', props.uriFragment)}
+  >
+    {props.text || props.children}
+  </a>
+);
+NavLink.propTypes = {
+  uriFragment: PropTypes.string.isRequired,
+  text: PropTypes.string,
+};
+
 class Router extends StateRouter {
   constructor(options) {
-    this.routes = options.routes;
-    this.breadcrumb = new Collection();
+    super(options);
+    this._attachEvents();
 
-    this.attachEvents();
+    this.breadcrumb = new Collection();
   }
 
-  attachEvents() {
+  _attachEvents() {
     routerChannel.reply({
       inst: () => this,
 
@@ -63,7 +78,7 @@ class Router extends StateRouter {
   }
 
   authenticate(route /* , routeData */) {
-    return !(route.authorize && !sessionChannel.request('authorized'));
+    return !(route.authorize !== false && !sessionChannel.request('authorized'));
   }
 
   initBreadcrumb(route, routeData) {
@@ -71,7 +86,7 @@ class Router extends StateRouter {
     this.breadcrumb.reset();
 
     if (route.breadcrumb) {
-      return Promise.all(this.createBreadcrumb(originalRoute || route, routeData)).then(
+      return Promise.all(this._createBreadcrumb(originalRoute || route, routeData)).then(
           () => Promise.resolve(this.breadcrumb)
       );
     }
@@ -79,15 +94,15 @@ class Router extends StateRouter {
     return Promise.resolve(this.breadcrumb);
   }
 
-  createBreadcrumb(route, routeData, promises = [0]) {
-    const details = this.routeDetails(route);
+  _createBreadcrumb(route, routeData, promises = [0]) {
+    const details = this._routeDetails(route);
     if (!details) { return promises; }
     const { routeOriginal, routeObject, parentRoute } = details;
 
-    const url = this.getMappedUrl(routeOriginal, routeData);
+    const uriFragment = this._getMappedUrl(routeOriginal, routeData);
     const text = applyFn.call(routeObject, 'breadcrumb', routeData);
 
-    const b = new Model({ url, text });
+    const b = new Model({ uriFragment, text });
     promises.push(Promise.resolve(text).then(
         t => b.set({ text: t })
     ));
@@ -100,7 +115,7 @@ class Router extends StateRouter {
     return promises;
   }
 
-  getMappedUrl(originalRoute, routeData) {
+  _getMappedUrl(originalRoute, routeData) {
     if (!routeData) { return originalRoute; }
     const { params, queryString } = routeData;
     let url = originalRoute;
@@ -111,7 +126,7 @@ class Router extends StateRouter {
     return url;
   }
 
-  routeDetails(route) {
+  _routeDetails(route) {
     let routeOriginal;
     if (route instanceof Route) {
       routeOriginal = findKey(this.routes, linked =>
@@ -136,4 +151,8 @@ class Router extends StateRouter {
   }
 }
 
-export default new Router({ routes });
+export default (options) => {
+  if (Router._created) { throw new Error('Router has already been created'); }
+  Router._created = true;
+  return new Router(options);
+};

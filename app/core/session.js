@@ -1,4 +1,5 @@
-import { Model, $ } from 'backbone';
+import $ from 'jquery';
+import { Model } from 'backbone';
 import radio from 'backbone.radio';
 import store from 'store';
 import { Model as User } from '../entities/user';
@@ -19,15 +20,14 @@ function onError(resp, error) {
 class Session extends Model {
   constructor(options) {
     super(options);
-    this.attachEvents();
+    this._attachEvents();
 
     this.user = new User();
     this.user.isAuth = () => !!this.get('token');
-
     this.updateUser();
   }
 
-  attachEvents() {
+  _attachEvents() {
     sessionChannel.reply({
       inst: () => this,
 
@@ -125,4 +125,8 @@ class Session extends Model {
   }
 }
 
-export default new Session();
+export default (options) => {
+  if (Session._created) { throw new Error('Session has already been created'); }
+  Session._created = true;
+  return new Session(options);
+};
