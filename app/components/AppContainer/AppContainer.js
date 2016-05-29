@@ -27,7 +27,7 @@ export default class AppContainer extends Component {
     if (route.dashboard === false) {
       return (
         <div id="container">
-          <Helmet titleTemplate="DSS-WM | %s" />
+          <Helmet titleTemplate="%s | DSS-WM" />
           <Page />
         </div>
       );
@@ -35,7 +35,7 @@ export default class AppContainer extends Component {
 
     return (
       <div id="container">
-        <Helmet titleTemplate="DSS-WM | %s" title="Панель управления" />
+        <Helmet titleTemplate="%s | DSS-WM" title="Панель управления" />
         <div id="wrapper" className="content">
           <Navbar />
 

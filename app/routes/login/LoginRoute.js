@@ -1,4 +1,5 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 import radio from 'backbone.radio';
 import { Route } from '../../core/router';
 import { Login } from '../../components';
@@ -24,6 +25,11 @@ export default class LoginRoute extends Route {
   }
 
   render(props) {
-    return <Login {...props} onSubmit={this.onSubmit} onError={this.onError} />;
+    return (
+      <div>
+        <Helmet title="Вход в систему" />
+        <Login {...props} onSubmit={this.onSubmit} onError={this.onError} />
+      </div>
+    );
   }
 }

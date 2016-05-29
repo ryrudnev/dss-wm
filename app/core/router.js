@@ -15,15 +15,18 @@ export class Route extends BaseRoute {}
 export const NavLink = (props) => (
   <a
     {...props}
-    href={props.uriFragment}
+    href={props.url}
     className={classNames(props.className, 'nav-link')}
-    onClick={() => router.request('navigate', props.uriFragment)}
+    onClick={(e) => {
+      e.preventDefault();
+      router.request('navigate', props.url);
+    }}
   >
     {props.text || props.children}
   </a>
 );
 NavLink.propTypes = {
-  uriFragment: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
   text: PropTypes.string,
 };
 
@@ -95,10 +98,10 @@ class Router extends StateRouter {
     if (!details) { return promises; }
     const { routeOriginal, routeObject, parentRoute } = details;
 
-    const uriFragment = this._getMappedUrl(routeOriginal, routeData);
+    const url = this._getMappedUrl(routeOriginal, routeData);
     const text = applyFn.call(routeObject, 'breadcrumb', routeData);
 
-    const b = new Model({ uriFragment, text });
+    const b = new Model({ url, text });
     promises.push(Promise.resolve(text).then(
         t => b.set({ text: t })
     ));

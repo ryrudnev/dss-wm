@@ -1,4 +1,4 @@
-import { omit, pick } from '../util/utils';
+import { pick } from '../util/utils';
 import { genUid } from '../services/counter';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -10,7 +10,7 @@ const SALT_ROUNDS = 10;
 
 export const NEW_ALLOWED_ATTRS = ['email', 'username', 'password', 'role', 'subjects'];
 
-export const PUBLIC_ATTRS = ['id', ...omit(NEW_ALLOWED_ATTRS, 'password')];
+export const PUBLIC_ATTRS = ['id', 'email', 'username', 'role', 'subjects'];
 
 const UserSchema = new Schema({
   _id: { type: Number, unique: true },
