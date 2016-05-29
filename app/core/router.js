@@ -6,9 +6,9 @@ import { applyFn } from '../util/utils';
 import { each, isEmpty, findKey, isString, has } from 'underscore';
 import radio from 'backbone.radio';
 
-const routerChannel = radio.channel('router');
-const sessionChannel = radio.channel('session');
-const errorChannel = radio.channel('errors');
+const router = radio.channel('router');
+const session = radio.channel('session');
+const errors = radio.channel('errors');
 
 export class Route extends BaseRoute {}
 
@@ -17,7 +17,7 @@ export const NavLink = (props) => (
     {...props}
     href={props.uriFragment}
     className={classNames(props.className, 'nav-link')}
-    onClick={() => routerChannel.request('navigate', props.uriFragment)}
+    onClick={() => router.request('navigate', props.uriFragment)}
   >
     {props.text || props.children}
   </a>
@@ -36,9 +36,7 @@ class Router extends StateRouter {
   }
 
   _attachEvents() {
-    routerChannel.reply({
-      inst: () => this,
-
+    router.reply({
       navigate: uriFragment => this.navigate(uriFragment),
 
       breadcrumb: () => this.breadcrumb,
@@ -48,25 +46,23 @@ class Router extends StateRouter {
       currentRouteData: () => this.currentRouteData,
     });
 
-    sessionChannel.on('login', () => {
-      const session = sessionChannel.request('inst');
-      const redirectFrom = session.get('redirectFrom');
+    session.on('login', () => {
+      const redirectFrom = session.request('get', 'redirectFrom');
       if (redirectFrom) {
-        session.unset('redirectFrom');
+        session.request('unset', 'redirectFrom');
         this.navigate(redirectFrom);
       } else { this.navigate(''); }
     });
 
     this.on({
       unauthorized: (route, routeData) => {
-        const session = sessionChannel.request('inst');
-        session.set('redirectFrom', routeData.uriFragment);
+        session.request('set', 'redirectFrom', routeData.uriFragment);
         this.navigate('login');
       },
-      route: (route, routeData) => routerChannel.trigger('route', route, routeData),
+      route: (route, routeData) => router.trigger('route', route, routeData),
     });
 
-    errorChannel.on({
+    errors.on({
       'error:401': () => {
         if (this.currentRouteData.originalRoute !== 'login') {
           this.navigate('login');
@@ -78,7 +74,7 @@ class Router extends StateRouter {
   }
 
   authenticate(route /* , routeData */) {
-    return !(route.authorize !== false && !sessionChannel.request('authorized'));
+    return !(route.authorize !== false && !session.request('authorized'));
   }
 
   initBreadcrumb(route, routeData) {

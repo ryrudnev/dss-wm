@@ -3,23 +3,27 @@ import radio from 'backbone.radio';
 import { Route } from '../../core/router';
 import { Login } from '../../components';
 
-const sessionChannel = radio.channel('session');
+const session = radio.channel('session');
+const errors = radio.channel('errors');
 
-export default class LoginRoute extends Route{
+export default class LoginRoute extends Route {
   authorize = false
 
   dashboard = false
 
   redirect() {
-    return sessionChannel.request('authorized') ? '' : false;
+    return session.request('authorized') ? '' : false;
+  }
+
+  onSubmit(username, password) {
+    session.request('login', { username, password });
+  }
+
+  onError(handler) {
+    errors.on('error', handler);
   }
 
   render(props) {
-    return (
-      <Login
-        {...props}
-        onSubmit={(credentials) => sessionChannel.request('login', credentials)}
-      />
-    );
+    return <Login {...props} onSubmit={this.onSubmit} onError={this.onError} />;
   }
 }

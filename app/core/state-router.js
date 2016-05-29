@@ -13,9 +13,6 @@ import {
   reduce,
 } from 'underscore';
 
-const NAMED_PARAM = /(\(\?)?[:*]\w+/g;
-const PLUS_SYMBOL = /\+/g;
-
 function Route(/* options */) {}
 Object.assign(Route.prototype, {
   render(/* props, context */) {
@@ -34,6 +31,9 @@ Object.assign(Route.prototype, {
 }, Events);
 Route.extend = Model.extend;
 export { Route };
+
+const NAMED_PARAM = /(\(\?)?[:*]\w+/g;
+const PLUS_SYMBOL = /\+/g;
 
 export const StateRouter = Router.extend({
   constructor(...args) {
@@ -168,13 +168,7 @@ export const StateRouter = Router.extend({
 
       this.trigger('route', linked, routeData);
     })
-    .catch(e => {
-      if (isFunction(linked.onError)) {
-        linked.onError(e, routeData);
-      } else {
-        this.onError(e, routeData);
-      }
-    });
+    .catch(e => this.onError(e, routeData));
   },
 
   _startBreadcrumb(route, routeData) {

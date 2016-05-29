@@ -5,19 +5,16 @@ import { Navbar } from 'react-bootstrap';
 export default class AppContainer extends Component {
   static propTypes = {
     route: PropTypes.object,
-    error: PropTypes.object,
     user: PropTypes.object,
     breadcrumb: PropTypes.object,
   }
 
   static childContextTypes = {
-    error: PropTypes.object,
     user: PropTypes.object,
   }
 
   getChildContext() {
     return {
-      error: this.props.error,
       user: this.props.user,
     };
   }

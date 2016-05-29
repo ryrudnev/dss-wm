@@ -1,52 +1,71 @@
-import React, { PropTypes } from 'react';
+import React, { PropTypes, Component } from 'react';
 import {
   Col,
   Panel,
-  Input,
+  FormGroup,
+  ControlLabel,
+  FormControl,
   Button,
   Alert,
 } from 'react-bootstrap';
 
-const Login = (props, context) => {
-  const onSubmit = () => {
-    props.onSubmit({});
-  };
+export default class Login extends Component {
+  static propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    onError: PropTypes.func.isRequired,
+  }
 
-  const alert = !context.error ? '' : (
-    <Alert bsStyle="danger">
-      <h4>Ошибка!</h4>
-      <p>{context.error.message}</p>
-    </Alert>
-  );
-  return (
-    <Col md={4} mdOffset={4}>
-      <div className="text-center">
-        <h1 className="login-brand-text">DSS-WM</h1>
-        <h3 className="text-muted">Система поддеркжи принятия решений по управлению отходами</h3>
-      </div>
+  constructor(props) {
+    super(props);
 
-      <Panel header={<h3>Вход в систему</h3>} className="login-panel">
-        {alert}
-        <form role="form" onSubmit={onSubmit}>
-          <fieldset>
-            <div className="form-group">
-              <Input
-                className="form-control" placeholder="Укажите логин" ref="login" type="text"
-              />
-            </div>
-            <div className="form-group">
-              <Input
-                className="form-control" placeholder="Укажите пароль" ref="password" type="password"
-              />
-            </div>
-            <Button type="submit" bsSize="large" bsStyle="success" block>Войти</Button>
-          </fieldset>
-        </form>
-      </Panel>
-    </Col>
-  );
-};
-Login.contextTypes = { error: PropTypes.object };
-Login.propTypes = { onSubmit: PropTypes.func.isRequired };
+    this.state = { username: '', password: '', error: null };
 
-export default Login;
+    this.props.onError(error => this.setState({ error }));
+  }
+
+  onSubmit(e) {
+    e.preventDefault();
+
+    this.props.onSubmit(this.state.username, this.state.password);
+  }
+
+  render() {
+    const { error } = this.state;
+
+    const errorAlert = error == null ? '' : (
+      <Alert bsStyle="danger" onDismiss={() => this.setState({ error: null })}>
+        <h4>Ошибка!</h4>
+        <p>{error.message}</p>
+      </Alert>
+    );
+
+    return (
+      <Col md={4} mdOffset={4}>
+        <div className="text-center">
+          <h1 className="login-brand-text">DSS-WM</h1>
+          <h3 className="text-muted">СППР по управлению отходами</h3>
+        </div>
+        <Panel header={<h3>Вход в систему</h3>} className="login-panel">
+          {errorAlert}
+          <form role="form" onSubmit={(e) => this.onSubmit(e)}>
+            <fieldset>
+              <FormGroup controlId="username">
+                <ControlLabel>Логин</ControlLabel>
+                <FormControl
+                  type="text" placeholder="Укажите логин" value={this.state.username}
+                  onChange={e => this.setState({ username: e.target.value })}
+                />
+                <ControlLabel>Пароль</ControlLabel>
+                <FormControl
+                  type="text" placeholder="Укажите пароль" value={this.state.password}
+                  onChange={e => this.setState({ password: e.target.value })}
+                />
+              </FormGroup>
+              <Button type="submit" bsSize="large" bsStyle="success" block>Войти</Button>
+            </fieldset>
+          </form>
+        </Panel>
+      </Col>
+    );
+  }
+}
