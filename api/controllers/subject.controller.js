@@ -3,7 +3,6 @@ import { respondOk, respondError } from '../util/expressUtils';
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
 import wasteStorage from '../models/waste.storage';
-import Strategy from '../models/strategy.model';
 
 export function getAllIndivids(req, res) {
   const { qs } = req;
@@ -152,11 +151,6 @@ export function searchStrategy(req, res) {
       methods,
     });
 
-    if (data) {
-      const strategy = new Strategy(data);
-      strategy.save();
-    }
-
     respondOk.call(res, { data });
   }).catch(err => respondError.call(res, err));
 }
@@ -184,12 +178,5 @@ export function deleteIndivid(req, res) {
   return subjectStorage.individExists(`${fid}`, { falseAsReject: true })
       .then(() => subjectStorage.deleteIndivid(fid, { falseAsReject: true }))
       .then(data => respondOk.call(res, data))
-      .catch(err => respondError.call(res, err));
-}
-
-export function getStrategies(req, res) {
-  Strategy.find({ 'subject.fid': `${req.params.fid}` })
-      .sort({ created: -1 }).exec()
-      .then(data => respondOk.call(res, { data }))
       .catch(err => respondError.call(res, err));
 }

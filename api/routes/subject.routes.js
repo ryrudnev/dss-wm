@@ -25,9 +25,6 @@ export default (roles) => {
   // Generate waste management strategy for the subject by FID
   router.get('/individuals/:fid/search-strategy', roles.can('read subject'), Controller.searchStrategy); // eslint-disable-line
 
-  // Get all strategies for the subject by FID
-  router.get('/individuals/:fid/strategies', roles.can('read subject'), Controller.getStrategies);
-
   // Get all specific types of Subject entity
   // /subjects/types?
   // individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
