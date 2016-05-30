@@ -243,6 +243,7 @@ describe('method.storage', function () {
           costOnDistance: '899.0',
           costOnWeight: '1000.0',
           fid: 'tm4',
+          subjectFid: 'e7',
           title: 'Транспортировка на вертолете',
         });
         done();
