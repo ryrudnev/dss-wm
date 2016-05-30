@@ -85,14 +85,9 @@ class MethodStorage extends RdfBaseStorage {
       } LIMIT 1 OFFSET 0
     `;
     return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
-      if (resp.data.length) {
-        return next({ ...resp, data: resp.data[0] });
-      }
-      return error({
-        code: 404,
-        message: __('Not found'),
-        data: null,
-      });
+      if (resp.data.length > 0) {
+        next({ ...resp, data: resp.data[0] });
+      } else { error({ code: 404, message: __('Not found'), data: null }); }
     });
   }
 

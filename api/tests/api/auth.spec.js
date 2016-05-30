@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 
 import supertest from 'supertest';
-import { setup, drop, expect } from '../common';
+import { start, finish, expect } from '../common';
 import User from '../../models/user.model';
 import { genToken } from '../../controllers/auth.controller';
 import app from '../../core/app';
@@ -9,9 +9,9 @@ import app from '../../core/app';
 describe('/api/auth', function () {
   this.timeout(30 * 1000); // delay
 
-  before(done => setup(done));
+  before(done => start(done));
 
-  after(done => drop(done));
+  after(done => finish(done));
 
   context('/token', () => {
     it('not credentials', done => {
@@ -90,7 +90,7 @@ describe('/api/auth', function () {
           done();
         });
     });
-    it('should not create a new user', done => {
+    it('should not create a new user when username already exists', done => {
       supertest(app)
         .post('/api/auth/signup')
         .set({ Authorization: `JWT ${genToken('admin')}` })

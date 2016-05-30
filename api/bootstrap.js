@@ -2,7 +2,7 @@ import _debug from 'debug';
 import stardog from './core/stardog';
 import mongoose from 'mongoose';
 import config from './core/config';
-import dummyData from './dummyData';
+import dummyData from './dummy.data';
 
 const debug = _debug('api');
 

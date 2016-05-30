@@ -13,9 +13,7 @@ function execWithHandle(query, cb) {
   exec(query).then(resp => {
     if (cb) {
       cb(resp, dfd.resolve.bind(dfd), dfd.reject.bind(dfd));
-    } else {
-      dfd.resolve(resp);
-    }
+    } else { dfd.resolve(resp); }
   }).catch(resp => dfd.reject(resp));
   return dfd.promise;
 }
@@ -25,12 +23,8 @@ function update(cond, cb, fid, data) {
   let [qinsert, qwhere] = ['', ''];
   Object.keys(data || {}).forEach((key) => {
     const [insert, where] = cb(key, data[key], fid);
-    if (!!insert) {
-      qinsert = `${qinsert} ${insert}`;
-    }
-    if (!!where) {
-      qwhere = `${qwhere} ${where}`;
-    }
+    if (!!insert) { qinsert = `${qinsert} ${insert}`; }
+    if (!!where) { qwhere = `${qwhere} ${where}`; }
   });
   const query = `DELETE {
         ${qwhere.trim()}
@@ -41,6 +35,7 @@ function update(cond, cb, fid, data) {
         ${qwhere.trim()}
         FILTER(?ind = ${axiomWithPrefix(fid)})
     }`;
+  console.log(query);
   return exec(query);
 }
 
@@ -77,18 +72,17 @@ export default class RdfBaseStorage {
     const query = `
       ASK { ${axiomWithPrefix(individ)} a ${this.entityWithPrefix} ; :title ?title }
     `;
-    if (!falseAsReject) {
-      return exec(query);
-    }
+    if (!falseAsReject) { return exec(query); }
     return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
-        return next(resp);
+        next(resp);
+      } else {
+        error({
+          code: 404,
+          message: __('Individual %s of %s entity is not exists', individ, this.entity),
+          data: null,
+        });
       }
-      return error({
-        code: 404,
-        message: __('Individual %s of %s entity is not exists', individ, this.entity),
-        data: null,
-      });
     });
   }
 
@@ -98,25 +92,24 @@ export default class RdfBaseStorage {
       ASK {
         ${axiomWithPrefix(type)} rdfs:subClassOf ${this.entityWithPrefix} ; rdfs:label ?title
     }`;
-    if (!falseAsReject) {
-      return stardog.query({ query });
-    }
+    if (!falseAsReject) { return stardog.query({ query }); }
     return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
-        return next(resp);
+        next(resp);
+      } else {
+        error({
+          code: 404,
+          message: __('Type %s of %s entity is not exists', type, this.entity),
+          data: null,
+        });
       }
-      return error({
-        code: 404,
-        message: __('Type %s of %s entity is not exists', type, this.entity),
-        data: null,
-      });
     });
   }
 
   // Create a new individual of entity
   createIndivid(type, data = {}) {
-    return Counter.genUid().then(uid => {
-      const fid = axiomWithPrefix(uid);
+    return Counter.genUid().then(id => {
+      const fid = axiomWithPrefix(id);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createIndividReducer(key, data[key], fid);
         return !!reduced ? `${res} ${reduced}` : res;
@@ -125,14 +118,14 @@ export default class RdfBaseStorage {
         ${fid} a ${axiomWithPrefix(type || this.entity)} .
         ${qdata.trim()}
       }`;
-      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: uid } }));
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }));
     });
   }
 
   // Create a new type of entity
   createType(subtype, data = {}) {
-    return Counter.genUid().then(uid => {
-      const fid = axiomWithPrefix(uid);
+    return Counter.genUid().then(id => {
+      const fid = axiomWithPrefix(id);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createTypeReducer(key, data[key], fid);
         return !!reduced ? `${res} ${reduced}` : res;
@@ -141,7 +134,7 @@ export default class RdfBaseStorage {
         ${fid} a owl:Class ; rdfs:subClassOf ${axiomWithPrefix(subtype)} .
         ${qdata.trim()}
       }`;
-      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: uid } }));
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }));
     });
   }
 
@@ -176,13 +169,14 @@ export default class RdfBaseStorage {
     }
     return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
-        return next(resp);
+        next(resp);
+      } else {
+        error({
+          code: 500,
+          message: __('Deleting %s of %s entity is failed', fid, this.entity),
+          data: null,
+        });
       }
-      return error({
-        code: 500,
-        message: __('Deleting %s of %s entity is failed', fid, this.entity),
-        data: null,
-      });
     });
   }
 

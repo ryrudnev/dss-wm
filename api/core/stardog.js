@@ -13,23 +13,17 @@ export function parseStardogResponse(body, resp) {
     message: resp.statusMessage,
   };
 
-  if (!res.success) {
-    return { ...res, data: body };
-  }
+  if (!res.success) { return { ...res, data: body }; }
 
   const { boolean, results } = body;
 
-  if (boolean !== undefined) {
-    return { ...res, data: { boolean } };
-  }
+  if (boolean != null) { return { ...res, data: { boolean } }; }
 
-  const { bindings } = results;
   return {
     ...res,
-    data: bindings.map(b => Object.keys(b).reduce((r, val) => {
-      const cur = r;
-      cur[val] = b[val].value;
-      return cur;
+    data: results.bindings.map(b => Object.keys(b).reduce((r, val) => {
+      r[val] = b[val].value;
+      return r;
     }, {})) || [],
   };
 }

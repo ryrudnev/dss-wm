@@ -4,3 +4,4 @@
 /dist/
 /coverage/
 npm-debug.log
+/api/owl/catalog-v001.xml

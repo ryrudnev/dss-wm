@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import mongoose from 'mongoose';
 import stardog from '../core/stardog';
 import config from '../core/config';
-import dummyData from '../dummyData';
+import dummyData from '../dummy.data';
 
 // init chai
 chai.use(chaiAsPromised);
@@ -28,10 +28,14 @@ function dropDB(done) {
   });
 }
 
-export function setup(done) {
-  connectDB(() => stardog.checkDb().then(() => done()).catch(err => done(err)));
+export function setupStardog(done) {
+  stardog.checkDb().then(() => done()).catch(err => done(err));
 }
 
-export function drop(done) {
+export function start(done) {
+  connectDB(() => setupStardog(done));
+}
+
+export function finish(done) {
   dropDB(done);
 }

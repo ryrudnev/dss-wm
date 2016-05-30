@@ -114,7 +114,7 @@ class WasteStorage extends RdfBaseStorage {
         ?waste :amount ?amount ; :title ?title .
         ${qType(['waste', 'a'], [':SpecificWaste', subtypes])} .
         ${qInFilter(['subject', ':hasWaste', 'waste'], forSubjects)}
-        ${qNotInFilter(['subject', ':hasMethod', 'method'], forNotSubjects)}
+        ${qNotInFilter(['subject', ':hasWaste', 'waste'], forNotSubjects)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
     return RdfBaseStorage.exec(query);
@@ -131,14 +131,11 @@ class WasteStorage extends RdfBaseStorage {
       } LIMIT 1 OFFSET 0
     `;
     return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
-      if (resp.data.length) {
-        return next({ ...resp, data: resp.data[0] });
+      if (resp.data.length > 0) {
+        next({ ...resp, data: resp.data[0] });
+      } else {
+        error({ code: 404, message: __('Not found'), data: null });
       }
-      return error({
-        code: 404,
-        message: __('Not found'),
-        data: null,
-      });
     });
   }
 
