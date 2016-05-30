@@ -1,8 +1,11 @@
 import User from './models/user.model';
 
-export default function () {
+export default function (done) {
+  done = done || (() => {});
+
   User.count().exec((err, count) => {
-    if (count > 0) { return; }
+    if (err) { return done(err); }
+    if (count > 0) { return done(); }
 
     const seeds = [
       { username: 'admin', password: 'admin', role: 'admin' },
@@ -10,9 +13,8 @@ export default function () {
     ];
 
     User.create(seeds, (error) => {
-      if (!error) {
-        // console.log('ready to go....');
-      }
+      if (!error) { return done(error); }
+      done();
     });
   });
 }

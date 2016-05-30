@@ -1,9 +1,10 @@
 {
 	"You must specify enterprises (forSubject)": "Необходимо указать предприятия (forSubject)",
 	"Has no available enterprises for you": "Нет доступных предприятий",
-	"Access denied. You don't have permission to do '%s'. %s": "Доступ запрещен. У вас нет разрешения, чтобы выполнить '%s'. %s",
+	"Access denied. You don't have permission to do '%s' %s": "Доступ запрещен. У вас нет разрешения, чтобы выполнить '%s' %s",
 	"User not verified": "Пользователь не подтвержден",
 	"User successfully verified": "Пользователь успешно подтвержден",
+	"This an username already exists in the system": "Пользователь с таким именем уже существует в системе",
 	"You must specify a username and password": "Необходимо указать имя пользователя и пароль",
 	"Authentication failed. User not found": "Не удалось авторизоваться. Пользователь не найден",
 	"Authentication failed. Wrong password": "Не удалось авторизоваться. Неверный пароль",
@@ -15,7 +16,5 @@
 	"Individual %s of %s entity is not exists": "Экземпляр '%s' класса '%s' не существует",
 	"Type %s of %s entity is not exists": "Тип '%s' класса '%s' не существует",
 	"Deleting %s of %s entity is failed": "Удалить '%s' класса '%s' не удалось",
-	"Token could not be authenticated": "Токен не валидный и нельзя авторизоваться",
-	"Необходимо указать предприятия (forSubject)": "Необходимо указать предприятия (forSubject)",
-	"Нет доступных предприятий": "Нет доступных предприятий"
+	"Token could not be authenticated": "Токен не валидный и нельзя авторизоваться"
 }

@@ -1,3 +1,4 @@
+import { isString } from './utils';
 
 export function qsParser() {
   return (req, res, next) => {
@@ -42,6 +43,8 @@ export function respondOk(ok) {
 export function respondError(error) {
   if (error instanceof Error) {
     error = { message: error.message };
+  } else if (isString(error)) {
+    error = { message: error };
   }
 
   const resp = {

@@ -1,10 +1,11 @@
 {
   "You must specify enterprises (forSubject)": "You must specify enterprises (forSubject)",
   "Has no available enterprises for you": "Has no available enterprises for you",
-  "Access denied. You don't have permission to do '%s'. %s": "Access denied. You don't have permission to '%s'. %s",
+  "Access denied. You don't have permission to do '%s' %s": "Access denied. You don't have permission to '%s' %s",
   "User not verified": "User not verified",
   "User successfully verified": "User successfully verified",
   "You must specify a username and password": "You must specify a username and password",
+  "This an username already exists in the system": "This an username already exists in the system",
   "Authentication failed. User not found": "Authentication failed. User not found",
   "Authentication failed. Wrong password": "Authentication failed. Wrong password",
   "This the subject has not coordinates": "This the subject has not coordinates",

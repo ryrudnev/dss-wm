@@ -6,6 +6,7 @@ const isTesting = process.env.NODE_ENV === 'test';
 
 const stardogDb = isTesting ? 'wm-test' : (process.env.STARDOG_DB || 'wm');
 const mongodb = isTesting ? 'mongodb://localhost/wm-test' : (process.env.MONGO_URL || 'mongodb://localhost/wm');
+const serverPort = isTesting ? 1337 : (process.env.API_PORT || 3001);
 
 const config = {
   // Log path
@@ -21,6 +22,8 @@ const config = {
     // default locale
     defaultLocale: 'en',
 
+    updateFiles: false,
+
     extension: '.json',
 
     // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
@@ -34,7 +37,7 @@ const config = {
   // Server Configuration
   // ----------------------------------
   server: {
-    port: process.env.API_PORT || 1337,
+    port: serverPort,
   },
 
   // ----------------------------------
@@ -50,7 +53,7 @@ const config = {
   jwt: {
     secret: 'DSS-WM-secret',
     tokenExpirationTime: 24 * 60 * 60,
-    audience: 'http://localhost:1337',
+    audience: `http://localhost:${serverPort}`,
     issuer: 'admin@dsswm.me',
   },
 

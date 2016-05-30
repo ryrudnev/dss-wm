@@ -74,8 +74,8 @@ const rulesRoles = {
 const roles = new ConnectRoles({
   failureHandler({ user = {}, roleError = '' }, res, action) {
     debug(`Access denied for user '${user.username}' to do action '${action}'`);
-    const msg = res.__('Access denied. You don\'t have permission to do \'%s\'. %s', action, res.__(roleError)); // eslint-disable-line
-    respondForbidden.call(res, msg);
+    const msg = res.__('Access denied. You don\'t have permission to do \'%s\' %s', action, res.__(roleError)); // eslint-disable-line
+    respondForbidden.call(res, msg.trim());
   },
   async: true,
 

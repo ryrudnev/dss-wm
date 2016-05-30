@@ -4,19 +4,27 @@ import { respondUnauthorized, respondError, respondOk } from '../util/expressUti
 import { pick } from '../util/utils';
 import config from '../core/config';
 
+export function genToken(username) {
+  const iat = new Date().getTime() / 1000;
+  const exp = iat + config.jwt.tokenExpirationTime;
+  const payload = { aud: config.jwt.audience, iss: config.jwt.issuer, iat, exp, sub: username };
+  return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.tokenExpirationTime });
+}
+
 export function signup(req, res) {
   const { username, password } = req.body;
 
   if (!username || !password) {
     return respondUnauthorized.call(res, res.__('You must specify a username and password'));
   }
-  const user = new User(pick(req.body, NEW_ALLOWED_ATTRS));
-  user.save(err => {
-    if (err) {
-      return respondError.call(res, err);
+
+  User.findOne({ username }).exec().then(user => {
+    if (user) {
+      return respondError.call(res, res.__('This an username already exists in the system'));
     }
-    respondOk.call(res, { user });
-  });
+    user = new User(pick(req.body, NEW_ALLOWED_ATTRS));
+    user.save(() => respondOk.call(res, { user }));
+  }).catch(err => respondError.call(res, err));
 }
 
 export function auth(req, res) {
@@ -28,16 +36,7 @@ export function auth(req, res) {
     }
 
     user.comparePassword(password).then(() => {
-      const iat = new Date().getTime() / 1000;
-      const exp = iat + config.jwt.tokenExpirationTime;
-      const payload = {
-        aud: config.jwt.audience, iss: config.jwt.issuer,
-        iat, exp,
-        sub: user.username,
-      };
-      const token = jwt.sign(payload, config.jwt.secret, {
-        expiresIn: config.jwt.tokenExpirationTime,
-      });
+      const token = genToken(user.username);
       respondOk.call(res, { token: `JWT ${token}`, user });
     }).catch(() => respondUnauthorized.call(res, res.__('Authentication failed. Wrong password')));
   }).catch(err => respondError.call(res, err));

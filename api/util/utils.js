@@ -10,6 +10,10 @@ export function isFunction(obj) {
   return !!(obj && obj.constructor && obj.call && obj.apply);
 }
 
+export function isString(obj) {
+  return toString.call(obj) === '[object String]';
+}
+
 export function isBool(obj) {
   return typeof(obj) === 'boolean';
 }

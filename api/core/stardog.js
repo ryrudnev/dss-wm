@@ -50,7 +50,7 @@ class Stardog {
       if (!databases.includes(this.database)) { return this.createDb(); }
       if (process.env.NODE_ENV !== 'test') { return Promise.resolve(true); }
       return this.removeDb().then(() => this.createDb());
-    }).then(() => debug('Stardog successfully connected on db'));
+    }).then(() => debug('Stardog successfully connected on db!'));
   }
 
   listDbs() {

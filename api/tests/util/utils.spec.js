@@ -1,24 +1,25 @@
 import { should } from '../common';
 
 import {
-    isArray,
-    isObject,
-    isFunction,
-    isBool,
-    Deferred,
-    flatten,
-    arrayIndexOf,
-    intersectSet,
-    containsSet,
-    equalSet,
-    getEqualKeySetmap,
-    diffArray,
-    unionArray,
-    uniqueArray,
-    intersectArray,
-    omit,
-    pick,
-    joinExpanded,
+  isArray,
+  isObject,
+  isFunction,
+  isString,
+  isBool,
+  Deferred,
+  flatten,
+  arrayIndexOf,
+  intersectSet,
+  containsSet,
+  equalSet,
+  getEqualKeySetmap,
+  diffArray,
+  unionArray,
+  uniqueArray,
+  intersectArray,
+  omit,
+  pick,
+  joinExpanded,
 } from '../../util/utils';
 
 describe('utils', () => {
@@ -41,6 +42,14 @@ describe('utils', () => {
       isObject(null).should.equal(false);
     });
   });
+  context('isString(obj)', () => {
+    it('should string when value is string', () => {
+      isString('').should.equal(true);
+    });
+    it('should not string when value is null', () => {
+      isString(null).should.equal(false);
+    });
+  });
   context('isFunction(obj)', () => {
     it('should not function when value is array', () => {
       isFunction([]).should.equal(false);
@@ -49,7 +58,8 @@ describe('utils', () => {
       isFunction({ a: 1 }).should.equal(false);
     });
     it('should function when value is function', () => {
-      isFunction(() => {}).should.equal(true);
+      isFunction(() => {
+      }).should.equal(true);
     });
     it('should function when value is constructor', () => {
       isFunction(Date).should.equal(true);
@@ -163,7 +173,7 @@ describe('utils', () => {
   context('uniqueArray(arr)', () => {
     it('should unique array', () => {
       uniqueArray([1, 2, 'test', { a: 1 }, { a: 1 }, 'tesT', {}, 3, 4, {}])
-          .should.eql([1, 2, 'test', { a: 1 }, 'tesT', {}, 3, 4]);
+        .should.eql([1, 2, 'test', { a: 1 }, 'tesT', {}, 3, 4]);
     });
   });
   context('intersectArray(a, b)', () => {
