@@ -1,5 +1,3 @@
-import _debug from 'debug';
-import Express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
@@ -16,14 +14,11 @@ import config from './config';
 import fs from 'fs';
 import path from 'path';
 
-const debug = _debug('api:express');
-
-const stream = fs.createWriteStream(path.join(config.logDir, 'api.log'), { flags: 'a' });
-
 // Initialize the express application
-export default (app = new Express()) => {
+export default (app) => {
   app.set('port', config.server.port);
 
+  const stream = fs.createWriteStream(path.join(config.logDir, 'api.log'), { flags: 'a' });
   app.use(morgan('combined', { stream }));
 
   // Method override for support old browsers
@@ -53,6 +48,5 @@ export default (app = new Express()) => {
   // API endpoints with authentication via passport
   app.use(routes(passport, roles));
 
-  debug('Express app successfully initialized');
   return app;
 };

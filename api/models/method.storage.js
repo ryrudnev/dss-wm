@@ -8,7 +8,7 @@ import {
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
-import { __ } from '../config/translations';
+import { __ } from '../core/translations';
 
 class MethodStorage extends RdfBaseStorage {
   get entity() {

@@ -1,7 +1,7 @@
 import _debug from 'debug';
 import { Deferred } from '../util/utils';
 import { Connection } from 'stardog';
-import config from '../config/config';
+import config from '../core/config';
 
 const debug = _debug('api:stardog');
 
@@ -45,10 +45,12 @@ class Stardog {
     this.database = config.stardog.database;
   }
 
-  init() {
-    return this.createDbIfNotExists()
-        .then(() => debug('Stardog successfully initialized'))
-        .catch(err => debug(`Error ${err}`));
+  checkDb() {
+    return this.listDbs().then(databases => {
+      if (!databases.includes(this.database)) { return this.createDb(); }
+      if (process.env.NODE_ENV !== 'test') { return Promise.resolve(true); }
+      return this.removeDb().then(() => this.createDb());
+    }).then(() => debug('Stardog successfully connected on db'));
   }
 
   listDbs() {
@@ -61,16 +63,6 @@ class Stardog {
       dfd.resolve(body.databases);
     });
     return dfd.promise;
-  }
-
-  createDbIfNotExists(options = {}) {
-    const { database = this.database } = options;
-    return this.listDbs().then(databases => {
-      if (!databases.includes(database)) {
-        return this.createDb(options);
-      }
-      return Promise.resolve(true);
-    });
   }
 
   createDb(options = {}) {
@@ -88,7 +80,6 @@ class Stardog {
   removeDb(dbname) {
     const { conn, database } = this;
     const dfd = new Deferred();
-
     conn.dropDB({ database: dbname || database }, (body, resp) => {
       if (!(resp.statusCode < 400)) {
         return dfd.reject(body);

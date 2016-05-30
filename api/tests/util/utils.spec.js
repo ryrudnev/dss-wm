@@ -1,4 +1,4 @@
-import { should } from '../setup';
+import { should } from '../common';
 
 import {
     isArray,

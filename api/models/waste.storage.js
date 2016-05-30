@@ -9,7 +9,7 @@ import {
     axiomWithPrefix,
     qTypeRestrict,
 } from '../util/owlUtils';
-import { __ } from '../config/translations';
+import { __ } from '../core/translations';
 
 class WasteStorage extends RdfBaseStorage {
   get entity() {

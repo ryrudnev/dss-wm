@@ -10,7 +10,7 @@ import {
     qLimitOffset,
     axiomWithPrefix,
 } from '../util/owlUtils';
-import { __ } from '../config/translations';
+import { __ } from '../core/translations';
 
 // Key = {reciver.fid}, Value = [distance, amount: {cost, method}]
 const cachedDistances = new Map();

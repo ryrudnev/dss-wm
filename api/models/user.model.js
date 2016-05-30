@@ -1,5 +1,5 @@
 import { pick } from '../util/utils';
-import { genUid } from '../services/counter';
+import Counter from '../models/counter.model';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -38,7 +38,7 @@ UserSchema.pre('save', function (next) {
   };
 
   if (this.isNew) {
-    genUid('userId').then(id => {
+    Counter.genUid('userId').then(id => {
       this._id = id;
       hashPass();
     }).catch(err => next(err));

@@ -26,8 +26,8 @@ const config = {
     // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     queryParameter: 'lang',
 
-    // where to store json files - defaults to './locales' relative to modules directory
-    directory: path.resolve(__dirname, 'locales'),
+    // where to store json files - defaults to '../locales' relative to modules directory
+    directory: path.resolve(__dirname, '../locales'),
   },
 
   // ----------------------------------

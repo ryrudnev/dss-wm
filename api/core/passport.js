@@ -1,7 +1,7 @@
 import passportJwt from 'passport-jwt';
 import _debug from 'debug';
 import User from '../models/user.model';
-import { __ } from '../config/translations';
+import { __ } from '../core/translations';
 import config from './config';
 
 const debug = _debug('api:passport');

@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User, { NEW_ALLOWED_ATTRS } from '../models/user.model';
 import { respondUnauthorized, respondError, respondOk } from '../util/expressUtils';
 import { pick } from '../util/utils';
-import config from '../config/config';
+import config from '../core/config';
 
 export function signup(req, res) {
   const { username, password } = req.body;
