@@ -1,10 +1,7 @@
 import passportJwt from 'passport-jwt';
-import _debug from 'debug';
 import User from '../models/user.model';
 import { __ } from '../core/translations';
 import config from './config';
-
-const debug = _debug('api:passport');
 
 const { Strategy, ExtractJwt } = passportJwt;
 
@@ -31,6 +28,5 @@ export default passport => {
     });
   }));
 
-  debug('Passport successfully initialized');
   return passport;
 };

@@ -1,14 +1,12 @@
 import _debug from 'debug';
-import Express from 'express';
-import configureApp from './core/express';
 import stardog from './core/stardog';
 import mongoose from 'mongoose';
 import config from './core/config';
 import dummyData from './dummyData';
 
-const debug = _debug('api:server');
+const debug = _debug('api');
 
-// Check owl connection via stardog
+// check owl connection via stardog
 stardog.checkDb().catch(error => {
   debug('Please make sure Stardog is installed and running!');
   throw error;
@@ -22,18 +20,10 @@ mongoose.connect(config.mongodb.url, { promiseLibrary: Promise }, error => {
   }
   // feed some dummy data in DB.
   dummyData();
+
+  debug('Mongodb successfully connected!');
 });
 
-const app = new Express();
-configureApp(app);
+// init and listen app
+import './core/app';
 
-app.listen(config.server.port, (error) => {
-  if (!error) {
-    debug(`Api server is running on ${config.server.port} port`);
-  } else {
-    debug('Server error');
-    throw error;
-  }
-});
-
-export default app;
