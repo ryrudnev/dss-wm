@@ -222,8 +222,8 @@ class SubjectStorage extends RdfBaseStorage {
         return [`?ind :title "${value}" .`, '?ind :title ?title .'];
       case 'coordinates':
         return [`?ind :coordinates "${
-            Array.isArray(value) ? JSON.stringify(value) : value}
-            " .`, '?ind :coordinates ?coordinates .'];
+            Array.isArray(value) ? JSON.stringify(value) : value}" .`,
+          '?ind :coordinates ?coordinates .'];
       case 'budget':
         return [`?ind :budget ${+value} .`, '?ind :budget ?budget .'];
       case 'type':
