@@ -35,7 +35,6 @@ function update(cond, cb, fid, data) {
         ${qwhere.trim()}
         FILTER(?ind = ${axiomWithPrefix(fid)})
     }`;
-  console.log(query);
   return exec(query);
 }
 
@@ -141,7 +140,7 @@ export default class RdfBaseStorage {
   // Update the individual of entity
   updateIndivid(fid, data = {}) {
     return update(`?ind a ${this.entityWithPrefix} .`,
-        this.updateIndividReducer.bind(this), fid, data);
+      this.updateIndividReducer.bind(this), fid, data);
   }
 
   // Update the type of entity
