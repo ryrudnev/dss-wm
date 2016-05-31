@@ -369,14 +369,14 @@ describe('method.storage', function () {
         expect(results).has.property('success').that.is.to.eql(true);
         expect(results).has.property('code').that.is.to.eql(200);
         expect(results).has.property('message').that.is.to.eql('OK');
-        expect(results).has.property('data').that.is.to.eql({ fid: 1 });
+        expect(results).has.property('data').that.is.to.eql({ fid: 'a1' });
         // check in db
-        Method.selectIndividByFid(1, 'e5').then(res => {
+        Method.selectIndividByFid('a1', 'e5').then(res => {
           expect(res).has.property('success').that.is.to.eql(true);
           expect(res).has.property('code').that.is.to.eql(200);
           expect(res).has.property('message').that.is.to.eql('OK');
           expect(res).has.property('data').that.is.to.eql({
-            fid: '1',
+            fid: 'a1',
             title: 'Тестовые отходы',
             costOnWeight: '15', costOnDistance: '16', costByService: '17',
           });

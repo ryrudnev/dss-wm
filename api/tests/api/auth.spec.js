@@ -9,9 +9,9 @@ import app from '../../core/app';
 describe('/api/auth', function () {
   this.timeout(30 * 1000); // delay
 
-  before(done => start(done));
+  beforeEach(done => start(done));
 
-  after(done => finish(done));
+  afterEach(done => finish(done));
 
   context('/token', () => {
     it('not credentials', done => {

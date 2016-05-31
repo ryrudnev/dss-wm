@@ -3,6 +3,7 @@ import { respondOk, respondError } from '../util/expressUtils';
 import subjectStorage from '../models/subject.storage';
 import methodStorage from '../models/method.storage';
 import wasteStorage from '../models/waste.storage';
+import User from '../models/user.model';
 
 export function getAllIndivids(req, res) {
   const { qs } = req;
@@ -33,7 +34,7 @@ export function getAllIndivids(req, res) {
           curSubject.methods = methods[curSubject.fid] || [];
         }
         if (typeof locations !== 'boolean') {
-          curSubject.located = locations[curSubject.fid] || [];
+          curSubject.locations = locations[curSubject.fid] || [];
         }
         if (typeof types !== 'boolean') {
           curSubject.types = types[curSubject.fid] || [];
@@ -160,7 +161,12 @@ export function createIndivid(req, res) {
   return Promise.all([
     subjectStorage.typeExists(`${type}`, { falseAsReject: true }),
   ]).then(() => subjectStorage.createIndivid(type, req.body))
-      .then(data => respondOk.call(res, data))
+      .then(resp => {
+        if (req.user.role !== 'admin') {
+          User.findByIdAndUpdate(req.user.id, { $push: { subjects: resp.data.fid } }).exec()
+            .then(respondOk.call(res, resp)).catch(err => respondError.call(res, err));
+        } else { respondOk.call(res, resp); }
+      })
       .catch(err => respondError.call(res, err));
 }
 

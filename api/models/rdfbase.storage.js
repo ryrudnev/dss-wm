@@ -108,6 +108,7 @@ export default class RdfBaseStorage {
   // Create a new individual of entity
   createIndivid(type, data = {}) {
     return Counter.genUid().then(id => {
+      id = `a${id}`;
       const fid = axiomWithPrefix(id);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createIndividReducer(key, data[key], fid);
@@ -124,6 +125,7 @@ export default class RdfBaseStorage {
   // Create a new type of entity
   createType(subtype, data = {}) {
     return Counter.genUid().then(id => {
+      id = `a${id}`;
       const fid = axiomWithPrefix(id);
       const qdata = Object.keys(data).reduce((res, key) => {
         const reduced = this.createTypeReducer(key, data[key], fid);

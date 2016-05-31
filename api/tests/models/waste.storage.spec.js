@@ -321,14 +321,14 @@ describe('waste.storage', function () {
           expect(results).has.property('success').that.is.to.eql(true);
           expect(results).has.property('code').that.is.to.eql(200);
           expect(results).has.property('message').that.is.to.eql('OK');
-          expect(results).has.property('data').that.is.to.eql({ fid: 1 });
+          expect(results).has.property('data').that.is.to.eql({ fid: 'a1' });
           // check in db
-          Waste.selectIndividByFid(1, 'e5').then(res => {
+          Waste.selectIndividByFid('a1', 'e5').then(res => {
             expect(res).has.property('success').that.is.to.eql(true);
             expect(res).has.property('code').that.is.to.eql(200);
             expect(res).has.property('message').that.is.to.eql('OK');
             expect(res).has.property('data').that.is.to.eql({
-              fid: '1',
+              fid: 'a1',
               title: 'Тестовые отходы',
               amount: '15',
             });
@@ -346,9 +346,9 @@ describe('waste.storage', function () {
           expect(results).has.property('success').that.is.to.eql(true);
           expect(results).has.property('code').that.is.to.eql(200);
           expect(results).has.property('message').that.is.to.eql('OK');
-          expect(results).has.property('data').that.is.to.eql({ fid: 1 });
+          expect(results).has.property('data').that.is.to.eql({ fid: 'a1' });
           // check in db
-          Waste.selectTypes({ types: 1 }).then(res => {
+          Waste.selectTypes({ types: 'a1' }).then(res => {
             expect(res).has.property('success').that.is.to.eql(true);
             expect(res).has.property('code').that.is.to.eql(200);
             expect(res).has.property('message').that.is.to.eql('OK');
