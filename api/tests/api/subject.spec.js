@@ -6,7 +6,7 @@ import User from '../../models/user.model';
 import { genToken } from '../../controllers/auth.controller';
 import app from '../../core/app';
 
-describe('/api/subject', function () {
+describe('/api/subjects', function () {
   this.timeout(30 * 1000); // delay
 
   beforeEach(done => start(done));

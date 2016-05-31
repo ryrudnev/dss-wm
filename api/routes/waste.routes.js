@@ -7,7 +7,7 @@ export default (roles) => {
   // Get all individuals of Waste entity
   // /waste/individuals?expand=['types', 'subject']
   // &subtypes=[]&forSubjects=[]&sort=[]&offset&limit
-  router.get('/individuals', roles.can('get wastes'), Controller.getAllIndivids);
+  router.get('/individuals', roles.can('get waste'), Controller.getAllIndivids);
 
   // Create a new individual of Waste entity
   router.post('/individuals', roles.can('create waste'), Controller.createIndivid);

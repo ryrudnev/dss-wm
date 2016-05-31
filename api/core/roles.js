@@ -54,7 +54,7 @@ const rulesRoles = {
     'read method': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
     'all methods types': () => true,
 
-    'get wastes': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubjects')),
+    'get waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubjects')),
     'create waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'body.forSubject')),
     'update waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'body.forSubject')),
     'delete waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
