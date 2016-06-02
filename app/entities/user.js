@@ -1,4 +1,4 @@
-import { Model as BaseModel, Collection as BaseCollection } from '../core/entity';
+import { Model as BaseModel, Collection as BaseCollection } from '../core/Entity';
 
 export class Model extends BaseModel {
   urlRoot() {

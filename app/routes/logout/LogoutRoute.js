@@ -5,7 +5,7 @@ const session = radio.channel('session');
 
 export default class LoginRoute extends Route {
   redirect() {
-    session.request('logout');
+    session.request('clear');
     return '';
   }
 }

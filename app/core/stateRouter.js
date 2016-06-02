@@ -19,6 +19,10 @@ Object.assign(Route.prototype, {
     throw new Error('Method not implemented');
   },
   /*
+   authorize(routeData) {
+   throw new Error('Method not implemented');
+   }
+  /*
    fetch(routeData) {
    throw new Error('Method not implemented');
    },
@@ -125,7 +129,7 @@ export const StateRouter = Router.extend({
       throw new Error('A Route object must be associated with each route.');
     }
 
-    routeData = pick(routeData, 'params', 'query', 'uriFragment', 'originalRoute');
+    routeData = pick(routeData, 'params', 'query', 'uriFragment');
 
     const redirect = applyFn.call(linked, 'redirect', routeData);
     if (isString(redirect)) {
@@ -135,7 +139,13 @@ export const StateRouter = Router.extend({
       return;
     }
 
-    if (isFunction(this.authenticate) && !this.authenticate(linked, routeData)) {
+    if (applyFn.call(this, 'authenticate', linked, routeData) === false) {
+      linked.trigger('unauthenticated', routeData);
+      this.trigger('unauthenticated', linked, routeData);
+      return;
+    }
+
+    if (applyFn.call(linked, 'authorize', routeData) === false) {
       linked.trigger('unauthorized', routeData);
       this.trigger('unauthorized', linked, routeData);
       return;
@@ -152,19 +162,14 @@ export const StateRouter = Router.extend({
 
     Promise.all(promises).then(() => {
       if (this._transitioningTo !== linked) { return; }
-
-      if (this.currentRoute) {
-        this.currentRoute.trigger('exit');
-      }
+      if (this.currentRoute) { this.currentRoute.trigger('exit'); }
       if (this._transitioningTo !== linked) { return; }
 
       this.currentRoute = linked;
       this.currentRouteData = routeData;
       linked.trigger('enter', routeData);
 
-      if (this._transitioningTo === linked) {
-        delete this._transitioningTo;
-      }
+      if (this._transitioningTo === linked) { delete this._transitioningTo; }
 
       this.trigger('route', linked, routeData);
     })

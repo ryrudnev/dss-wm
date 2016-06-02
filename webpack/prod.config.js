@@ -12,15 +12,15 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /(\.css|\.scss)$/,
+        test: /\.less$/,
         include: path.join(__dirname, '../app'),
-        loader: ExtractTextPlugin.extract('style', 'css?minimize!sass'),
+        loader: ExtractTextPlugin.extract('style', 'css?minimize!less'),
       },
     ],
   },
 
   plugins: [
-    new ExtractTextPlugin('style.css'),
+    new ExtractTextPlugin('style.css', { allChunks: true }),
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({

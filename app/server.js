@@ -52,7 +52,7 @@ if (!config.isProd) {
 
 // Activate proxy for session
 app.use('/api', proxy({
-  target: `http://${config.apiHost}:${config.apiPort}`,
+  target: `http://localhost:${config.apiPort}`,
   changeOrigin: true,
 }));
 

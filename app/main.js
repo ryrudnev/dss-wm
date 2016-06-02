@@ -1,4 +1,4 @@
-import './styles/main.scss';
+import './styles/main.less';
 import app from './core/app';
 
 window.app = app;

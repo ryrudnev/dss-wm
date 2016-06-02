@@ -19,8 +19,6 @@ export default class Login extends Component {
     super(props);
 
     this.state = { username: '', password: '', error: null };
-
-    this.props.onError(error => this.setState({ error }));
   }
 
   onSubmit(e) {
@@ -30,12 +28,12 @@ export default class Login extends Component {
   }
 
   render() {
-    const { error } = this.state;
+    this.props.onError(error => this.setState({ error }));
 
-    const errorAlert = error == null ? '' : (
+    const errorAlert = this.state.error == null ? '' : (
       <Alert bsStyle="danger" onDismiss={() => this.setState({ error: null })}>
         <h4>Ошибка!</h4>
-        <p>{error.message}</p>
+        <p>{this.state.error.message}</p>
       </Alert>
     );
 

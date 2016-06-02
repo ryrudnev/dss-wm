@@ -1,7 +1,16 @@
-import { LogoutRoute, LoginRoute, NotfoundRoute } from '../routes';
+import {
+  LogoutRoute,
+  LoginRoute,
+  CompanyIndexRoute,
+  NotFoundRoute,
+} from '../routes';
+
+const companyIndexRoute = new CompanyIndexRoute;
 
 export default {
-  logout: new LogoutRoute(),
-  login: new LoginRoute(),
-  '*notfound': new NotfoundRoute(),
+  '': { uses: companyIndexRoute, as: 'home' },
+  companies: companyIndexRoute,
+  logout: new LogoutRoute,
+  login: new LoginRoute,
+  '*notfound': new NotFoundRoute,
 };

@@ -1,9 +1,8 @@
-import React, { PropTypes } from 'react';
-import classNames from 'classnames';
 import { Model, Collection } from 'backbone';
-import { StateRouter, Route as BaseRoute } from './state-router';
+import { StateRouter, Route as BaseRoute } from './StateRouter';
 import { applyFn } from '../util/utils';
 import { each, isEmpty, findKey, isString, has } from 'underscore';
+import { NotAuthorizedRoute } from '../routes';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
@@ -11,24 +10,6 @@ const session = radio.channel('session');
 const errors = radio.channel('errors');
 
 export class Route extends BaseRoute {}
-
-export const NavLink = (props) => (
-  <a
-    {...props}
-    href={props.url}
-    className={classNames(props.className, 'nav-link')}
-    onClick={(e) => {
-      e.preventDefault();
-      router.request('navigate', props.url);
-    }}
-  >
-    {props.text || props.children}
-  </a>
-);
-NavLink.propTypes = {
-  url: PropTypes.string.isRequired,
-  text: PropTypes.string,
-};
 
 class Router extends StateRouter {
   constructor(options) {
@@ -49,35 +30,46 @@ class Router extends StateRouter {
       currentRouteData: () => this.currentRouteData,
     });
 
-    session.on('login', () => {
-      const redirectFrom = session.request('get', 'redirectFrom');
-      if (redirectFrom) {
-        session.request('unset', 'redirectFrom');
-        this.navigate(redirectFrom);
-      } else { this.navigate(''); }
-    });
+    session.on('login', this.onLogin, this);
 
     this.on({
-      unauthorized: (route, routeData) => {
-        session.request('set', 'redirectFrom', routeData.uriFragment);
-        this.navigate('login');
-      },
+      unauthenticated: this.onUnauthenticated,
+      unauthorized: this.onUnauthorized,
       route: (route, routeData) => router.trigger('route', route, routeData),
-    });
+    }, this);
 
     errors.on({
       'error:401': () => {
-        if (this.currentRouteData.originalRoute !== 'login') {
+        const { originalRoute } = this._routeDetails(this.currentRoute);
+        if (originalRoute !== 'login') {
+          session.request('clear');
           this.navigate('login');
         }
       },
-      'error:403': () => { /* */ },
+      'error:403': () => this.onUnauthorized(),
       'error:404': () => this.navigate('*notfound'),
     });
   }
 
   authenticate(route /* , routeData */) {
-    return !(route.authorize !== false && !session.request('authorized'));
+    return !(route.authentication !== false && !session.request('authenticated'));
+  }
+
+  onLogin() {
+    const redirectFrom = session.request('get', 'redirectFrom');
+    if (redirectFrom) {
+      session.request('unset', 'redirectFrom');
+      this.navigate(redirectFrom);
+    } else { this.navigate(''); }
+  }
+
+  onUnauthorized(route, routeData) {
+    this.trigger('route', new NotAuthorizedRoute, routeData || this.currentRouteData);
+  }
+
+  onUnauthenticated(route, routeData) {
+    session.request('set', 'redirectFrom', routeData.uriFragment);
+    this.navigate('login');
   }
 
   initBreadcrumb(route, routeData) {
@@ -96,20 +88,16 @@ class Router extends StateRouter {
   _createBreadcrumb(route, routeData, promises = [0]) {
     const details = this._routeDetails(route);
     if (!details) { return promises; }
-    const { routeOriginal, routeObject, parentRoute } = details;
+    const { originalRoute, routeObject, parentRoute } = details;
 
-    const url = this._getMappedUrl(routeOriginal, routeData);
+    const url = this._getMappedUrl(originalRoute, routeData);
     const text = applyFn.call(routeObject, 'breadcrumb', routeData);
 
     const b = new Model({ url, text });
-    promises.push(Promise.resolve(text).then(
-        t => b.set({ text: t })
-    ));
+    promises.push(Promise.resolve(text).then(title => b.set({ text: title })));
     this.breadcrumb.unshift(b);
 
-    if (parentRoute) {
-      return this.createBreadcrumb(parentRoute, routeData, promises);
-    }
+    if (parentRoute) { return this.createBreadcrumb(parentRoute, routeData, promises); }
 
     return promises;
   }
@@ -126,25 +114,25 @@ class Router extends StateRouter {
   }
 
   _routeDetails(route) {
-    let routeOriginal;
+    let originalRoute;
     if (route instanceof Route) {
-      routeOriginal = findKey(this.routes, linked =>
+      originalRoute = findKey(this.routes, linked =>
           linked === route || !(linked instanceof Route) && linked.uses === route
       );
     } else if (isString(route)) {
-      routeOriginal = has(this.routes, route) ? route :
+      originalRoute = has(this.routes, route) ? route :
           findKey(this.routes, linked => !(linked instanceof Route) && linked.as === route);
     } else { return false; }
 
-    const linked = this.routes[routeOriginal];
+    const linked = this.routes[originalRoute];
     const isLinked = linked instanceof Route;
     const routeObject = isLinked ? linked : linked.uses;
-    if (routeOriginal === void 0 || routeObject === void 0) { return false; }
+    if (originalRoute == null || routeObject == null) { return false; }
 
     return {
-      routeOriginal,
+      originalRoute,
       routeObject,
-      routeName: isLinked ? routeOriginal : linked.as || routeOriginal,
+      routeName: isLinked ? originalRoute : linked.as || originalRoute,
       parentRoute: isLinked ? void 0 : linked.parent,
     };
   }

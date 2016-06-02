@@ -154,7 +154,6 @@ class SubjectStorage extends RdfBaseStorage {
       const ownAvailableMethodTypes = intersectSet(group, ownMethodTypes);
       ownAvailableMethodTypes.delete(TRANSPORT_METHOD); // without type of transportation
       if (ownAvailableMethodTypes.size) {
-        console.log(ownAvailableMethodTypes);
         strategy.ownMethods = Array.from(ownAvailableMethodTypes).reduce(
             (prev, methodType) => [...prev, ...ownMethods[methodType]], []
         );

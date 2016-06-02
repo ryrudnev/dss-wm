@@ -1,12 +1,12 @@
-import { history } from 'backbone';
-import radio from 'backbone.radio';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AppContainer } from '../components';
+import AppContainer from '../components/AppContainer';
 import routes from './routes';
+import { history } from 'backbone';
+import radio from 'backbone.radio';
 import initSession from './session';
 import initRouter from './router';
-import initErrorHandler from './error-handler';
+import initErrorHandler from './errorHandler';
 
 const session = radio.channel('session');
 const router = radio.channel('router');
@@ -14,7 +14,7 @@ const router = radio.channel('router');
 class App {
   constructor() {
     // rerender a new route
-    router.on('route', () => this.render());
+    router.on('route', route => this.render({ route }));
 
     // Start error handler
     initErrorHandler();
@@ -26,12 +26,12 @@ class App {
     initRouter({ routes });
   }
 
-  render() {
+  render({ route }) {
     ReactDOM.render(
       < AppContainer
         user={session.request('currentUser')}
         breadcrumb={router.request('breadcrumb')}
-        route={router.request('currentRoute')}
+        route={route || router.request('currentRoute')}
       />,
       document.getElementById('app')
     );

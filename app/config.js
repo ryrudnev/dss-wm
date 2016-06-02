@@ -1,4 +1,5 @@
 import _debug from 'debug';
+import apiConfig from '../api/core/config';
 
 const debug = _debug('server:config');
 
@@ -12,8 +13,8 @@ const config = {
   host: process.env.HOST || 'localhost',
   port: process.env.PORT || (isProd ? 8080 : 3000),
 
-  apiHost: process.env.API_HOST || 'localhost',
-  apiPort: process.env.API_PORT || 1337,
+  apiPort: process.env.API_PORT || apiConfig.server.port,
+  // apiHost: process.env.API_HOST || 'localhost',
 
   // ----------------------------------
   // App Configuration

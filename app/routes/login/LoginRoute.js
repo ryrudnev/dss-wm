@@ -2,13 +2,13 @@ import React from 'react';
 import Helmet from 'react-helmet';
 import radio from 'backbone.radio';
 import { Route } from '../../core/router';
-import { Login } from '../../components';
+import Login from '../../components/Login';
 
 const session = radio.channel('session');
 const errors = radio.channel('errors');
 
 export default class LoginRoute extends Route {
-  authorize = false
+  authentication = false
 
   dashboard = false
 

@@ -26,7 +26,7 @@ var commonConfig = {
 
   resolve: {
     root: path.resolve(__dirname, '../app'),
-    extensions: ['', '.jsx', '.js', '.json', '.scss'],
+    extensions: ['', '.jsx', '.js', '.json', '.less'],
     modulesDirectories: [
       'node_modules'
     ],
@@ -40,42 +40,8 @@ var commonConfig = {
         include: path.join(__dirname, '../app'),
         loaders: ['babel'],
       },
-      {
-        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff',
-      },
-      {
-        test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff2',
-      },
-      {
-        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/octet-stream',
-      },
-      {
-        test: /\.otf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-otf',
-      },
-      {
-        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
-      },
-      {
-        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=image/svg+xml',
-      },
-      {
-        test: /\.png$/,
-        loader: 'file-loader?name=[name].[ext]',
-      },
-      {
-        test: /\.jpg$/,
-        loader: 'file-loader?name=[name].[ext]',
-      },
-      {
-        test: /\.gif$/,
-        loader: 'file-loader?name=[name].[ext]',
-      },
+      { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' },
+      { test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loaders: ['file-loader'] },
     ],
   },
 

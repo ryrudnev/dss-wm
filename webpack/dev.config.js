@@ -21,8 +21,8 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /(\.css|\.scss)$/,
-        loaders: ['style', 'css?sourceMap', 'sass?sourceMap']
+        test: /\.less$/,
+        loaders: ['style', 'css?sourceMap', 'less?sourceMap']
       },
     ],
   },

@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { Model } from 'backbone';
 import radio from 'backbone.radio';
 import store from 'store';
-import { Model as User } from '../entities/user';
+import { Model as User } from '../entities/User';
 import { pick, result, isFunction } from 'underscore';
 
 const session = radio.channel('session');
@@ -35,15 +35,15 @@ class Session extends Model {
 
       unset: (key) => this.unset(key),
 
-      authorized: () => !!this.get('token'),
+      authenticated: () => !!this.get('token'),
 
       token: () => this.get('token'),
 
       currentUser: () => this.user,
 
-      login: this.login,
+      clear: () => this.clear(),
 
-      logout: this.logout,
+      login: this.login,
 
       signup: this.signup,
     }, this);
@@ -110,11 +110,6 @@ class Session extends Model {
         onError(resp, error);
       }
     }).fail(resp => onError(resp, error));
-  }
-
-  logout() {
-    this.clear();
-    session.trigger('logout');
   }
 }
 
