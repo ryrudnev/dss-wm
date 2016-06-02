@@ -8,21 +8,19 @@ const debug = _debug('api');
 
 // Get only allowed subjects for the user.
 function allowedSubjects(req, subjectsPath) {
+  const isMulti = ~subjectsPath.indexOf('forSubjects') || ~subjectsPath.indexOf('fids');
+
   const subjects = objectPath.get(req, subjectsPath, false);
-  if (!subjects) {
+  if (!isMulti && !subjects) {
     req.roleError = req.__('You must specify enterprises (forSubject)');
     return false;
   }
-  const allowed = intersectArray(req.user.subjects, subjects);
+  const allowed = intersectArray(req.user.subjects, subjects || req.user.subjects);
   if (!allowed.length) {
     req.roleError = req.__('Has no available enterprises for you');
     return false;
   }
-  if (~subjectsPath.indexOf('forSubjects')) {
-    objectPath.set(req, subjectsPath, allowed);
-  } else if (~subjectsPath.indexOf('forSubject')) {
-    objectPath.set(req, subjectsPath, allowed[0]);
-  }
+  objectPath.set(req, subjectsPath, isMulti ? allowed : allowed[0]);
   return true;
 }
 
