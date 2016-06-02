@@ -1,7 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import Helmet from 'react-helmet';
 import $ from 'jquery';
-import { Navbar, Nav, NavDropdown, Row, Col } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown, Row, Col, Grid } from 'react-bootstrap';
 import NavMenuItem from './NavMenuItem';
 import NavBreadcrumb from './NavBreadcrumb';
 import NavSidebar from './NavSidebar';
@@ -67,14 +67,14 @@ export default class AppContainer extends Component {
             <NavSidebar style={{ marginLeft: '-20px', marginTop: '1px' }} />
           </Navbar>
           <div id="page-wrapper" className="page-wrapper" style={{ minHeight: this.state.height }}>
-            <div className="container-fluid">
+            <Grid fluid>
               <Row>
-                <Col lg={12}><NavBreadcrumb collection={breadcrumb} /></Col>
+                <Col md={12}><NavBreadcrumb collection={breadcrumb} /></Col>
               </Row>
               <Row>
-                <Col lg={12}><Page /></Col>
+                <Col md={12}><Page /></Col>
               </Row>
-            </div>
+            </Grid>
           </div>
         </div>
       </div>
