@@ -1,5 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import Helmet from 'react-helmet';
+import $ from 'jquery';
 import { Navbar, Nav, NavDropdown, Row, Col } from 'react-bootstrap';
 import NavMenuItem from './NavMenuItem';
 import NavBreadcrumb from './NavBreadcrumb';
@@ -20,6 +21,10 @@ export default class AppContainer extends Component {
     return {
       user: this.props.user,
     };
+  }
+
+  componentWillMount() {
+    this.setState({ height: $(window).height() });
   }
 
   render() {
@@ -61,7 +66,7 @@ export default class AppContainer extends Component {
             </Navbar.Collapse>
             <NavSidebar style={{ marginLeft: '-20px', marginTop: '1px' }} />
           </Navbar>
-          <div id="page-wrapper" className="page-wrapper">
+          <div id="page-wrapper" className="page-wrapper" style={{ minHeight: this.state.height }}>
             <div className="container-fluid">
               <Row>
                 <Col lg={12}><NavBreadcrumb collection={breadcrumb} /></Col>
