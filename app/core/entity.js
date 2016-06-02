@@ -4,6 +4,7 @@ import 'backbone-associations';
 
 const sessionChannel = radio.channel('session');
 
+
 export class Model extends Backbone.AssociatedModel {
   sync(method, model, options = {}) {
     const token = sessionChannel.request('token');

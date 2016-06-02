@@ -2,7 +2,7 @@ import { Model as BaseModel, Collection as BaseCollection } from '../core/Entity
 
 export class Model extends BaseModel {
   urlRoot() {
-    return '/api/user';
+    return '/api/users';
   }
 
   defaults() {

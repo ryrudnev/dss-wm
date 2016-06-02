@@ -35,6 +35,8 @@ class Router extends StateRouter {
     this.on({
       unauthenticated: this.onUnauthenticated,
       unauthorized: this.onUnauthorized,
+
+      'before:route': (route, routeData) => router.trigger('before:route', route, routeData),
       route: (route, routeData) => router.trigger('route', route, routeData),
     }, this);
 

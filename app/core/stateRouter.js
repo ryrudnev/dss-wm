@@ -20,16 +20,13 @@ Object.assign(Route.prototype, {
   },
   /*
    authorize(routeData) {
-   throw new Error('Method not implemented');
    }
   /*
    fetch(routeData) {
-   throw new Error('Method not implemented');
    },
    */
   /*
    breadcrumb(routeData) {
-   throw new Error('Method not implemented');
    },
    */
 }, Events);
