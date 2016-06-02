@@ -17,6 +17,8 @@ export class Model extends BaseModel {
 }
 
 export class Collection extends BaseCollection {
+  model = Model
+
   constructor(options) {
     super(options);
 

@@ -21,7 +21,7 @@ Object.assign(Route.prototype, {
   /*
    authorize(routeData) {
    }
-  /*
+   /*
    fetch(routeData) {
    },
    */
@@ -187,7 +187,7 @@ export const StateRouter = Router.extend({
   _startFetch(route, routeData) {
     if (isFunction(route.fetch)) {
       this.trigger('before:fetch');
-      return Promise.all(flatten[route.fetch(routeData)]).then(data => {
+      return Promise.all(flatten([route.fetch(routeData)])).then(data => {
         if (this._transitioningTo !== route) { return; }
 
         this.trigger('fetch', route, routeData, data);
