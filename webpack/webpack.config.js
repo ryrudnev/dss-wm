@@ -62,8 +62,7 @@ var commonConfig = {
       'process.env': {
         NODE_ENV: JSON.stringify(isProd ? 'production' : 'development'),
       },
-      __DEV__: !isProd,
-      __PROD__: isProd,
+      __DEVELOPMENT__: !isProd,
     }),
   ],
 

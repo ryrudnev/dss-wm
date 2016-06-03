@@ -32,7 +32,7 @@ export default class NavSidebar extends Component {
                 className={classNames({ 'nav nav-second-level': true,
                           collapse: this.state.createMenuCollapsed })}
               >
-                <li><NavLink to="/">Предприятие</NavLink></li>
+                <li><NavLink to="companies/new">Предприятие</NavLink></li>
                 <li><NavLink to="/">Способ обращения</NavLink></li>
                 <li><NavLink to="/">Отходы</NavLink></li>
                 {isAdmin ? <li><NavLink to="/">Вид отходов</NavLink></li> : ''}
@@ -42,7 +42,7 @@ export default class NavSidebar extends Component {
             </li>
             <li><NavLink to="/">Виды способов обращения</NavLink></li>
             <li><NavLink to="/">Виды отходов</NavLink></li>
-            <li><NavLink to="/">Предприятия</NavLink></li>
+            <li><NavLink to="companies">Предприятия</NavLink></li>
             {isAdmin ? <li><NavLink to="/">Пользователи</NavLink></li> : ''}
           </ul>
         </div>

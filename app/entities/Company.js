@@ -6,10 +6,7 @@ export class Model extends BaseModel {
 
   defaults() {
     return {
-      title: null,
-      coordinates: null,
-      budget: null,
-      fid: null,
+      type: 'Company',
     };
   }
 
@@ -21,7 +18,7 @@ export class Model extends BaseModel {
   }
 
   urlRoot() {
-    return '/api/subjects/individuals';
+    return `${this.apiUrl()}/subjects/individuals`;
   }
 }
 
@@ -35,6 +32,6 @@ export class Collection extends BaseCollection {
   }
 
   url() {
-    return '/api/subjects/individuals';
+    return `${this.apiUrl()}/subjects/individuals`;
   }
 }

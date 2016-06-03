@@ -15,11 +15,7 @@ export default class Login extends Component {
     onError: PropTypes.func.isRequired,
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = { username: '', password: '', error: null };
-  }
+  state = { username: '', password: '', error: null }
 
   onSubmit(e) {
     e.preventDefault();

@@ -4,6 +4,7 @@ import 'backbone-associations';
 import { isFunction, isString, isArray, has, flatten, union } from 'underscore';
 import { words } from 'underscore.string';
 import { applyFn, isPlainObject } from '../util/utils';
+import config from '../config';
 
 const { AssociatedModel } = Backbone;
 
@@ -11,6 +12,10 @@ const sessionChannel = radio.channel('session');
 
 function syncMixin(proto) {
   return {
+    apiUrl() {
+      return `http://localhost:${config.apiPort}/api`;
+    },
+
     sync(method, modelOrCollection, options = {}) {
       const token = sessionChannel.request('token');
       Object.assign(options, { headers: { Authorization: token } });

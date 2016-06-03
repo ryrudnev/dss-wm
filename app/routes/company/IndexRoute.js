@@ -62,10 +62,11 @@ export default class CompanyIndexRoute extends Route {
               collection={this.companies}
               columns={['fid', 'title', 'budget']}
               columnMetadata={[
-                { columnName: 'title', order: 1, displayName: 'Наименование' },
+                { columnName: 'title', order: 1, displayName: 'Название' },
                 { columnName: 'budget', order: 2, displayName: 'Бюджет' },
+                { columnName: 'type', order: 4, displayName: 'Тип', visible: false },
                 {
-                  order: 4,
+                  order: 5,
                   displayName: 'Действия',
                   columnName: 'fid',
                   sortable: false,

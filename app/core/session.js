@@ -4,6 +4,7 @@ import radio from 'backbone.radio';
 import store from 'store';
 import { Model as User } from '../entities/User';
 import { pick, result, isFunction } from 'underscore';
+import config from '../config';
 
 const session = radio.channel('session');
 
@@ -50,7 +51,7 @@ class Session extends Model {
   }
 
   url() {
-    return '/api/auth';
+    return `http://localhost:${config.apiPort}/api/auth`;
   }
 
   get(key) {

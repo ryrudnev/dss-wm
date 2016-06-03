@@ -99,7 +99,7 @@ class Router extends StateRouter {
     promises.push(Promise.resolve(text).then(title => b.set({ text: title })));
     this.breadcrumb.unshift(b);
 
-    if (parentRoute) { return this.createBreadcrumb(parentRoute, routeData, promises); }
+    if (parentRoute) { return this._createBreadcrumb(parentRoute, routeData, promises); }
 
     return promises;
   }
