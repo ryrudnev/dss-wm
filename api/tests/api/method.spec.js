@@ -90,6 +90,61 @@ describe('/api/methods', function () {
           done();
         });
     });
+    it('get methods for subjects', done => {
+      supertest(app)
+        .get('/api/methods/individuals?forSubjects=["e5"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+          }]);
+          done();
+        });
+    });
+    it('get methods for subjects with types expanding', done => {
+      supertest(app)
+        .get('/api/methods/individuals?forSubjects=["e5"]&expand=["types"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+            types: [
+              { fid: 'Utilization', title: 'Утилизация' },
+            ],
+          }]);
+          done();
+        });
+    });
+    it('get methods for subjects with subject expanding', done => {
+      supertest(app)
+        .get('/api/methods/individuals?forSubjects=["e5"]&expand=["subject"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+            subject: { budget: '12356.0', coordinates: '[48.74862044225773,44.66869053100585]', fid: 'e5', title: 'ОАО ЛесВАЛ' },
+          }]);
+          done();
+        });
+    });
     it('get methods for subjects with types and subject expanding', done => {
       supertest(app)
         .get('/api/methods/individuals?forSubjects=["e5"]&expand=["types","subject"]&limit=1')
@@ -270,6 +325,61 @@ describe('/api/methods', function () {
             code: 401,
             success: false,
             message: 'Token could not be authenticated',
+          });
+          done();
+        });
+    });
+    it('get method', done => {
+      supertest(app)
+        .get('/api/methods/individuals/um1?forSubject=e5')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+          });
+          done();
+        });
+    });
+    it('get method with types expanding', done => {
+      supertest(app)
+        .get('/api/methods/individuals/um1?forSubject=e5&expand=["types"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+            types: [
+              { fid: 'Utilization', title: 'Утилизация' },
+            ],
+          });
+          done();
+        });
+    });
+    it('get method with subject expanding', done => {
+      supertest(app)
+        .get('/api/methods/individuals/um1?forSubject=e5&expand=["subject"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', subjectFid: 'e5', title: 'Сжигание',
+            subject: { budget: '12356.0', coordinates: '[48.74862044225773,44.66869053100585]', fid: 'e5', title: 'ОАО ЛесВАЛ' },
           });
           done();
         });

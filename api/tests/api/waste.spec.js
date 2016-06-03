@@ -92,6 +92,77 @@ describe('/api/waste', function () {
           done();
         });
     });
+    it('get waste', done => {
+      supertest(app)
+        .get('/api/waste/individuals?forSubjects=["e5"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+          }]);
+          done();
+        });
+    });
+    it('get waste for subjects with types expanding', done => {
+      supertest(app)
+        .get('/api/waste/individuals?forSubjects=["e5"]&expand=["types"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+            types: [
+              { fid: 'ConsumptionWaste', title: 'Бытовые отходы' },
+              { fid: 'ProductionWaste', title: 'Промышленные отходы' },
+              { fid: 'HarmlessWaste', title: 'Практически неопасные отходы' },
+              { fid: 'SolidWaste', title: 'Твердые отходы' },
+              { fid: 'RecyclableWaste', title: 'Перерабатываемые отходы' },
+              { fid: 'TransportableWaste', title: 'Транспортабельные отходы' },
+              { fid: 'UtilableWaste', title: 'Утилизируемые отходы' },
+              { fid: 'SW1', title: 'Отходы бумажных изделий' },
+            ],
+          }]);
+          done();
+        });
+    });
+    it('get waste for subjects with subject expanding', done => {
+      supertest(app)
+        .get('/api/waste/individuals?forSubjects=["e5"]&expand=["subject"]&limit=1')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([{
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+            subject: { budget: '12356.0', coordinates: '[48.74862044225773,44.66869053100585]', fid: 'e5', title: 'ОАО ЛесВАЛ' },
+          }]);
+          done();
+        });
+    });
     it('get waste for subjects with types and subject expanding', done => {
       supertest(app)
         .get('/api/waste/individuals?forSubjects=["e5"]&expand=["types","subject"]&limit=1')
@@ -282,6 +353,77 @@ describe('/api/waste', function () {
             code: 401,
             success: false,
             message: 'Token could not be authenticated',
+          });
+          done();
+        });
+    });
+    it('get waste', done => {
+      supertest(app)
+        .get('/api/waste/individuals/w11?forSubject=e5')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+          });
+          done();
+        });
+    });
+    it('get waste with types expanding', done => {
+      supertest(app)
+        .get('/api/waste/individuals/w11?forSubject=e5&expand=["types"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+            types: [
+              { fid: 'ConsumptionWaste', title: 'Бытовые отходы' },
+              { fid: 'ProductionWaste', title: 'Промышленные отходы' },
+              { fid: 'HarmlessWaste', title: 'Практически неопасные отходы' },
+              { fid: 'SolidWaste', title: 'Твердые отходы' },
+              { fid: 'RecyclableWaste', title: 'Перерабатываемые отходы' },
+              { fid: 'TransportableWaste', title: 'Транспортабельные отходы' },
+              { fid: 'UtilableWaste', title: 'Утилизируемые отходы' },
+              { fid: 'SW1', title: 'Отходы бумажных изделий' },
+            ],
+          });
+          done();
+        });
+    });
+    it('get waste with subject expanding', done => {
+      supertest(app)
+        .get('/api/waste/individuals/w11?forSubject=e5&expand=["subject"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            amount: '0.05',
+            fid: 'w11',
+            subjectFid: 'e5',
+            title: 'Газеты',
+            subject: { budget: '12356.0', coordinates: '[48.74862044225773,44.66869053100585]', fid: 'e5', title: 'ОАО ЛесВАЛ' },
           });
           done();
         });

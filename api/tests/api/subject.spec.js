@@ -96,6 +96,132 @@ describe('/api/subjects', function () {
           done();
         });
     });
+    it('get subjects', done => {
+      supertest(app)
+        .get('/api/subjects/individuals?fids=["e5"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([
+            {
+              budget: '12356.0',
+              coordinates: '[48.74862044225773,44.66869053100585]',
+              fid: 'e5',
+              title: 'ОАО ЛесВАЛ',
+            },
+          ]);
+          done();
+        });
+    });
+    it('get subjects with methods expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals?fids=["e5"]&expand=["methods"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([
+            {
+              budget: '12356.0',
+              coordinates: '[48.74862044225773,44.66869053100585]',
+              fid: 'e5',
+              methods: [
+                { costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', title: 'Сжигание' },
+              ],
+              title: 'ОАО ЛесВАЛ',
+            },
+          ]);
+          done();
+        });
+    });
+    it('get subjects with waste expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals?fids=["e5"]&expand=["waste"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([
+            {
+              budget: '12356.0',
+              coordinates: '[48.74862044225773,44.66869053100585]',
+              fid: 'e5',
+              title: 'ОАО ЛесВАЛ',
+              waste: [
+                { amount: '0.05', fid: 'w11', title: 'Газеты' },
+                { amount: '53.0', fid: 'w17', title: 'Трубы большие' },
+                { amount: '1.53', fid: 'w2', title: 'Брусья' },
+              ],
+            },
+          ]);
+          done();
+        });
+    });
+    it('get subjects with types expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals?fids=["e5"]&expand=["types"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([
+            {
+              budget: '12356.0',
+              coordinates: '[48.74862044225773,44.66869053100585]',
+              fid: 'e5',
+              title: 'ОАО ЛесВАЛ',
+              types: [
+                { fid: 'Company', title: 'Предприятие' },
+              ],
+            },
+          ]);
+          done();
+        });
+    });
+    it('get subjects with located expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals?fids=["e5"]&expand=["located"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql([
+            {
+              budget: '12356.0',
+              coordinates: '[48.74862044225773,44.66869053100585]',
+              fid: 'e5',
+              locations: [
+                { fid: 'r6', title: 'Поволжский' },
+                { fid: 'c4', title: 'Волжский' },
+                { fid: 's1', title: 'Россия' },
+              ],
+              title: 'ОАО ЛесВАЛ',
+            },
+          ]);
+          done();
+        });
+    });
     it('get subjects with methods, waste, types and located expanding', done => {
       supertest(app)
         .get('/api/subjects/individuals?fids=["e5"]&expand=["types","waste","methods","located"]')
@@ -345,6 +471,122 @@ describe('/api/subjects', function () {
           expect(res.body).has.property('message').that.is.to.eql('Access denied. You don\'t have permission to \'read subject\' Has no available enterprises for you');
           expect(res.body).has.property('code').that.is.to.eql(403);
           expect(res.body).has.not.property('data');
+          done();
+        });
+    });
+    it('get subject', done => {
+      supertest(app)
+        .get('/api/subjects/individuals/e5')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            budget: '12356.0',
+            coordinates: '[48.74862044225773,44.66869053100585]',
+            fid: 'e5',
+            title: 'ОАО ЛесВАЛ',
+          });
+          done();
+        });
+    });
+    it('get subject with methods', done => {
+      supertest(app)
+        .get('/api/subjects/individuals/e5?expand=["methods"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            budget: '12356.0',
+            coordinates: '[48.74862044225773,44.66869053100585]',
+            fid: 'e5',
+            methods: [
+              { costByService: '4500.0', costOnWeight: '1000.0', fid: 'um1', title: 'Сжигание' },
+            ],
+            title: 'ОАО ЛесВАЛ',
+          });
+          done();
+        });
+    });
+    it('get subject with waste expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals/e5?expand=["waste"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            budget: '12356.0',
+            coordinates: '[48.74862044225773,44.66869053100585]',
+            fid: 'e5',
+            title: 'ОАО ЛесВАЛ',
+            waste: [
+              { amount: '0.05', fid: 'w11', title: 'Газеты' },
+              { amount: '53.0', fid: 'w17', title: 'Трубы большие' },
+              { amount: '1.53', fid: 'w2', title: 'Брусья' },
+            ],
+          });
+          done();
+        });
+    });
+    it('get subject with types expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals/e5?expand=["types"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            budget: '12356.0',
+            coordinates: '[48.74862044225773,44.66869053100585]',
+            fid: 'e5',
+            title: 'ОАО ЛесВАЛ',
+            types: [
+              { fid: 'Company', title: 'Предприятие' },
+            ],
+          });
+          done();
+        });
+    });
+    it('get subject with located expanding', done => {
+      supertest(app)
+        .get('/api/subjects/individuals/e5?expand=["located"]')
+        .set({ Authorization: `JWT ${genToken('test')}` })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) { throw err; }
+          expect(res.body).has.property('success').that.is.to.eql(true);
+          expect(res.body).has.property('message').that.is.to.eql('OK');
+          expect(res.body).has.property('code').that.is.to.eql(200);
+          expect(res.body).has.property('data').that.is.to.eql({
+            budget: '12356.0',
+            coordinates: '[48.74862044225773,44.66869053100585]',
+            fid: 'e5',
+            locations: [
+              { fid: 'r6', title: 'Поволжский' },
+              { fid: 'c4', title: 'Волжский' },
+              { fid: 's1', title: 'Россия' },
+            ],
+            title: 'ОАО ЛесВАЛ',
+          });
           done();
         });
     });
