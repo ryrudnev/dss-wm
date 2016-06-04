@@ -1,21 +1,25 @@
 import React, { PropTypes, Component } from 'react';
 import Helmet from 'react-helmet';
 import $ from 'jquery';
-import { Navbar, Nav, NavDropdown, Row, Col, Grid } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown, Row, Col, Grid, Alert } from 'react-bootstrap';
 import NavMenuItem from './NavMenuItem';
 import NavBreadcrumb from './NavBreadcrumb';
 import NavSidebar from './NavSidebar';
+import Progress from 'react-progress-2';
 
 export default class AppContainer extends Component {
   static propTypes = {
     route: PropTypes.object,
     breadcrumb: PropTypes.object,
     user: PropTypes.object,
+    onError: PropTypes.func.isRequired,
   }
 
   static childContextTypes = {
     user: PropTypes.object,
   }
+
+  state = { height: '450px', error: null }
 
   getChildContext() {
     return {
@@ -28,7 +32,7 @@ export default class AppContainer extends Component {
   }
 
   render() {
-    const { route, breadcrumb } = this.props;
+    const { route, breadcrumb, onError } = this.props;
 
     const Page = (props, context) => route.render(props, context);
 
@@ -40,6 +44,18 @@ export default class AppContainer extends Component {
         </div>
       );
     }
+
+    onError(error => {
+      Progress.hide();
+      this.setState({ error });
+    });
+
+    const errorAlert = this.state.error == null ? '' : (
+      <Alert bsStyle="danger" onDismiss={() => this.setState({ error: null })}>
+        <h4>Ошибка!</h4>
+        <p>{this.state.error.message}</p>
+      </Alert>
+    );
 
     return (
       <div id="container">
@@ -68,12 +84,9 @@ export default class AppContainer extends Component {
           </Navbar>
           <div id="page-wrapper" className="page-wrapper" style={{ minHeight: this.state.height }}>
             <Grid fluid>
-              <Row>
-                <Col md={12}><NavBreadcrumb collection={breadcrumb} /></Col>
-              </Row>
-              <Row>
-                <Col md={12}><Page /></Col>
-              </Row>
+              <Row><Col md={12}><NavBreadcrumb collection={breadcrumb} /></Col></Row>
+              <Row><Col md={12}>{errorAlert}</Col></Row>
+              <Row><Col md={12}><Page /></Col></Row>
             </Grid>
           </div>
         </div>

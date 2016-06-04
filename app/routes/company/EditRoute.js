@@ -7,7 +7,6 @@ import CompanyForm from '../../components/CompanyForm';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
-const errors = radio.channel('errors');
 
 export default class CompanyEditRoute extends Route {
   breadcrumb = 'Изменить'
@@ -27,10 +26,6 @@ export default class CompanyEditRoute extends Route {
     });
   }
 
-  onError(handler) {
-    errors.on('error', handler);
-  }
-
   render() {
     return (
       <div>
@@ -42,7 +37,6 @@ export default class CompanyEditRoute extends Route {
               <CompanyForm
                 values={this.company.toJSON()}
                 onSubmit={(values) => this.onSubmit(values)}
-                onError={this.onError}
                 onCancel={() => this.onCancel()}
               />
             </Panel>

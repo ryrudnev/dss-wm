@@ -11,6 +11,7 @@ import initErrorHandler from './errorHandler';
 
 const session = radio.channel('session');
 const router = radio.channel('router');
+const errors = radio.channel('errors');
 
 class App {
   constructor() {
@@ -38,6 +39,7 @@ class App {
       <div>
         <Progress.Component />
         < AppContainer
+          onError={handler => errors.on('error', handler)}
           user={session.request('currentUser')}
           breadcrumb={router.request('breadcrumb')}
           route={route || router.request('currentRoute')}

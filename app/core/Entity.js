@@ -50,10 +50,10 @@ function fetchMixin(proto) {
       const newValue = isString(value) ? words(value, ',') : value;
       return this.setParam(param, options.merge ?
         oldValue => {
-          if (isPlainObject(oldValue) || isPlainObject(newValue)) {
+          if (oldValue == null) return newValue;
+          if (isPlainObject(newValue)) {
             return { ...(oldValue || {}), ...newValue };
           }
-          if (oldValue == null) return newValue;
           return union(flatten([oldValue || []]), flatten([newValue]));
         } : newValue);
     },
@@ -93,7 +93,7 @@ export const Model = AssociatedModel.extend({
   fillableParams: ['expand'],
 
   parse(resp) {
-    return ('success' in resp && 'data' in resp) ? resp.data || {} : resp;
+    return isPlainObject(resp) ? (isPlainObject(resp.data) ? resp.data : resp) : {};
   },
 });
 
@@ -105,7 +105,7 @@ export const Collection = BaseCollection.extend({
   fillableParams: ['expand', 'sort', 'limit', 'offset', 'subtypes'],
 
   parse(resp) {
-    return ('success' in resp && 'data' in resp) ? flatten([resp.data || []]) : isArray(resp) || [];
+    return isPlainObject(resp) ? this.parse(resp.data) : isArray(resp) ? resp : [];
   },
 
   sortParam(list, options = {}) {

@@ -1,3 +1,4 @@
+import Backbone from 'backbone';
 import { Model as BaseModel, Collection as BaseCollection } from '../core/Entity';
 import { tryParseJson } from '../util/utils';
 
@@ -20,6 +21,21 @@ export class Model extends BaseModel {
   urlRoot() {
     return `${this.apiUrl()}/subjects/individuals`;
   }
+
+  relations = [
+    {
+      type: Backbone.Many,
+      key: 'methods',
+      collectionType: () => require('./Method').Collection, // eslint-disable-line
+      isTransient: true,
+    },
+    {
+      type: Backbone.Many,
+      key: 'waste',
+      collectionType: () => require('./Waste').Collection, // eslint-disable-line
+      isTransient: true,
+    },
+  ]
 }
 
 export class Collection extends BaseCollection {

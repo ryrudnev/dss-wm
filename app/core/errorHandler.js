@@ -13,7 +13,7 @@ class ErrorHandler {
     if (success || (success === void 0 && xhr.code < 400)) { return; }
     const error = { code: code || xhr.code, name: xhr.statusText, message };
 
-    errors.trigger(`error: ${error.code}`, error);
+    errors.trigger(`error:${error.code}`, error);
     errors.trigger('error', error);
   }
 }

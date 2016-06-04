@@ -48,7 +48,7 @@ export default class CompanyIndexRoute extends Route {
     return (
       <div>
         <Helmet title="Предприятия" />
-        <PageHeader> Предприятия </PageHeader>
+        <PageHeader>Предприятия</PageHeader>
         <Row>
           <Col md={12}>
             <NavLink to="companies/new" className="btn btn-primary" role="button">

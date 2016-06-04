@@ -1,18 +1,11 @@
 import React, { Component, PropTypes } from 'react';
-import {
-  FormGroup,
-  Col,
-  Alert,
-  Button,
-  ButtonToolbar,
-} from 'react-bootstrap';
+import { FormGroup, Col, Button, ButtonToolbar } from 'react-bootstrap';
 import { Form, ValidatedInput } from 'react-bootstrap-validation';
 
 export default class CompanyForm extends Component {
   static propTypes = {
     onSubmit: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
-    onError: PropTypes.func.isRequired,
     values: PropTypes.object,
     create: PropTypes.bool,
   }
@@ -43,20 +36,10 @@ export default class CompanyForm extends Component {
   }
 
   render() {
-    this.props.onError(error => this.setState({ error }));
-
-    const { error, title, lat, long, budget } = this.state;
-
-    const errorAlert = error == null ? '' : (
-      <Alert bsStyle="danger" onDismiss={() => this.setState({ error: null })}>
-        <h4>Ошибка!</h4>
-        <p>{error.message}</p>
-      </Alert>
-    );
+    const { title, lat, long, budget } = this.state;
 
     return (
       <div>
-        {errorAlert}
         <Form
           className="form-horizontal"
           onValidSubmit={(values) => this.onSubmit(values)}

@@ -2,7 +2,7 @@ import { Model, Collection } from 'backbone';
 import { StateRouter, Route as BaseRoute } from './StateRouter';
 import { applyFn } from '../util/utils';
 import { each, isEmpty, findKey, isString, has } from 'underscore';
-import { NotAuthorizedRoute } from '../routes';
+import { NotAuthorizedRoute, NotFoundRoute } from '../routes';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
@@ -49,7 +49,7 @@ class Router extends StateRouter {
         }
       },
       'error:403': () => this.onUnauthorized(),
-      'error:404': () => this.navigate('*notfound'),
+      'error:404': () => this.onNotFound(),
     });
   }
 
@@ -63,6 +63,10 @@ class Router extends StateRouter {
       session.request('unset', 'redirectFrom');
       this.navigate(redirectFrom);
     } else { this.navigate(''); }
+  }
+
+  onNotFound(route, routeData) {
+    this.trigger('route', new NotFoundRoute, routeData || this.currentRouteData);
   }
 
   onUnauthorized(route, routeData) {
