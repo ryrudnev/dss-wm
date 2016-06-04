@@ -166,7 +166,7 @@ export default class RdfBaseStorage {
         ${cond}
       }`;
     if (!falseAsReject) {
-      return exec(query);
+      return exec(query, false);
     }
     return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
@@ -178,7 +178,7 @@ export default class RdfBaseStorage {
           data: null,
         });
       }
-    });
+    }, false);
   }
 
   // Delete the type of entity
