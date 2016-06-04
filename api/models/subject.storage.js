@@ -135,7 +135,7 @@ class SubjectStorage extends RdfBaseStorage {
 
     for (const [group, waste] of groupWaste(ownWaste, wasteMethods)) {
       // Calculate total amount of all own waste for the current group
-      const totalAmount = +(waste.reduce((prev, val) => prev + +val.amount, 0)).toFixed(3);
+      const totalAmount = +waste.reduce((prev, val) => prev + +val.amount, 0).toFixed(2);
 
       if (!group.size) {  // No available waste management methods for group of waste
         strategies.push({ waste, totalAmount });
@@ -174,10 +174,11 @@ class SubjectStorage extends RdfBaseStorage {
       Array.from(availableMethodTypes).forEach(methodType => {
         methods[methodType].forEach(method => {
           const transport = getBestTransport(source, method.subject, totalAmount, transportation);
-          const cost = +(calcMethodCost(totalAmount, method) + transport.cost).toFixed(3);
+          const cost = +(calcMethodCost(totalAmount, method) + transport.cost).toFixed(2);
           if (bestCost === undefined || bestCost >= cost) {
             bestTransportation = transport.method;
             bestMethod = method;
+            bestMethod.distance = +cachedDistances.get(method.subject.fid).distance.toFixed(2);
             bestCost = cost;
           }
         });
@@ -199,7 +200,12 @@ class SubjectStorage extends RdfBaseStorage {
     }
 
     // Results of searching algorithm of waste management strategy
-    return { subject, strategies, totalBestCost, totalWasteAmount };
+    return {
+      subject,
+      strategies,
+      totalBestCost: +totalBestCost.toFixed(2),
+      totalWasteAmount: +totalWasteAmount.toFixed(2),
+    };
   }
 
   createIndividReducer(key, value, fid) {

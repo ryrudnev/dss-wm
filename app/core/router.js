@@ -111,11 +111,9 @@ class Router extends StateRouter {
   _getMappedUrl(originalRoute, routeData) {
     if (!routeData) { return originalRoute; }
     const { params, queryString } = routeData;
-    let url = originalRoute;
+    let url = `/${originalRoute}`;
     each(params || {}, (v, k) => (url = url.replace(`:${k}`, v)));
-    if (queryString) {
-      url += (isEmpty(url) ? '/?' : '?') + queryString;
-    }
+    if (queryString) { url += `?${queryString}`; }
     return url;
   }
 

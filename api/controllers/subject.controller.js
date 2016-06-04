@@ -138,6 +138,7 @@ export function searchStrategy(req, res) {
         if (!cur[fid]) {
           cur[fid] = [];
         }
+        delete curSubject.budget;
         method.subject = curSubject;
         cur[fid].push(method);
       }

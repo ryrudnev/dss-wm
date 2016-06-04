@@ -102,7 +102,7 @@ const config = {
         'reasoning.virtual.graph.enabled': true,
         'reasoning.punning.enabled': false,
         'reasoning.consistency.automatic': false,
-        'reasoning.schema.timeout': '60s',
+        'reasoning.schema.timeout': '360s',
         'search.enabled': false,
         'search.reindex.mode': 'sync',
         'transaction.logging': false,
