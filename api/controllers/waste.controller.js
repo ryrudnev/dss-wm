@@ -7,20 +7,25 @@ export function getAllIndivids(req, res) {
   const { qs } = req;
   const exp = flatten([qs.expand]);
   return wasteStorage.selectIndivids(qs).then(waste => {
-    const wasteFids = waste.data.map(w => w.fid);
+    const fids = waste.data.map(w => w.fid);
     return Promise.all([
       waste,
-      exp.includes('types') ? wasteStorage.selectTypes({ individs: wasteFids }) : 0,
-      exp.includes('subject') ? subjectStorage.selectIndivids({ byWaste: wasteFids }) : 0,
+      exp.includes('subtype') ? wasteStorage.selectTypes({ individs: fids, subtypes: true }) : 0,
+      exp.includes('types') ? wasteStorage.selectTypes({ individs: fids }) : 0,
+      exp.includes('subject') ? subjectStorage.selectIndivids({ byWaste: fids }) : 0,
     ]);
   }).then(results => {
     const [waste] = results;
     if (results.slice(1).some(p => !!p)) {
-      let [, types, subjects] = results;
+      let [, subtype, types, subjects] = results;
+      subtype = !subtype || joinExpanded('wasteFid', subtype.data, true);
       types = !types || joinExpanded('wasteFid', types.data);
       subjects = !subjects || joinExpanded('wasteFid', subjects.data, true);
 
       waste.data = waste.data.map(curWaste => {
+        if (typeof subtype !== 'boolean') {
+          curWaste.subtype = subtype[curWaste.fid] || {};
+        }
         if (typeof types !== 'boolean') {
           curWaste.types = types[curWaste.fid] || [];
         }
@@ -39,14 +44,19 @@ export function getIndivid(req, res) {
   const exp = flatten([req.qs.expand]);
   return Promise.all([
     wasteStorage.selectIndividByFid(fid, req.qs),
+    exp.includes('subtype') ? wasteStorage.selectTypes({ individs: fid, subtypes: true }) : 0,
     exp.includes('types') ? wasteStorage.selectTypes({ individs: fid }) : 0,
     exp.includes('subject') ? subjectStorage.selectIndivids({ byWaste: fid }) : 0,
   ]).then(results => {
     const [waste] = results;
-    let [, types, subjects] = results;
+    let [, subtype, types, subjects] = results;
+    subtype = !subtype || joinExpanded('wasteFid', subtype.data, true);
     types = !types || joinExpanded('wasteFid', types.data);
     subjects = !subjects || joinExpanded('wasteFid', subjects.data, true);
 
+    if (typeof subtype !== 'boolean') {
+      waste.data.subtype = subtype[fid] || {};
+    }
     if (typeof types !== 'boolean') {
       waste.data.types = types[fid] || [];
     }

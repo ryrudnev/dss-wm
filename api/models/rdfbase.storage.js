@@ -4,13 +4,13 @@ import Counter from '../models/counter.model';
 import stardog from '../core/stardog';
 import { __ } from '../core/translations';
 
-function exec(query) {
-  return stardog.query({ query });
+function exec(query, reasoning = true) {
+  return stardog.query({ query }, reasoning);
 }
 
-function execWithHandle(query, cb) {
+function execWithHandle(query, cb, reasoning = true) {
   const dfd = new Deferred();
-  exec(query).then(resp => {
+  exec(query, reasoning).then(resp => {
     if (cb) {
       cb(resp, dfd.resolve.bind(dfd), dfd.reject.bind(dfd));
     } else { dfd.resolve(resp); }
@@ -57,13 +57,13 @@ export default class RdfBaseStorage {
 
   // Execute a query to Stardog platform and handle response before to next promises chain
   // cb(response, next, error)
-  static execWithHandle(query, cb) {
-    return execWithHandle(query, cb);
+  static execWithHandle(query, cb, reasoning = true) {
+    return execWithHandle(query, cb, reasoning);
   }
 
   // Execute a query to Stardog platform. Returned promise
-  static exec(query) {
-    return exec(query);
+  static exec(query, reasoning = true) {
+    return exec(query, reasoning);
   }
 
   // Check exists individual of entity

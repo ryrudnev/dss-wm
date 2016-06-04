@@ -140,14 +140,17 @@ class WasteStorage extends RdfBaseStorage {
   }
 
   selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
-    if (!individs && !types) {
+    if (individs && subtypes) {
       const query = `
-        SELECT DISTINCT ${qFidAs('type', 'fid')} ?title WHERE {
-          ${qType(['type', 'rdfs:subClassOf'], [':SpecificWaste', subtypes])} ; rdfs:label ?title
-          FILTER(?type != :SpecificWaste)
+        SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
+        ${qFidAs('waste', 'wasteFid')}
+        WHERE {
+          ?type rdfs:subClassOf :SpecificWaste ; rdfs:label ?title.
+          ?waste a ?type
+          ${qInFilter(['waste'], individs)}
         } ${qSort(sort)} ${qLimitOffset(limit, offset)}
       `;
-      return RdfBaseStorage.exec(query);
+      return RdfBaseStorage.exec(query, false);
     }
 
     const evidences = [
@@ -163,10 +166,10 @@ class WasteStorage extends RdfBaseStorage {
       SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
       ${individs ? qFidAs('waste', 'wasteFid') : ''}
       WHERE {
-        ?type rdfs:subClassOf ${this.entityWithPrefix} OPTIONAL { ?type rdfs:label ?title } .
-        ${qInFilter(['waste', 'a', 'type'], individs)}
+        ${qType(['type', 'rdfs:subClassOf'], [this.entity, subtypes])} ; rdfs:label ?title .
         ${types ? `?subtype rdfs:subClassOf ?type FILTER(?subtype != ?type)
         ${qInFilter(['subtype'], types)}` : ''}
+        ${qInFilter(['waste', 'a', 'type'], individs)}
         ${qNotInFilter(['type'], evidences)}
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;

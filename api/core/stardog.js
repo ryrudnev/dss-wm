@@ -83,14 +83,15 @@ class Stardog {
     return dfd.promise;
   }
 
-  query(options, parseResult = parseStardogResponse) {
-    debug(`Query to Stardog platform: ${options.query}`);
+  query(options, reasoning = true) {
+    debug(`Query to Stardog platform ${reasoning ? 'with reasoning' : ''}: ${options.query}`);
 
     const { conn, database } = this;
+    conn.setReasoning(reasoning);
     const dfd = new Deferred();
     conn.query({ ...options, database }, (body, resp) => {
       debug(`Response from Stardog platform: ${JSON.stringify(body)}`);
-      const res = parseResult(body, resp);
+      const res = parseStardogResponse(body, resp);
       dfd[res.success ? 'resolve' : 'reject'](res);
     });
     return dfd.promise;
