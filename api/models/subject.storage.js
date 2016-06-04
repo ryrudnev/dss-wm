@@ -135,7 +135,7 @@ class SubjectStorage extends RdfBaseStorage {
 
     for (const [group, waste] of groupWaste(ownWaste, wasteMethods)) {
       // Calculate total amount of all own waste for the current group
-      const totalAmount = waste.reduce((prev, val) => prev + +val.amount, 0);
+      const totalAmount = +(waste.reduce((prev, val) => prev + +val.amount, 0)).toFixed(3);
 
       if (!group.size) {  // No available waste management methods for group of waste
         strategies.push({ waste, totalAmount });
@@ -174,7 +174,7 @@ class SubjectStorage extends RdfBaseStorage {
       Array.from(availableMethodTypes).forEach(methodType => {
         methods[methodType].forEach(method => {
           const transport = getBestTransport(source, method.subject, totalAmount, transportation);
-          const cost = calcMethodCost(totalAmount, method) + transport.cost;
+          const cost = +(calcMethodCost(totalAmount, method) + transport.cost).toFixed(3);
           if (bestCost === undefined || bestCost >= cost) {
             bestTransportation = transport.method;
             bestMethod = method;
@@ -190,15 +190,16 @@ class SubjectStorage extends RdfBaseStorage {
       strategies.push({ waste, totalAmount, strategy });
     }
 
+    let totalBestCost = null;
+    let totalWasteAmount = null;
+    for (const st of strategies) {
+      const { strategy, totalAmount } = st;
+      if (strategy != null && strategy.bestCost != null) totalBestCost += strategy.bestCost;
+      if (totalAmount != null) totalWasteAmount += totalAmount;
+    }
+
     // Results of searching algorithm of waste management strategy
-    return {
-      subject,
-      strategies,
-      // Get best total cost of uses best waste management methods for all group of waste
-      totalBestCost: strategies.reduce((total, v) =>
-          (!v.strategy || !v.strategy.bestCost ? total : total + v.strategy.bestCost), null
-      ),
-    };
+    return { subject, strategies, totalBestCost, totalWasteAmount };
   }
 
   createIndividReducer(key, value, fid) {
