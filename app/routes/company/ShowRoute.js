@@ -26,7 +26,13 @@ export default class CompanyShowRoute extends Route {
   }
 
   search() {
-
+    Progress.show();
+    this.company.searchStrategy({
+      success: (model, resp) => {
+        Progress.hide();
+        console.log(model, resp);
+      },
+    });
   }
 
   delete() {
@@ -64,7 +70,7 @@ export default class CompanyShowRoute extends Route {
                 </NavLink>
                 <NavLink
                   to={`waste/${props.rowData.fid}/edit`}
-                  className="btn btn-sm btn-success" role="button"
+                  className="btn btn-sm btn-primary" role="button"
                 >
                   Изменить
                 </NavLink>
@@ -110,7 +116,7 @@ export default class CompanyShowRoute extends Route {
                 </NavLink>
                 <NavLink
                   to={`methods/${props.rowData.fid}/edit`}
-                  className="btn btn-sm btn-success" role="button"
+                  className="btn btn-sm btn-primary" role="button"
                 >
                   Изменить
                 </NavLink>
@@ -135,16 +141,16 @@ export default class CompanyShowRoute extends Route {
     return (
       <div>
         <Helmet title={`Предприятие ${company.get('title')}`} />
-        <PageHeader>{`Просмотр предприятия ${company.get('title')}`}</PageHeader>
+        <PageHeader>{`Предприятие ${company.get('title')}`}</PageHeader>
         <Row>
           <Col md={12}>
             <ButtonToolbar>
-              <Button bsStyle="primary" onClick={() => this.search()}>
+              <Button bsStyle="success" onClick={() => this.search()}>
                 Найти стратегию
               </Button>
               <NavLink
                 to={`companies/${company.id}/edit`}
-                className="btn btn-success" role="button"
+                className="btn btn-primary" role="button"
               >
                 Изменить
               </NavLink>
@@ -172,7 +178,7 @@ export default class CompanyShowRoute extends Route {
                       to={`waste/new?forSubject=${company.id}`}
                       className="btn btn-primary" role="button"
                     >
-                      Создать
+                      Добавить
                     </NavLink>
                   </Col>
                 </Row>
@@ -189,7 +195,7 @@ export default class CompanyShowRoute extends Route {
                       to={`methods/new?forSubject=${company.id}`}
                       className="btn btn-primary" role="button"
                     >
-                      Создать
+                      Добавить
                     </NavLink>
                   </Col>
                 </Row>

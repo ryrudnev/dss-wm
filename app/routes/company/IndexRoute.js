@@ -26,7 +26,7 @@ export default class CompanyIndexRoute extends Route {
         </NavLink>
         <NavLink
           to={`companies/${props.rowData.fid}/edit`}
-          className="btn btn-sm btn-success" role="button"
+          className="btn btn-sm btn-primary" role="button"
         >
           Изменить
         </NavLink>

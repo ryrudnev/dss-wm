@@ -22,6 +22,11 @@ export class Model extends BaseModel {
     return `${this.apiUrl()}/subjects/individuals`;
   }
 
+  searchStrategy(options = {}) {
+    options.url = `${this.urlRoot()}/${this.get('fid')}/search-strategy`;
+    return this.sync('read', this, options);
+  }
+
   relations = [
     {
       type: Backbone.Many,

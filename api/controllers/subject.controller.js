@@ -73,7 +73,7 @@ export function getIndivid(req, res) {
       subject.data.locations = locations[fid] || [];
     }
     if (typeof waste !== 'boolean') {
-      subject.data.waste = waste[fid];
+      subject.data.waste = waste[fid] || [];
     }
     respondOk.call(res, subject);
   }).catch(err => respondError.call(res, err));

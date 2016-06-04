@@ -118,7 +118,7 @@ export default class RdfBaseStorage {
         ${fid} a ${axiomWithPrefix(type || this.entity)} .
         ${qdata.trim()}
       }`;
-      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }));
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }), false);
     });
   }
 
@@ -135,7 +135,7 @@ export default class RdfBaseStorage {
         ${fid} a owl:Class ; rdfs:subClassOf ${axiomWithPrefix(subtype)} .
         ${qdata.trim()}
       }`;
-      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }));
+      return execWithHandle(query, (resp, next) => next({ ...resp, data: { fid: id } }), false);
     });
   }
 
