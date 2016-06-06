@@ -51,7 +51,7 @@ export default class Login extends Component {
                 />
                 <ControlLabel>Пароль</ControlLabel>
                 <FormControl
-                  type="text" placeholder="Укажите пароль" value={this.state.password}
+                  type="password" placeholder="Укажите пароль" value={this.state.password}
                   onChange={e => this.setState({ password: e.target.value })}
                 />
               </FormGroup>

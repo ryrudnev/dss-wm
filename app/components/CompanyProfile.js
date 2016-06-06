@@ -171,21 +171,14 @@ export default class CompanyProfile extends Component {
             columnName: 'fid',
             sortable: false,
             customComponent: props => (
-              <ButtonToolbar>
-                <NavLink
-                  to={`/waste/${props.rowData.fid}`}
-                  className="btn btn-sm btn-info" role="button"
-                >
-                  Просмотр
+              <div>
+                <NavLink to={`/waste/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+                  <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
-                <NavLink
-                  to={`/waste/${props.rowData.fid}/edit`}
-                  className="btn btn-sm btn-primary" role="button"
-                >
-                  Изменить
+                <NavLink to={`/waste/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+                  <i className="fa fa-pencil" aria-hidden="true" />
                 </NavLink>
-                <Button
-                  bsStyle="danger" bsSize="small"
+                <a
                   onClick={() => {
                     Progress.show();
                     const model = company.get('waste').findWhere({ fid: props.rowData.fid });
@@ -193,9 +186,9 @@ export default class CompanyProfile extends Component {
                     model.destroy({ wait: true, success: () => Progress.hide() });
                   }}
                 >
-                  Удалить
-                </Button>
-              </ButtonToolbar>
+                  <i className="fa fa-ban" aria-hidden="true" />
+                </a>
+              </div>
             ),
           },
         ]}
@@ -217,21 +210,14 @@ export default class CompanyProfile extends Component {
             columnName: 'fid',
             sortable: false,
             customComponent: props => (
-              <ButtonToolbar>
-                <NavLink
-                  to={`/methods/${props.rowData.fid}`}
-                  className="btn btn-sm btn-info" role="button"
-                >
-                  Просмотр
+              <div>
+                <NavLink to={`/methods/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+                  <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
-                <NavLink
-                  to={`/methods/${props.rowData.fid}/edit`}
-                  className="btn btn-sm btn-primary" role="button"
-                >
-                  Изменить
+                <NavLink to={`/methods/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+                  <i className="fa fa-pencil" aria-hidden="true" />
                 </NavLink>
-                <Button
-                  bsStyle="danger" bsSize="small"
+                <a
                   onClick={() => {
                     Progress.show();
                     const model = company.get('methods').findWhere({ fid: props.rowData.fid });
@@ -239,9 +225,9 @@ export default class CompanyProfile extends Component {
                     model.destroy({ wait: true, success: () => Progress.hide() });
                   }}
                 >
-                  Удалить
-                </Button>
-              </ButtonToolbar>
+                  <i className="fa fa-ban" aria-hidden="true" />
+                </a>
+              </div>
             ),
           },
         ]}
@@ -286,7 +272,7 @@ export default class CompanyProfile extends Component {
           <Col md={12}>
             <Panel>
               <h5><Label>Координаты</Label> [{company.get('coordinates').join(', ')}]</h5>
-              <h5><Label>Бюджет</Label> {company.get('budget')}</h5>
+              <h5><Label>Бюджет</Label> {company.get('budget')} р.</h5>
             </Panel>
           </Col>
         </Row>

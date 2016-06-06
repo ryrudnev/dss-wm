@@ -2,7 +2,7 @@ import React from 'react';
 import Helmet from 'react-helmet';
 import { Route } from '../../core/router';
 import { Collection as Companies } from '../../entities/Company';
-import { PageHeader, Row, Col, ButtonToolbar, Button } from 'react-bootstrap';
+import { PageHeader, Row, Col } from 'react-bootstrap';
 import NavLink from '../../components/NavLink';
 import GridContainer from '../../components/GridContainer';
 import Progress from 'react-progress-2';
@@ -17,30 +17,24 @@ export default class CompanyIndexRoute extends Route {
 
   render() {
     const actions = props => (
-      <ButtonToolbar>
-        <NavLink
-          to={`companies/${props.rowData.fid}`}
-          className="btn btn-sm btn-info" role="button"
-        >
-          Просмотр
+      <div>
+        <NavLink to={`/companies/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+          <i className="fa fa-eye" aria-hidden="true" />
         </NavLink>
-        <NavLink
-          to={`companies/${props.rowData.fid}/edit`}
-          className="btn btn-sm btn-primary" role="button"
-        >
-          Изменить
+        <NavLink to={`/companies/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+          <i className="fa fa-pencil" aria-hidden="true" />
         </NavLink>
-        <Button
-          bsStyle="danger" bsSize="small"
+        <a
+          href="javascript:;"
           onClick={() => {
             Progress.show();
             const model = this.companies.findWhere({ fid: props.rowData.fid });
             model.destroy({ wait: true, success: () => Progress.hide() });
           }}
         >
-          Удалить
-        </Button>
-      </ButtonToolbar>
+          <i className="fa fa-ban" aria-hidden="true" />
+        </a>
+      </div>
     );
 
     const coordinates = props => (<span>[{props.rowData.coordinates.join(', ')}]</span>);
