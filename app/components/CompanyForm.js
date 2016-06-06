@@ -19,7 +19,6 @@ export default class CompanyForm extends Component {
 
     const { title, coordinates, budget } = this.props.values;
     this.state = {
-      error: null,
       title,
       lat: `${coordinates[0] || ''}`,
       long: `${coordinates[1] || ''}`,

@@ -161,7 +161,7 @@ export default class RdfBaseStorage {
       DELETE { ?s ?p ?o . ?a ?b ?s }
       WHERE {
         ?s ?p ?o . ?a ?b ?s
-        FILTER(?s = ${axiomWithPrefix(fid)} && ?)
+        FILTER(?s = ${axiomWithPrefix(fid)})
         ${cond}
       }`;
     if (!falseAsReject) return exec(query);

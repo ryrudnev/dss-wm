@@ -3,7 +3,7 @@ import Progress from 'react-progress-2';
 import GridContainer from './GridContainer';
 import NavLink from './NavLink';
 import {
-  Row, Col, Button, ButtonToolbar, Tabs,
+  Row, Col, Button, Tabs,
   Panel, Label, Tab, Modal, ListGroup, ListGroupItem,
 } from 'react-bootstrap';
 
@@ -28,7 +28,8 @@ export default class CompanyProfile extends Component {
   createWasteItem({ fid, title, amount }, i) {
     return (
       <ListGroupItem key={i + 1}>
-        <Label>Название</Label>{' '}<NavLink to={`/waste/${fid}`}>{title}</NavLink><br />
+        <Label>Название</Label>{' '}
+        <NavLink to={`/waste/${fid}?forSubject=${this.props.company.id}`}>{title}</NavLink><br />
         <Label>Количество</Label>{' '}{amount} т
       </ListGroupItem>
     );
@@ -37,7 +38,8 @@ export default class CompanyProfile extends Component {
   createMethod({ fid, subject, title, costByService, costOnDistance, costOnWeight, distance }) {
     return (
       <div>
-        <Label>Название</Label>{' '}<NavLink to={`/methods/${fid}`}>{title}</NavLink><br />
+        <Label>Название</Label>{' '}
+        <NavLink to={`/methods/${fid}?forSubject=${this.props.company.id}`}>{title}</NavLink><br />
         {subject == null ? '' : (
           <span>
             <Label>Предприятие</Label>{' '}
@@ -101,7 +103,7 @@ export default class CompanyProfile extends Component {
           </Panel>
         </Col>
         <Col md={5}>
-          <Panel header="Оптимальные способы обращения">
+          <Panel header="Эффективные способы обращения">
             <ListGroup fill>
               {
                 !optimalExists ? '' : (
@@ -172,13 +174,20 @@ export default class CompanyProfile extends Component {
             sortable: false,
             customComponent: props => (
               <div>
-                <NavLink to={`/waste/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+                <NavLink
+                  to={`/waste/${props.rowData.fid}?forSubject=${company.id}`}
+                  style={{ marginRight: '15px' }}
+                >
                   <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
-                <NavLink to={`/waste/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+                <NavLink
+                  to={`/waste/${props.rowData.fid}/edit?forSubject=${company.id}`}
+                  style={{ marginRight: '15px' }}
+                >
                   <i className="fa fa-pencil" aria-hidden="true" />
                 </NavLink>
                 <a
+                  href="javascript:;"
                   onClick={() => {
                     Progress.show();
                     const model = company.get('waste').findWhere({ fid: props.rowData.fid });
@@ -211,13 +220,20 @@ export default class CompanyProfile extends Component {
             sortable: false,
             customComponent: props => (
               <div>
-                <NavLink to={`/methods/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+                <NavLink
+                  to={`/methods/${props.rowData.fid}?forSubject=${company.id}`}
+                  style={{ marginRight: '15px' }}
+                >
                   <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
-                <NavLink to={`/methods/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+                <NavLink
+                  to={`/methods/${props.rowData.fid}/edit?forSubject=${company.id}`}
+                  style={{ marginRight: '15px' }}
+                >
                   <i className="fa fa-pencil" aria-hidden="true" />
                 </NavLink>
                 <a
+                  href="javascript:;"
                   onClick={() => {
                     Progress.show();
                     const model = company.get('methods').findWhere({ fid: props.rowData.fid });
@@ -252,27 +268,31 @@ export default class CompanyProfile extends Component {
         </Modal>
         <Row>
           <Col md={12}>
-            <ButtonToolbar>
-              <Button bsStyle="success" onClick={() => this.search()}>
-                Найти стратегию
-              </Button>
-              <NavLink
-                to={`/companies/${company.id}/edit`}
-                className="btn btn-primary" role="button"
-              >
-                Изменить
-              </NavLink>
-              <Button bsStyle="danger" onClick={() => this.delete()}>
-                Удалить
-              </Button>
-            </ButtonToolbar>
+            <ul className="nav menu-nav-pills">
+              <li>
+                <a href="javascript:;" onClick={() => this.search()}>
+                  <i className="fa fa-search" aria-hidden="true" /> Найти стратегию
+                </a>
+              </li>
+              <li><span className="h-seperate" /></li>
+              <li>
+                <NavLink to={`/companies/${company.id}/edit`}>
+                  <i className="fa fa-pencil-square-o" /> Редактировать
+                </NavLink>
+              </li>
+              <li>
+                <a href="javascript:;" onClick={() => this.delete()}>
+                  <i className="fa fa-ban" aria-hidden="true" /> Удалить
+                </a>
+              </li>
+            </ul>
           </Col>
         </Row>
-        <Row style={{ marginTop: '20px' }}>
+        <Row>
           <Col md={12}>
             <Panel>
-              <h5><Label>Координаты</Label> [{company.get('coordinates').join(', ')}]</h5>
-              <h5><Label>Бюджет</Label> {company.get('budget')} р.</h5>
+              <h4><Label>Координаты</Label> [{company.get('coordinates').join(', ')}]</h4>
+              <h4><Label>Бюджет</Label> {company.get('budget')} р.</h4>
             </Panel>
           </Col>
         </Row>
@@ -280,34 +300,28 @@ export default class CompanyProfile extends Component {
           <Col md={12}>
             <Tabs className="company-tabs">
               <Tab eventKey={1} title="Отходы">
-                <Row style={{ marginTop: '20px' }}>
-                  <Col md={12}>
-                    <NavLink
-                      to={`/waste/new?forSubject=${company.id}`}
-                      className="btn btn-primary" role="button"
-                    >
-                      Добавить
+                <ul className="nav menu-nav-pills">
+                  <li>
+                    <NavLink to={`/waste/new?forSubject=${company.id}`}>
+                      <i className="fa fa-plus-square" aria-hidden="true" /> Добавить
                     </NavLink>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '20px' }}>
+                  </li>
+                </ul>
+                <Row>
                   <Col md={12}>
                     <WasteGrid />
                   </Col>
                 </Row>
               </Tab>
               <Tab eventKey={2} title="Методы">
-                <Row style={{ marginTop: '20px' }}>
-                  <Col md={12}>
-                    <NavLink
-                      to={`/methods/new?forSubject=${company.id}`}
-                      className="btn btn-primary" role="button"
-                    >
-                      Добавить
+                <ul className="nav menu-nav-pills">
+                  <li>
+                    <NavLink to={`/methods/new?forSubject=${company.id}`}>
+                      <i className="fa fa-plus-square" aria-hidden="true" /> Добавить
                     </NavLink>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '20px' }}>
+                  </li>
+                </ul>
+                <Row>
                   <Col md={12}>
                     <MethodGrid />
                   </Col>

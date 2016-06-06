@@ -1,7 +1,7 @@
 import { Model, Collection } from 'backbone';
 import { StateRouter, Route as BaseRoute } from './StateRouter';
 import { applyFn } from '../util/utils';
-import { each, isEmpty, findKey, isString, has } from 'underscore';
+import { each, findKey, isString, has } from 'underscore';
 import { NotAuthorizedRoute, NotFoundRoute } from '../routes';
 import radio from 'backbone.radio';
 
@@ -9,7 +9,11 @@ const router = radio.channel('router');
 const session = radio.channel('session');
 const errors = radio.channel('errors');
 
-export class Route extends BaseRoute {}
+export class Route extends BaseRoute {
+  onError(cb) {
+    errors.on('error', cb);
+  }
+}
 
 class Router extends StateRouter {
   constructor(options) {

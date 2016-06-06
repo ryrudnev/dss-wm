@@ -8,7 +8,7 @@ import GridContainer from '../../components/GridContainer';
 import Progress from 'react-progress-2';
 
 export default class CompanyIndexRoute extends Route {
-  breadcrumb = 'Предприятия'
+  breadcrumb = 'Просмотр предприятий'
 
   fetch() {
     this.companies = new Companies;
@@ -18,10 +18,10 @@ export default class CompanyIndexRoute extends Route {
   render() {
     const actions = props => (
       <div>
-        <NavLink to={`/companies/${props.rowData.fid}`} style={{ marginRight: '10px' }}>
+        <NavLink to={`/companies/${props.rowData.fid}`} style={{ marginRight: '15px' }}>
           <i className="fa fa-eye" aria-hidden="true" />
         </NavLink>
-        <NavLink to={`/companies/${props.rowData.fid}/edit`} style={{ marginRight: '10px' }}>
+        <NavLink to={`/companies/${props.rowData.fid}/edit`} style={{ marginRight: '15px' }}>
           <i className="fa fa-pencil" aria-hidden="true" />
         </NavLink>
         <a
@@ -43,14 +43,14 @@ export default class CompanyIndexRoute extends Route {
       <div>
         <Helmet title="Предприятия" />
         <PageHeader>Предприятия</PageHeader>
-        <Row>
-          <Col md={12}>
-            <NavLink to="companies/new" className="btn btn-primary" role="button">
-              Создать
+        <ul className="nav menu-nav-pills">
+          <li>
+            <NavLink to="/companies/new">
+              <i className="fa fa-plus-square" aria-hidden="true" /> Добавить
             </NavLink>
-          </Col>
-        </Row>
-        <Row style={{ marginTop: '20px' }}>
+          </li>
+        </ul>
+        <Row>
           <Col md={12}>
             <GridContainer
               collection={this.companies}

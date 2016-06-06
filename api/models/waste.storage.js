@@ -43,10 +43,10 @@ class WasteStorage extends RdfBaseStorage {
       case 'hazardClass':
         return `${fid} rdfs:subClassOf
           ${qTypeRestrict(['hasHazardClass', 'owl:hasValue'], value)} .`;
-      case 'origin':
+      case 'origins':
         return `${fid} rdfs:subClassOf
           ${qTypeRestrict(['hasOrigin', 'owl:hasValue'], value)} .`;
-      case 'method':
+      case 'methods':
         return `${fid} rdfs:subClassOf
           ${qTypeRestrict(['hasMethod', 'owl:someValuesFrom'], value)} .`;
       default:
@@ -87,14 +87,14 @@ class WasteStorage extends RdfBaseStorage {
            ?_hazardClass a owl:Restriction ; owl:onProperty :hasHazardClass ;
            owl:hasValue ?hazardClass .`,
         ];
-      case 'origin':
+      case 'origins':
         return [
           `?ind rdfs:subClassOf ${qTypeRestrict(['hasOrigin', 'owl:hasValue'], value)} .`,
           `?ind rdfs:subClassOf ?_origin .
            ?_origin a owl:Restriction ; owl:onProperty :hasOrigin ;
            owl:hasValue ?origin .`,
         ];
-      case 'method':
+      case 'methods':
         return [
           `?ind rdfs:subClassOf ${qTypeRestrict(['hasMethod', 'owl:someValuesFrom'], value)} .`,
           `?ind rdfs:subClassOf ?_method .
@@ -199,7 +199,7 @@ class WasteStorage extends RdfBaseStorage {
         ...type.data[0],
         aggregateState: (aggregate.data || [])[0] || null,
         hazardClass: (hazard.data || [])[0] || null,
-        origin: origins.data || null,
+        origins: origins.data || null,
         methods: methods.data || null,
       };
 

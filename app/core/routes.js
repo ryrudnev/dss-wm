@@ -5,6 +5,10 @@ import {
   CompanyCreateRoute,
   CompanyShowRoute,
   CompanyEditRoute,
+  WasteTypeIndexRoute,
+  WasteTypeShowRoute,
+  WasteTypeCreateRoute,
+  WasteTypeEditRoute,
   NotFoundRoute,
 } from '../routes';
 
@@ -21,6 +25,16 @@ export default {
   },
   'companies/:fid/edit': {
     uses: new CompanyEditRoute, parent: 'companies/show', as: 'companies/edit',
+  },
+  'waste-types': new WasteTypeIndexRoute,
+  'waste-types/new': {
+    uses: new WasteTypeCreateRoute, parent: 'companies',
+  },
+  'waste-types/:fid': {
+    uses: new WasteTypeShowRoute, parent: 'waste-types', as: 'waste-types/show',
+  },
+  'waste-types/:fid/edit': {
+    uses: new WasteTypeEditRoute, parent: 'waste-types/show', as: 'waste-types/edit',
   },
   logout: new LogoutRoute,
   login: new LoginRoute,

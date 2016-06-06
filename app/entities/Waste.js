@@ -7,6 +7,13 @@ export class Model extends BaseModel {
     return `${this.apiUrl()}/waste/individuals`;
   }
 
+  defaults() {
+    return {
+      title: '',
+      amount: '',
+    };
+  }
+
   forSubjectParam(value) {
     return this._defineParam('forSubject', value);
   }

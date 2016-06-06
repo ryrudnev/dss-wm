@@ -5,7 +5,6 @@ import { Route } from '../../core/router';
 import Login from '../../components/Login';
 
 const session = radio.channel('session');
-const errors = radio.channel('errors');
 
 export default class LoginRoute extends Route {
   authentication = false
@@ -18,10 +17,6 @@ export default class LoginRoute extends Route {
 
   onSubmit(username, password) {
     session.request('login', { username, password });
-  }
-
-  onError(handler) {
-    errors.on('error', handler);
   }
 
   render(props) {

@@ -4,20 +4,25 @@ import { Route } from '../../core/router';
 import { Model as Company } from '../../entities/Company';
 import { PageHeader, Row, Col, Panel } from 'react-bootstrap';
 import CompanyForm from '../../components/CompanyForm';
+import Progress from 'react-progress-2';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
 
 export default class CompanyCreateRoute extends Route {
-  breadcrumb = 'Создать предприятие'
+  breadcrumb = 'Создать'
 
   onCancel() {
     router.request('navigate', 'companies');
   }
 
   onSubmit(values) {
+    Progress.show();
     (new Company(values)).save({}, {
-      success: model => router.request('navigate', `companies/${model.id}`),
+      success: model => {
+        Progress.hide();
+        router.request('navigate', `companies/${model.id}`);
+      },
     });
   }
 

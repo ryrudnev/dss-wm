@@ -24,8 +24,14 @@ ol.breadcrumb {
 .griddle {
 
   .griddle-settings-toggle > button {
-    .btn() !important;
-    .btn-default() !important;
+    color: #337ab7;
+
+    &:focus, &:hover {
+      color: #23527c;
+    }
+
+    // .btn() !important;
+    // .btn-default() !important;
   }
 
   .top-section {
@@ -57,4 +63,34 @@ ol.breadcrumb {
 
 .custom-modal {
   width: 90%;
+}
+
+.menu-nav-pills {
+  &:extend(.nav-pills all);
+
+  padding-bottom: 10px;
+
+  & li:first-child {
+    padding-left: 0;
+
+    & > a {
+      padding-left: 0;
+    }
+  }
+
+  li > a {
+    &:focus, &:hover {
+      background-color: transparent;
+    }
+  }
+
+  span.h-seperate {
+    height: 6px;
+    width: 2px;
+    margin: 0px 10px;
+    border-left: 1px solid #e1e1e1;
+    display: inline;
+    position: relative;
+    top: 8px;
+  }
 }

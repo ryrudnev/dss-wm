@@ -8,6 +8,9 @@ export class Model extends BaseModel {
   defaults() {
     return {
       type: 'Company',
+      title: '',
+      coordinates: [],
+      budget: '',
     };
   }
 

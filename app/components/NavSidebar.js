@@ -35,13 +35,13 @@ export default class NavSidebar extends Component {
                 <li><NavLink to="/companies/new">Предприятие</NavLink></li>
                 <li><NavLink to="/">Способ обращения</NavLink></li>
                 <li><NavLink to="/">Отходы</NavLink></li>
-                {isAdmin ? <li><NavLink to="/">Вид отходов</NavLink></li> : ''}
+                {isAdmin ? <li><NavLink to="/waste-types/new">Вид отходов</NavLink></li> : ''}
                 {isAdmin ? <li><NavLink to="/">Вид способа обращения</NavLink></li> : ''}
                 {isAdmin ? <li><NavLink to="/">Пользователя</NavLink></li> : ''}
               </ul>
             </li>
-            <li><NavLink to="/">Виды способов обращения</NavLink></li>
-            <li><NavLink to="/">Виды отходов</NavLink></li>
+            <li><NavLink to="/method-types">Виды способов обращения</NavLink></li>
+            <li><NavLink to="/waste-types">Виды отходов</NavLink></li>
             <li><NavLink to="/companies">Предприятия</NavLink></li>
             {isAdmin ? <li><NavLink to="/">Пользователи</NavLink></li> : ''}
           </ul>

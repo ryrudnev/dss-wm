@@ -26,7 +26,10 @@ function syncMixin(proto) {
 
 function fetchMixin(proto) {
   return {
-    queryParams: {},
+    initialize(...args) {
+      this.resetParam();
+      proto.initialize.apply(this, args);
+    },
 
     getParam(param) {
       return this.queryParams[param] || null;
@@ -38,7 +41,7 @@ function fetchMixin(proto) {
       return this;
     },
 
-    deleteParam(param) {
+    resetParam(param) {
       if (param == null) {
         this.queryParams = {};
       } else { delete this.queryParams[param]; }

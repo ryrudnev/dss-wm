@@ -5,6 +5,7 @@ export class Model extends BaseModel {
 
   defaults() {
     return {
+      title: '',
       costOnWeight: '',
       costOnDistance: '',
       costByService: '',
