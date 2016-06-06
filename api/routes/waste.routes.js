@@ -28,6 +28,8 @@ export default (roles) => {
   // individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
   router.get('/types', roles.can('all wastes types'), Controller.getAllTypes);
 
+  router.get('/types/:fid', roles.can('get waste type'), Controller.getType);
+
   // Create a new type of Waste entity
   router.post('/types', roles.can('create waste type'), Controller.createType);
 

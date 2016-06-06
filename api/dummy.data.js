@@ -10,6 +10,8 @@ export default function (done) {
     const seeds = [
       { username: 'admin', password: 'admin', role: 'admin' },
       { username: 'test', password: 'test', role: 'user', subjects: ['e6', 'e5'] },
+      // For testing ГБУЗ "Николаевское ЦРБ"
+      { username: 'gbuz', password: 'gbuz', role: 'user', subjects: ['gbuz'] },
     ];
 
     User.create(seeds, (error) => {

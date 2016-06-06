@@ -144,3 +144,10 @@ export function deleteType(req, res) {
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
 }
+
+export function getType(req, res) {
+  const { fid } = req.params;
+  return wasteStorage.selectTypeByFid(`${fid}`)
+    .then(data => respondOk.call(res, data))
+    .catch(err => respondError.call(res, err));
+}

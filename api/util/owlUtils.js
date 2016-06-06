@@ -47,9 +47,9 @@ export function qType([s, p], types) {
 }
 
 // Create type restriction conditional for SPARQL query
-export function qTypeRestrict([prop, p], values) {
+export function qTypeRestrict([prop, p], values, withPrefix = true) {
   return flatten([values]).reduce((res, val) => {
-    const axiom = axiomWithPrefix(val);
+    const axiom = withPrefix ? axiomWithPrefix(val) : val;
     if (!axiom) { return res; }
     const cond = `[ rdf:type owl:Restriction ;
                     owl:onProperty ${axiomWithPrefix(prop)} ;

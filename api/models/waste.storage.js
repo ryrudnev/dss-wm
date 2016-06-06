@@ -139,6 +139,74 @@ class WasteStorage extends RdfBaseStorage {
     });
   }
 
+  selectTypeByFid(fid) {
+    const promises = [
+      RdfBaseStorage.exec(`
+        SELECT ${qFidAs('type', 'fid')} ?title
+        WHERE {
+          ?type rdfs:label ?title ; rdfs:subClassOf :SpecificWaste ${qInFilter(['type'], fid)}
+        }
+      `),
+
+      RdfBaseStorage.exec(`
+        SELECT ${qFidAs('aggregateState', 'fid')} ?title
+        WHERE {
+          ?type rdfs:subClassOf :SpecificWaste,
+          ${qTypeRestrict(['hasAggregateState', 'owl:hasValue'], '?aggregateState', false)}
+          ${qInFilter(['type'], fid)}
+          ?aggregateState :title ?title
+        }
+      `),
+
+      RdfBaseStorage.exec(`
+        SELECT ${qFidAs('hazardClass', 'fid')} ?title
+        WHERE {
+          ?type rdfs:subClassOf :SpecificWaste,
+          ${qTypeRestrict(['hasHazardClass', 'owl:hasValue'], '?hazardClass', false)}
+          ${qInFilter(['type'], fid)}
+          ?hazardClass :title ?title
+        }
+      `),
+
+      RdfBaseStorage.exec(`
+        SELECT ${qFidAs('origin', 'fid')} ?title
+        WHERE {
+          ?type rdfs:subClassOf :SpecificWaste,
+          ${qTypeRestrict(['hasOrigin', 'owl:hasValue'], '?origin', false)}
+          ${qInFilter(['type'], fid)}
+          ?origin :title ?title
+        }
+      `),
+
+      RdfBaseStorage.exec(`
+        SELECT ${qFidAs('methodType', 'fid')} ?title
+        WHERE {
+          ?type rdfs:subClassOf :SpecificWaste,
+          ${qTypeRestrict(['hasMethod', 'owl:someValuesFrom'], '?methodType', false)}
+          ${qInFilter(['type'], fid)}
+          ?methodType rdfs:label ?title
+        }
+      `),
+    ];
+    return Promise.all(promises).then(results => {
+      const [type, aggregate, hazard, origins, methods] = results;
+
+      if (!type.success || !(type.data || []).length) {
+        return Promise.reject({ code: 404, message: __('Not found'), data: null });
+      }
+
+      const wasteType = {
+        ...type.data[0],
+        aggregateState: (aggregate.data || [])[0] || null,
+        hazardClass: (hazard.data || [])[0] || null,
+        origin: origins.data || null,
+        methods: methods.data || null,
+      };
+
+      return Promise.resolve({ data: wasteType });
+    });
+  }
+
   selectTypes({ individs, types, subtypes, sort, offset, limit } = {}) {
     if (individs && subtypes) {
       const query = `

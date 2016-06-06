@@ -5,9 +5,9 @@ import fs from 'fs';
 const isTesting = process.env.NODE_ENV === 'test';
 
 const stardogDb = isTesting ? 'wm-test' : (process.env.STARDOG_DB || 'wm');
-const mongodb = isTesting ? 'mongodb://localhost/wm-test' : (process.env.MONGO_URL || 'mongodb://localhost/wm');
+const mongodb = isTesting ? 'mongodb://localhost/wm-test' : (process.env.MONGO_URL || 'mongodb://localhost/gbuz');
 const serverPort = isTesting ? 1337 : (process.env.API_PORT || 3001);
-const owlFile = isTesting ? 'test-ontology.ttl' : 'prod-ontology.ttl';
+const owlFile = isTesting ? 'test-ontology.ttl' : 'gbuz-ontology.ttl';
 
 const config = {
   // Log path

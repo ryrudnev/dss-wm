@@ -133,7 +133,8 @@ class SubjectStorage extends RdfBaseStorage {
     // Cached all available transportation
     const transportation = methods[TRANSPORT_METHOD];
 
-    for (const [group, waste] of groupWaste(ownWaste, wasteMethods)) {
+    const grouped = groupWaste(ownWaste, wasteMethods);
+    for (const [group, waste] of grouped) {
       // Calculate total amount of all own waste for the current group
       const totalAmount = +waste.reduce((prev, val) => prev + +val.amount, 0).toFixed(2);
 
@@ -203,7 +204,7 @@ class SubjectStorage extends RdfBaseStorage {
     return {
       subject,
       strategies,
-      totalBestCost: +totalBestCost.toFixed(2),
+      totalBestCost: totalBestCost == null ? null : +totalBestCost.toFixed(2),
       totalWasteAmount: +totalWasteAmount.toFixed(2),
     };
   }

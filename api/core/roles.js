@@ -45,7 +45,7 @@ const rulesRoles = {
 
   // role => [rule]
   actionRules: {
-    'get methods': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubjects')),
+    'get methods': () => true,
     'create method': req => ifRole(req, 'user', () => allowedSubjects(req, 'body.forSubject')),
     'update method': req => ifRole(req, 'user', () => allowedSubjects(req, 'body.forSubject')),
     'delete method': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
@@ -58,6 +58,7 @@ const rulesRoles = {
     'delete waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
     'read waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
     'all wastes types': () => true,
+    'get waste type': () => true,
     'all waste evidence': () => true,
 
     'get subjects': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.fids')),

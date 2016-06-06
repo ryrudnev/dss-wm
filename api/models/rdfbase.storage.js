@@ -155,19 +155,16 @@ export default class RdfBaseStorage {
     let cond;
     try {
       cond = this.deleteReducer(fid, options);
-    } catch (e) {
-      cond = '';
-    }
-
+    } catch (e) { cond = ''; }
     const { falseAsReject } = options;
-    const query = `DELETE { ?s ?p ?o }
+    const query = `
+      DELETE { ?s ?p ?o . ?a ?b ?s }
       WHERE {
-        ?s ?p ?o FILTER(?s = ${axiomWithPrefix(fid)})
+        ?s ?p ?o . ?a ?b ?s
+        FILTER(?s = ${axiomWithPrefix(fid)} && ?)
         ${cond}
       }`;
-    if (!falseAsReject) {
-      return exec(query, false);
-    }
+    if (!falseAsReject) return exec(query);
     return execWithHandle(query, (resp, next, error) => {
       if (resp.data.boolean) {
         next(resp);
@@ -178,7 +175,7 @@ export default class RdfBaseStorage {
           data: null,
         });
       }
-    }, false);
+    });
   }
 
   // Delete the type of entity
