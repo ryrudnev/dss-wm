@@ -18,6 +18,11 @@ export class Model extends BaseModel {
     return this._defineParam('forSubject', value);
   }
 
+  save(attrs, options = {}) {
+    if (this.forSubjectParam()) this.set('forSubject', this.forSubjectParam());
+    return BaseModel.prototype.save.call(this, attrs, options);
+  }
+
   destroy(options = {}) {
     options.url = `${this.urlRoot()}/${this.get('fid')}?forSubject=${this.forSubjectParam()}`;
     return BaseModel.prototype.destroy.call(this, options);

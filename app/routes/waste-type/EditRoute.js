@@ -64,7 +64,7 @@ export default class CompanyEditRoute extends Route {
               <WasteTypeForm
                 values={values}
                 onSubmit={vals => this.onSubmit(vals)}
-                onCancel={this.onCancel}
+                onCancel={() => this.onCancel()}
                 origins={this.origins.toJSON()}
                 hazardClasses={this.hazardClasses.toJSON()}
                 aggregateStates={this.aggregateStates.toJSON()}

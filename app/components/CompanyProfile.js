@@ -26,20 +26,22 @@ export default class CompanyProfile extends Component {
   }
 
   createWasteItem({ fid, title, amount }, i) {
+    const { company } = this.props;
     return (
       <ListGroupItem key={i + 1}>
         <Label>Название</Label>{' '}
-        <NavLink to={`/waste/${fid}?forSubject=${this.props.company.id}`}>{title}</NavLink><br />
+        <NavLink to={`/companies/${company.id}/waste/${fid}`}>{title}</NavLink><br />
         <Label>Количество</Label>{' '}{amount} т
       </ListGroupItem>
     );
   }
 
   createMethod({ fid, subject, title, costByService, costOnDistance, costOnWeight, distance }) {
+    const { company } = this.props;
     return (
       <div>
         <Label>Название</Label>{' '}
-        <NavLink to={`/methods/${fid}?forSubject=${this.props.company.id}`}>{title}</NavLink><br />
+        <NavLink to={`/companies/${company.id}/methods/${fid}`}>{title}</NavLink><br />
         {subject == null ? '' : (
           <span>
             <Label>Предприятие</Label>{' '}
@@ -175,13 +177,13 @@ export default class CompanyProfile extends Component {
             customComponent: props => (
               <div>
                 <NavLink
-                  to={`/waste/${props.rowData.fid}?forSubject=${company.id}`}
+                  to={`/companies/${company.id}/waste/${props.rowData.fid}`}
                   style={{ marginRight: '15px' }}
                 >
                   <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
                 <NavLink
-                  to={`/waste/${props.rowData.fid}/edit?forSubject=${company.id}`}
+                  to={`/companies/${company.id}/waste/${props.rowData.fid}/edit`}
                   style={{ marginRight: '15px' }}
                 >
                   <i className="fa fa-pencil" aria-hidden="true" />
@@ -221,13 +223,13 @@ export default class CompanyProfile extends Component {
             customComponent: props => (
               <div>
                 <NavLink
-                  to={`/methods/${props.rowData.fid}?forSubject=${company.id}`}
+                  to={`/companies/${company.id}/methods/${props.rowData.fid}`}
                   style={{ marginRight: '15px' }}
                 >
                   <i className="fa fa-eye" aria-hidden="true" />
                 </NavLink>
                 <NavLink
-                  to={`/methods/${props.rowData.fid}/edit?forSubject=${company.id}`}
+                  to={`/companies/${company.id}/methods/${props.rowData.fid}/edit`}
                   style={{ marginRight: '15px' }}
                 >
                   <i className="fa fa-pencil" aria-hidden="true" />
@@ -302,7 +304,9 @@ export default class CompanyProfile extends Component {
               <Tab eventKey={1} title="Отходы">
                 <ul className="nav menu-nav-pills">
                   <li>
-                    <NavLink to={`/waste/new?forSubject=${company.id}`}>
+                    <NavLink
+                      to={`/companies/${company.id}/waste/new`}
+                    >
                       <i className="fa fa-plus-square" aria-hidden="true" /> Добавить
                     </NavLink>
                   </li>
@@ -313,10 +317,12 @@ export default class CompanyProfile extends Component {
                   </Col>
                 </Row>
               </Tab>
-              <Tab eventKey={2} title="Методы">
+              <Tab eventKey={2} title="Способы управления">
                 <ul className="nav menu-nav-pills">
                   <li>
-                    <NavLink to={`/methods/new?forSubject=${company.id}`}>
+                    <NavLink
+                      to={`/companies/${company.id}/methods/new`}
+                    >
                       <i className="fa fa-plus-square" aria-hidden="true" /> Добавить
                     </NavLink>
                   </li>
