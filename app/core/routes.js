@@ -20,6 +20,10 @@ import {
   MethodCreateRoute,
   MethodEditRoute,
   NotFoundRoute,
+  UserIndexRoute,
+  UserShowRoute,
+  UserCreateRoute,
+  UserEditRoute,
 } from '../routes';
 
 const companyIndexRoute = new CompanyIndexRoute;
@@ -73,6 +77,16 @@ export default {
   },
   'companies/:fid/methods/:mfid/edit': {
     uses: new MethodEditRoute, parent: 'companies/methods', as: 'companies/methods/edit',
+  },
+  users: new UserIndexRoute,
+  'users/new': {
+    uses: new UserCreateRoute, parent: 'users',
+  },
+  'users/:id': {
+    uses: new UserShowRoute, parent: 'users', as: 'users/show',
+  },
+  'users/:id/edit': {
+    uses: new UserEditRoute, parent: 'users/show', as: 'users/edit',
   },
   logout: new LogoutRoute,
   login: new LoginRoute,

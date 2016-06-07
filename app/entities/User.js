@@ -2,7 +2,7 @@ import { Model as BaseModel, Collection as BaseCollection } from '../core/Entity
 
 export class Model extends BaseModel {
   urlRoot() {
-    return `${this.apiUrl()}/users`;
+    return `${this.apiUrl()}/auth/users`;
   }
 
   defaults() {
@@ -26,6 +26,6 @@ export class Collection extends BaseCollection {
   }
 
   url() {
-    return `${this.apiUrl()}/users`;
+    return `${this.apiUrl()}/auth/users`;
   }
 }

@@ -23,7 +23,7 @@ export function signup(req, res) {
       return respondError.call(res, res.__('This an username already exists in the system'));
     }
     user = new User(pick(req.body, NEW_ALLOWED_ATTRS));
-    user.save(() => respondOk.call(res, { user }));
+    user.save(() => respondOk.call(res, { data: user }));
   }).catch(err => respondError.call(res, err));
 }
 
@@ -41,3 +41,42 @@ export function auth(req, res) {
     }).catch(() => respondUnauthorized.call(res, res.__('Authentication failed. Wrong password')));
   }).catch(err => respondError.call(res, err));
 }
+
+export function getUsers(req, res) {
+  User.find({}).exec().then(users => {
+    respondOk.call(res, { data: users });
+  }).catch(err => respondError.call(res, err));
+}
+
+export function getUser(req, res) {
+  User.findById(req.params.id).exec().then(user => {
+    if (!user) {
+      return respondError.call(res, res.__('Not found'));
+    }
+    respondOk.call(res, { data: user });
+  }).catch(err => respondError.call(res, err));
+}
+
+export function updateUser(req, res) {
+  User.findById(req.params.id).exec().then(user => {
+    if (!user) {
+      return respondError.call(res, res.__('Not found'));
+    }
+    const values = req.body;
+    if (values.role) user.role = values.role;
+    if (values.username) user.username = values.username;
+    if (values.password) user.password = values.password;
+    if (values.subjects) user.subjects = values.subjects;
+    user.save(() => respondOk.call(res, { data: user }));
+  }).catch(err => respondError.call(res, err));
+}
+
+export function deleteUser(req, res) {
+  User.findById(req.params.id).exec().then(user => {
+    if (!user) {
+      return respondError.call(res, res.__('Not found'));
+    }
+    user.remove(() => respondOk.call(res, { data: null }));
+  }).catch(err => respondError.call(res, err));
+}
+

@@ -20,3 +20,7 @@ export { default as LoginRoute } from './login/LoginRoute';
 export { default as LogoutRoute } from './logout/LogoutRoute';
 export { default as NotFoundRoute } from './notfound/NotfoundRoute';
 export { default as NotAuthorizedRoute } from './notauthorized/NotauthorizedRoute';
+export { default as UserIndexRoute } from './user/IndexRoute';
+export { default as UserShowRoute } from './user/ShowRoute';
+export { default as UserCreateRoute } from './user/CreateRoute';
+export { default as UserEditRoute } from './user/EditRoute';
