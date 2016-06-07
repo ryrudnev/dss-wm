@@ -39,14 +39,19 @@ export function getIndivid(req, res) {
   const exp = flatten([req.qs.expand]);
   return Promise.all([
     methodStorage.selectIndividByFid(fid, req.qs),
+    exp.includes('subtype') ? methodStorage.selectTypes({ individs: fid, subtypes: true }) : 0,
     exp.includes('types') ? methodStorage.selectTypes({ individs: fid }) : 0,
     exp.includes('subject') ? subjectStorage.selectIndivids({ byMethods: fid }) : 0,
   ]).then(results => {
     const [method] = results;
-    let [, types, subjects] = results;
+    let [, subtype, types, subjects] = results;
+    subtype = !subtype || joinExpanded('methodFid', subtype.data, true);
     types = !types || joinExpanded('methodFid', types.data);
     subjects = !subjects || joinExpanded('methodFid', subjects.data, true);
 
+    if (typeof subtype !== 'boolean') {
+      method.data.subtype = subtype[fid] || {};
+    }
     if (typeof types !== 'boolean') {
       method.data.types = types[fid] || [];
     }
@@ -90,4 +95,34 @@ export function deleteIndivid(req, res) {
       .then(() => methodStorage.deleteIndivid(fid, { forSubject, falseAsReject: true }))
       .then(data => respondOk.call(res, data))
       .catch(err => respondError.call(res, err));
+}
+
+export function getType(req, res) {
+  const { fid } = req.params;
+  return methodStorage.selectTypeByFid(`${fid}`)
+    .then(data => respondOk.call(res, data))
+    .catch(err => respondError.call(res, err));
+}
+
+export function deleteType(req, res) {
+  const { fid } = req.params;
+  return methodStorage.typeExists(`${fid}`, { falseAsReject: true })
+    .then(() => methodStorage.deleteType(fid))
+    .then(data => respondOk.call(res, data))
+    .catch(err => respondError.call(res, err));
+}
+
+export function createType(req, res) {
+  return methodStorage.createType('Method', req.body)
+    .then(data => respondOk.call(res, data))
+    .catch(err => respondError.call(res, err));
+}
+
+export function updateType(req, res) {
+  const { fid } = req.params;
+  return Promise.all([
+    methodStorage.typeExists(`${fid}`, { falseAsReject: true }),
+  ]).then(() => methodStorage.updateType(fid, req.body))
+    .then(data => respondOk.call(res, data))
+    .catch(err => respondError.call(res, err));
 }

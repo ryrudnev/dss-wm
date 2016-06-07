@@ -33,15 +33,18 @@ export default class NavSidebar extends Component {
                           collapse: this.state.createMenuCollapsed })}
               >
                 <li><NavLink to="/companies/new">Предприятие</NavLink></li>
-                {isAdmin ? <li><NavLink to="/waste-types/new">Вид отходов</NavLink></li> : ''}
-                {isAdmin ? <li><NavLink to="/">Вид способа управления</NavLink></li> : ''}
-                {isAdmin ? <li><NavLink to="/">Пользователя</NavLink></li> : ''}
+                {isAdmin ? <li>
+                  <NavLink to="/waste-types/new">Вид отходов</NavLink></li> : ''}
+                {isAdmin ? <li>
+                  <NavLink to="/method-types/new">Вид управления отходами</NavLink></li> : ''}
+                {isAdmin ? <li>
+                  <NavLink to="/users/new">Пользователя</NavLink></li> : ''}
               </ul>
             </li>
-            <li><NavLink to="/method-types">Виды способов управления</NavLink></li>
+            <li><NavLink to="/method-types">Виды управления отходами</NavLink></li>
             <li><NavLink to="/waste-types">Виды отходов</NavLink></li>
             <li><NavLink to="/companies">Предприятия</NavLink></li>
-            {isAdmin ? <li><NavLink to="/">Пользователи</NavLink></li> : ''}
+            {isAdmin ? <li><NavLink to="/users">Пользователи</NavLink></li> : ''}
           </ul>
         </div>
       </div>

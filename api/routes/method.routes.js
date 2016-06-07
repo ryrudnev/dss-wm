@@ -28,5 +28,13 @@ export default (roles) => {
   // forWaste=[]&individs=[]&types=[]&subtypes=[]&sort=[]&offset&limit
   router.get('/types', roles.can('all methods types'), Controller.getAllTypes);
 
+  router.get('/types/:fid', roles.can('get method type'), Controller.getType);
+
+  router.post('/types', roles.can('create method type'), Controller.createType);
+
+  router.put('/types/:fid', roles.can('update method type'), Controller.updateType);
+
+  router.delete('/types/:fid', roles.can('delete method type'), Controller.deleteType);
+
   return router;
 };

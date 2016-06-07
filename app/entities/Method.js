@@ -6,9 +6,9 @@ export class Model extends BaseModel {
   defaults() {
     return {
       title: '',
-      costOnWeight: '',
-      costOnDistance: '',
-      costByService: '',
+      costOnWeight: 0,
+      costOnDistance: 0,
+      costByService: 0,
     };
   }
 
@@ -18,6 +18,11 @@ export class Model extends BaseModel {
 
   forSubjectParam(value) {
     return this._defineParam('forSubject', value);
+  }
+
+  save(attrs, options = {}) {
+    if (this.forSubjectParam()) this.set('forSubject', this.forSubjectParam());
+    return BaseModel.prototype.save.call(this, attrs, options);
   }
 
   destroy(options = {}) {

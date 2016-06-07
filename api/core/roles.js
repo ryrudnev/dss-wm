@@ -51,6 +51,7 @@ const rulesRoles = {
     'delete method': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
     'read method': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubject')),
     'all methods types': () => true,
+    'get method type': () => true,
 
     'get waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'qs.forSubjects')),
     'create waste': req => ifRole(req, 'user', () => allowedSubjects(req, 'body.forSubject')),

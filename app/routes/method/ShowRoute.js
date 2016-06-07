@@ -1,7 +1,7 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 import { Route } from '../../core/router';
-import { Model as Waste } from '../../entities/Waste';
+import { Model as Method } from '../../entities/Method';
 import { Deferred } from '../../util/utils';
 import NavLink from '../../components/NavLink';
 import Progress from 'react-progress-2';
@@ -10,36 +10,36 @@ import radio from 'backbone.radio';
 
 const router = radio.channel('router');
 
-export default class WasteShowRoute extends Route {
+export default class MethodShowRoute extends Route {
   breadcrumb({ params }) {
     const dfd = new Deferred;
-    const waste = new Waste({ fid: params.wfid });
-    waste.forSubjectParam(params.fid);
-    waste.fetch({ success: m => dfd.resolve(m.get('title')) });
+    const method = new Method({ fid: params.mfid });
+    method.forSubjectParam(params.fid);
+    method.fetch({ success: m => dfd.resolve(m.get('title')) });
     return dfd.promise;
   }
 
   fetch({ params }) {
     this.companyFid = params.fid;
 
-    this.waste = new Waste({ fid: params.wfid });
-    this.waste.forSubjectParam(params.fid).expandParam('subtype');
-    return this.waste.fetch();
+    this.method = new Method({ fid: params.mfid });
+    this.method.forSubjectParam(params.fid).expandParam('subtype');
+    return this.method.fetch();
   }
 
   render() {
-    const waste = this.waste.toJSON();
+    const method = this.method.toJSON();
 
     return (
       <div>
-        <Helmet title={waste.title} />
-        <PageHeader>{waste.title}</PageHeader>
+        <Helmet title={method.title} />
+        <PageHeader>{method.title}</PageHeader>
         <Row>
           <Col md={12}>
             <ul className="nav menu-nav-pills">
               <li>
                 <NavLink
-                  to={`/companies/${this.companyFid}/waste/${waste.fid}/edit`}
+                  to={`/companies/${this.companyFid}/methods/${method.fid}/edit`}
                 >
                   <i className="fa fa-pencil-square-o" /> Редактировать
                 </NavLink>
@@ -67,13 +67,19 @@ export default class WasteShowRoute extends Route {
           <Col md={12}>
             <Panel>
               <h4><Label>Название</Label>{' '}
-                {waste.title}
+                {method.title}
               </h4>
-              <h4><Label>Вид отходов</Label>{' '}
-                <NavLink to={`/waste-types/${waste.subtype.fid}`}>{waste.subtype.title}</NavLink>
+              <h4><Label>Вид управления отходами</Label>{' '}
+                <NavLink to={`/method-types/${method.subtype.fid}`}>{method.subtype.title}</NavLink>
               </h4>
-              <h4><Label>Количество</Label>{' '}
-                {waste.amount} т
+              <h4><Label>Стоимость</Label>{' '}
+                {method.costByService} р
+              </h4>
+              <h4><Label>Стоимость на кг.</Label>{' '}
+                {method.costOnWeight} р
+              </h4>
+              <h4><Label>Стоимость на км.</Label>{' '}
+                {method.costOnDistance} р
               </h4>
             </Panel>
           </Col>

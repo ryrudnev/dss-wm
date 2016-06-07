@@ -9,9 +9,16 @@ import {
   WasteTypeShowRoute,
   WasteTypeCreateRoute,
   WasteTypeEditRoute,
+  MethodTypeIndexRoute,
+  MethodTypeShowRoute,
+  MethodTypeCreateRoute,
+  MethodTypeEditRoute,
   WasteShowRoute,
   WasteCreateRoute,
   WasteEditRoute,
+  MethodShowRoute,
+  MethodCreateRoute,
+  MethodEditRoute,
   NotFoundRoute,
 } from '../routes';
 
@@ -40,13 +47,32 @@ export default {
   },
   'waste-types': new WasteTypeIndexRoute,
   'waste-types/new': {
-    uses: new WasteTypeCreateRoute, parent: 'companies',
+    uses: new WasteTypeCreateRoute, parent: 'waste-types',
   },
   'waste-types/:fid': {
     uses: new WasteTypeShowRoute, parent: 'waste-types', as: 'waste-types/show',
   },
   'waste-types/:fid/edit': {
     uses: new WasteTypeEditRoute, parent: 'waste-types/show', as: 'waste-types/edit',
+  },
+  'method-types': new MethodTypeIndexRoute,
+  'method-types/new': {
+    uses: new MethodTypeCreateRoute, parent: 'method-types',
+  },
+  'method-types/:fid': {
+    uses: new MethodTypeShowRoute, parent: 'method-types', as: 'method-types/show',
+  },
+  'method-types/:fid/edit': {
+    uses: new MethodTypeEditRoute, parent: 'method-types/show', as: 'method-types/edit',
+  },
+  'companies/:fid/methods/new': {
+    uses: new MethodCreateRoute, parent: 'companies/show', as: 'companies/methods/new',
+  },
+  'companies/:fid/methods/:mfid': {
+    uses: new MethodShowRoute, parent: 'companies/show', as: 'companies/methods',
+  },
+  'companies/:fid/methods/:mfid/edit': {
+    uses: new MethodEditRoute, parent: 'companies/methods', as: 'companies/methods/edit',
   },
   logout: new LogoutRoute,
   login: new LoginRoute,

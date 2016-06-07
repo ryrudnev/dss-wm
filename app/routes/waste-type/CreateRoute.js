@@ -12,9 +12,14 @@ import Progress from 'react-progress-2';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
+const session = radio.channel('session');
 
 export default class CompanyCreateRoute extends Route {
-  breadcrumb = 'Создать вид отходов'
+  breadcrumb = 'Создать'
+
+  authorize() {
+    return session.request('currentUser').get('role') === 'admin';
+  }
 
   onCancel() {
     router.request('navigate', 'waste-types');

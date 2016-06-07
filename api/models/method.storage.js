@@ -92,6 +92,19 @@ class MethodStorage extends RdfBaseStorage {
   }
 
   selectTypes({ forWaste, individs, types, subtypes, sort, offset, limit } = {}) {
+    if (individs && subtypes) {
+      const query = `
+        SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
+        ${qFidAs('method', 'methodFid')}
+        WHERE {
+          ?type rdfs:subClassOf ${this.entityWithPrefix} ; rdfs:label ?title.
+          ?method a ?type
+          ${qInFilter(['method'], individs)}
+        } ${qSort(sort)} ${qLimitOffset(limit, offset)}
+      `;
+      return RdfBaseStorage.exec(query, false);
+    }
+
     if (forWaste) {
       const query = `
        SELECT DISTINCT ${qFidAs('type', 'fid')} ?title
@@ -121,6 +134,39 @@ class MethodStorage extends RdfBaseStorage {
       } ${qSort(sort)} ${qLimitOffset(limit, offset)}
     `;
     return RdfBaseStorage.exec(query);
+  }
+
+  selectTypeByFid(fid) {
+    const query = `
+      SELECT ${qFidAs('type', 'fid')} ?title
+      WHERE {
+        ?type rdfs:label ?title ; rdfs:subClassOf ${this.entityWithPrefix}
+        ${qInFilter(['type'], fid)}
+      }
+    `;
+    return RdfBaseStorage.execWithHandle(query, (resp, next, error) => {
+      if (resp.data.length > 0) {
+        next({ ...resp, data: resp.data[0] });
+      } else { error({ code: 404, message: __('Not found'), data: null }); }
+    });
+  }
+
+  createTypeReducer(key, value, fid) {
+    switch (key) {
+      case 'title':
+        return `${fid} rdfs:label "${value}"@ru .`;
+      default:
+        return '';
+    }
+  }
+
+  updateTypeReducer(key, value) {
+    switch (key) {
+      case 'title':
+        return [`?ind rdfs:label "${value}"@ru .`, '?ind rdfs:label ?title .'];
+      default:
+        return [];
+    }
   }
 }
 

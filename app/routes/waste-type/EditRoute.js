@@ -12,9 +12,14 @@ import Progress from 'react-progress-2';
 import radio from 'backbone.radio';
 
 const router = radio.channel('router');
+const session = radio.channel('session');
 
 export default class CompanyEditRoute extends Route {
   breadcrumb = 'Редактировать'
+
+  authorize() {
+    return session.request('currentUser').get('role') === 'admin';
+  }
 
   fetch({ params }) {
     this.wasteType = new WasteType({ fid: params.fid });

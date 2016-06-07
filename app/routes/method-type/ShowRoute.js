@@ -1,7 +1,7 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 import { Route } from '../../core/router';
-import { Model as WastType } from '../../entities/WasteType';
+import { Model as MethodType } from '../../entities/MethodType';
 import { Deferred } from '../../util/utils';
 import NavLink from '../../components/NavLink';
 import Progress from 'react-progress-2';
@@ -11,33 +11,33 @@ import radio from 'backbone.radio';
 const router = radio.channel('router');
 const session = radio.channel('session');
 
-export default class WasteTypeShowRoute extends Route {
+export default class MethodTypeShowRoute extends Route {
   breadcrumb({ params }) {
     const dfd = new Deferred;
-    (new WastType({ fid: params.fid })).fetch({ success: m => dfd.resolve(m.get('title')) });
+    (new MethodType({ fid: params.fid })).fetch({ success: m => dfd.resolve(m.get('title')) });
     return dfd.promise;
   }
 
   fetch({ params }) {
-    this.wastType = new WastType({ fid: params.fid });
-    return this.wastType.fetch();
+    this.methodType = new MethodType({ fid: params.fid });
+    return this.methodType.fetch();
   }
 
   render() {
     const isAdmin = session.request('currentUser').get('role') === 'admin';
 
-    const wasteType = this.wastType.toJSON();
+    const methodType = this.methodType.toJSON();
 
     return (
       <div>
-        <Helmet title={wasteType.title} />
-        <PageHeader>{wasteType.title}</PageHeader>
+        <Helmet title={methodType.title} />
+        <PageHeader>{methodType.title}</PageHeader>
         <Row>
           <Col md={12}>
             <ul className="nav menu-nav-pills">
               {!isAdmin ? '' : (
                 <li>
-                  <NavLink to={`/waste-types/${wasteType.fid}/edit`}>
+                  <NavLink to={`/method-types/${methodType.fid}/edit`}>
                     <i className="fa fa-pencil-square-o" /> Редактировать
                   </NavLink>
                 </li>
@@ -48,10 +48,10 @@ export default class WasteTypeShowRoute extends Route {
                     href="javascript:;"
                     onClick={() => {
                       Progress.show();
-                      this.wastType.destroy({
+                      this.methodType.destroy({
                         success: () => {
                           Progress.hide();
-                          router.request('navigate', 'waste-types');
+                          router.request('navigate', 'method-types');
                         },
                       });
                     }}
@@ -67,19 +67,7 @@ export default class WasteTypeShowRoute extends Route {
           <Col md={12}>
             <Panel>
               <h4><Label>Название</Label>{' '}
-                {wasteType.title}
-              </h4>
-              <h4><Label>Агрегатное состояние</Label>{' '}
-                {wasteType.aggregateState.title}
-              </h4>
-              <h4><Label>Класс опасности</Label>{' '}
-                {wasteType.hazardClass.title}
-              </h4>
-              <h4><Label>Происхождение</Label>{' '}
-                {wasteType.origins.map(el => el.title).join(', ')}
-              </h4>
-              <h4><Label>Возможные способы управления</Label>{' '}
-                {wasteType.methods.map(el => el.title).join(', ')}
+                {methodType.title}
               </h4>
             </Panel>
           </Col>
